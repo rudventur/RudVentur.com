@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RudVentur — Universe Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#0a0a0a;
+  --map:#00ff41;
+  --user:#ff9933;
+  --social:#ff3c78;
+  --os:#00e5ff;
+  --tools:#c78fff;
+  --index:#f5f5f5;
+}
+
+body{
+  background:var(--bg);
+  color:#ccc;
+  font-family:'DM Mono',monospace;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* subtle grid bg */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:60px 60px;
+  z-index:0;pointer-events:none;
+}
+
+/* ─── HEADER ─── */
+.site-header{
+  position:relative;z-index:2;
+  text-align:center;
+  padding:2.5rem 1rem 1.5rem;
+}
+.site-header h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.2rem,6vw,4rem);
+  letter-spacing:4px;
+  color:var(--index);
+  text-shadow:0 0 30px rgba(255,255,255,.08);
+}
+.site-header .tagline{
+  font-size:.8rem;
+  color:#555;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  margin-top:.3rem;
+}
+.site-header .version{
+  font-size:.6rem;
+  color:#333;
+  margin-top:.5rem;
+  letter-spacing:2px;
+}
+
+/* ─── GRID ─── */
+.universe-grid{
+  position:relative;z-index:1;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(2,1fr);
+  gap:3px;
+  max-width:1400px;
+  margin:0 auto;
+  padding:0 3px 3px;
+  min-height:calc(100vh - 140px);
+}
+
+/* ─── PANELS ─── */
+.panel{
+  background:#0e0e10;
+  border:1px solid #1a1a1a;
+  padding:1.8rem 1.5rem;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .3s,box-shadow .3s,transform .2s;
+  display:flex;
+  flex-direction:column;
+}
+.panel:hover{
+  transform:translateY(-1px);
+  z-index:2;
+}
+
+/* panel accent borders */
+.panel--map{border-color:#0a3a0a}
+.panel--map:hover{border-color:var(--map);box-shadow:0 0 25px rgba(0,255,65,.08)}
+
+.panel--user{border-color:#3a2a0a}
+.panel--user:hover{border-color:var(--user);box-shadow:0 0 25px rgba(255,153,51,.08)}
+
+.panel--social{border-color:#3a0a1a}
+.panel--social:hover{border-color:var(--social);box-shadow:0 0 25px rgba(255,60,120,.08)}
+
+.panel--os{border-color:#0a2a3a}
+.panel--os:hover{border-color:var(--os);box-shadow:0 0 25px rgba(0,229,255,.08)}
+
+.panel--tools{border-color:#2a0a3a}
+.panel--tools:hover{border-color:var(--tools);box-shadow:0 0 25px rgba(199,143,255,.08)}
+
+.panel--index{border-color:#222;background:#0c0c0e}
+.panel--index:hover{border-color:#444;box-shadow:0 0 25px rgba(255,255,255,.03)}
+
+/* ─── PANEL HEADER (clickable fullscreen toggle) ─── */
+.panel__head{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  cursor:pointer;
+  user-select:none;
+  margin-bottom:1.2rem;
+  padding-bottom:.6rem;
+  border-bottom:1px solid #1a1a1a;
+  transition:opacity .2s;
+}
+.panel__head:hover{opacity:.75}
+.panel__head::after{
+  content:'⛶';
+  font-size:.7rem;
+  margin-left:auto;
+  color:#333;
+  transition:color .3s;
+}
+.panel__head:hover::after{color:#888}
+
+.panel__icon{
+  font-size:1.4rem;
+  line-height:1;
+}
+.panel__title{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:clamp(.85rem,1.5vw,1.1rem);
+  text-transform:uppercase;
+  letter-spacing:2px;
+}
+.panel--map .panel__title{color:var(--map)}
+.panel--user .panel__title{color:var(--user)}
+.panel--social .panel__title{color:var(--social)}
+.panel--os .panel__title{color:var(--os)}
+.panel--tools .panel__title{color:var(--tools)}
+.panel--index .panel__title{color:var(--index)}
+
+/* ─── TOOL LINKS ─── */
+.tool-list{
+  list-style:none;
+  flex:1;
+}
+.tool-list li{
+  margin-bottom:.15rem;
+}
+.tool-link{
+  display:block;
+  padding:.45rem .5rem;
+  color:#aaa;
+  text-decoration:none;
+  font-size:.78rem;
+  border-left:2px solid transparent;
+  transition:all .2s;
+  letter-spacing:.5px;
+}
+.tool-link:hover{
+  color:#fff;
+  background:rgba(255,255,255,.03);
+  padding-left:.8rem;
+}
+
+/* accent link borders on hover */
+.panel--map .tool-link:hover{border-left-color:var(--map);color:var(--map)}
+.panel--user .tool-link:hover{border-left-color:var(--user);color:var(--user)}
+.panel--social .tool-link:hover{border-left-color:var(--social);color:var(--social)}
+.panel--os .tool-link:hover{border-left-color:var(--os);color:var(--os)}
+.panel--tools .tool-link:hover{border-left-color:var(--tools);color:var(--tools)}
+.panel--index .tool-link:hover{border-left-color:var(--index);color:var(--index)}
+
+/* coming soon state */
+.tool-link.soon{
+  color:#444;
+  font-style:italic;
+  cursor:default;
+}
+.tool-link.soon:hover{
+  color:#555;
+  background:none;
+  border-left-color:transparent;
+  padding-left:.5rem;
+}
+.tool-link.soon::after{
+  content:' — soon';
+  font-size:.6rem;
+  color:#333;
+}
+
+/* ─── INDEX PANEL (panel 6) ─── */
+.index-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(1.4rem,2.5vw,2rem);
+  color:var(--index);
+  letter-spacing:3px;
+  text-align:center;
+  margin-bottom:.3rem;
+}
+.index-sub{
+  text-align:center;
+  color:#555;
+  font-size:.7rem;
+  letter-spacing:2px;
+  margin-bottom:1.2rem;
+}
+.index-zones{
+  list-style:none;
+  margin-bottom:1rem;
+}
+.index-zones li{
+  text-align:center;
+  margin-bottom:.3rem;
+}
+.index-zones a{
+  color:#666;
+  text-decoration:none;
+  font-size:.75rem;
+  letter-spacing:1px;
+  transition:color .2s;
+}
+.index-zones a:hover{color:var(--index)}
+.index-meta{
+  margin-top:auto;
+  text-align:center;
+  font-size:.55rem;
+  color:#333;
+  letter-spacing:1px;
+}
+
+/* ─── FULLSCREEN MODE ─── */
+.panel.fullscreen{
+  position:fixed!important;
+  inset:0!important;
+  z-index:1000!important;
+  border-radius:0!important;
+  overflow-y:auto;
+  transform:none!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  padding:2.5rem;
+  animation:panelExpand .25s ease-out;
+}
+.panel.fullscreen .panel__head::after{
+  content:'✕';
+  color:#666;
+  font-size:.9rem;
+}
+.panel.fullscreen .panel__head:hover::after{color:#fff}
+.panel.fullscreen .tool-link{
+  font-size:1rem;
+  padding:.7rem .8rem;
+}
+.panel.fullscreen .panel__title{
+  font-size:1.6rem;
+}
+.panel.fullscreen .index-logo{
+  font-size:3rem;
+}
+
+@keyframes panelExpand{
+  from{opacity:.7;transform:scale(.95)}
+  to{opacity:1;transform:scale(1)}
+}
+
+/* ─── FOOTER BAR ─── */
+.footer-bar{
+  position:relative;z-index:2;
+  text-align:center;
+  padding:1rem;
+  font-size:.55rem;
+  color:#2a2a2a;
+  letter-spacing:2px;
+}
+.footer-bar a{color:#444;text-decoration:none;transition:color .2s}
+.footer-bar a:hover{color:#888}
+
+/* ─── MOBILE ─── */
+@media(max-width:900px){
+  .universe-grid{
+    grid-template-columns:1fr;
+    grid-template-rows:auto;
+    min-height:auto;
+    padding:0 .5rem .5rem;
+  }
+  .panel{
+    min-height:auto;
+    padding:1.4rem 1.2rem;
+  }
+}
+@media(max-width:480px){
+  .site-header{padding:1.5rem .5rem 1rem}
+  .site-header h1{letter-spacing:2px}
+  .panel{padding:1.2rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <h1>RUDVENTUR</h1>
+  <div class="tagline">a creative web universe</div>
+  <div class="version">v2.0 — hub index</div>
+</header>
+
+<!-- 6 PANEL GRID -->
+<main class="universe-grid">
+
+  <!-- PANEL 1 — MAP ZONE (top left) -->
+  <section class="panel panel--map">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">🗺️</span>
+      <span class="panel__title">The Map</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/" target="_blank">Map Merger Venti (ArtSpace City)</a></li>
+      <li><a class="tool-link soon">Browser</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 2 — USER ZONE (top middle) -->
+  <section class="panel panel--user">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">👤</span>
+      <span class="panel__title">The User</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="https://rudventur.github.io/windows13/useRbox-v2-upgraded.html" target="_blank">useRbox</a></li>
+      <li><a class="tool-link soon">Translator Maps</a></li>
+      <li><a class="tool-link soon">Maps</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 3 — INDEX (top right) -->
+  <section class="panel panel--index">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">◉</span>
+      <span class="panel__title">The Index</span>
+    </div>
+    <div class="index-logo">RUDVENTUR</div>
+    <div class="index-sub">a creative web universe</div>
+    <ul class="index-zones">
+      <li><a href="#" onclick="focusPanel('map');return false">→ The Map</a></li>
+      <li><a href="#" onclick="focusPanel('user');return false">→ The User</a></li>
+      <li><a href="#" onclick="focusPanel('social');return false">→ The Social</a></li>
+      <li><a href="#" onclick="focusPanel('os');return false">→ The OS</a></li>
+      <li><a href="#" onclick="focusPanel('tools');return false">→ The Tools</a></li>
+      <li><a href="rudventur-social/index.html" style="color:#ff3c78">→ RudVentur Social</a></li>
+    </ul>
+    <div class="index-meta">
+      v2.0 &middot; updated 2026-03-28<br>
+      <a href="https://github.com/rudventur" target="_blank">github.com/rudventur</a> &middot;
+      <a href="https://ko-fi.com/rudventur" target="_blank">ko-fi.com/rudventur</a>
+    </div>
+  </section>
+
+  <!-- PANEL 4 — SOCIAL ZONE (bottom left) -->
+  <section class="panel panel--social">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">💬</span>
+      <span class="panel__title">The Social</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link soon">RudVentur Social</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/windows13/keyboard-realistic.html" target="_blank">Keyboards</a></li>
+      <li><a class="tool-link soon">Global Chat / Prompter Chat</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 5 — OS ZONE (bottom middle) -->
+  <section class="panel panel--os">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">🖥️</span>
+      <span class="panel__title">The OS</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="https://rudventur.github.io/LuxWin13/" target="_blank">LuxWin13</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/windows13/taskbar-window-system.html" target="_blank">Taskbar &amp; Windows System</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank">WINDOWS13 Master</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 6 — TOOLS ZONE (bottom right) -->
+  <section class="panel panel--tools">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">🔧</span>
+      <span class="panel__title">The Tools</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="https://rudventur.github.io/windows13/bottom-right-popcorn-complete.html" target="_blank">Popcorn</a></li>
+      <li><a class="tool-link soon">Minner Wallet</a></li>
+      <li><a class="tool-link soon">Prompter Architect</a></li>
+      <li><a class="tool-link soon">Cookies Inspector</a></li>
+      <li><a class="tool-link soon">Popcorn File Burner</a></li>
+      <li><a class="tool-link soon">DESCRIBER — 3D Cam Scanner</a></li>
+    </ul>
+  </section>
+
+</main>
+
+<div class="footer-bar">
+  RUDVENTUR — everything connected. everything open. everything possible in a browser.
+  &middot; <a href="https://ko-fi.com/rudventur" target="_blank">☕ ko-fi</a>
+  &middot; <a href="https://github.com/rudventur" target="_blank">github</a>
+</div>
+
+<script>
+// Toggle fullscreen on panel head click
+function toggleFullscreen(headEl) {
+  const panel = headEl.closest('.panel');
+  if (panel.classList.contains('fullscreen')) {
+    panel.classList.remove('fullscreen');
+    document.body.style.overflow = '';
+  } else {
+    // close any other fullscreen panel first
+    document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
+    panel.classList.add('fullscreen');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+// Focus a panel (from index links) — scroll to it or fullscreen it
+function focusPanel(name) {
+  const panel = document.querySelector('.panel--' + name);
+  if (!panel) return;
+  // close any fullscreen first
+  document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
+  document.body.style.overflow = '';
+  // fullscreen the target
+  panel.classList.add('fullscreen');
+  document.body.style.overflow = 'hidden';
+}
+
+// ESC to close fullscreen
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
+    document.body.style.overflow = '';
+  }
+});
+
+// Prevent "soon" links from navigating
+document.querySelectorAll('.tool-link.soon').forEach(link => {
+  link.addEventListener('click', e => e.preventDefault());
+});
+</script>
+
+</body>
+</html>
