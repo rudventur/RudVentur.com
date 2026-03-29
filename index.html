@@ -247,80 +247,124 @@ body::before{
   letter-spacing:1px;
 }
 
-/* ─── REPOS GRID ─── */
-.repos-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:.5rem;
+/* ─── REPOS CORNER BUTTONS ─── */
+.repos-space{
   flex:1;
+  position:relative;
+  min-height:280px;
 }
-.repo-card{
-  background:#111;
-  border:1px solid #1a1a1a;
-  border-radius:4px;
-  padding:.8rem 1rem;
-  transition:border-color .2s,box-shadow .2s;
-  display:flex;
-  flex-direction:column;
-  gap:.4rem;
-  text-decoration:none;
-  color:inherit;
-}
-.repo-card:hover{
-  border-color:var(--repos);
-  box-shadow:0 0 12px rgba(255,221,51,.1);
-}
-.repo-card__name{
-  font-family:'Syne',sans-serif;
-  font-weight:700;
-  font-size:.85rem;
-  color:var(--repos);
-  letter-spacing:.5px;
-}
-.repo-card__desc{
-  font-size:.7rem;
-  color:#777;
-  line-height:1.4;
-  flex:1;
-}
-.repo-card__meta{
-  display:flex;
-  align-items:center;
-  gap:.6rem;
-  font-size:.6rem;
-  color:#555;
-  margin-top:.2rem;
-}
-.repo-card__lang{
-  display:inline-flex;
-  align-items:center;
-  gap:.25rem;
-}
-.repo-card__lang::before{
-  content:'';
-  display:inline-block;
-  width:8px;height:8px;
+.repo-btn{
+  position:absolute;
+  width:56px;height:56px;
   border-radius:50%;
-  background:var(--lang-color,#888);
-}
-.repo-card__stars{color:#888}
-.repo-card__pages{
-  color:var(--map);
-  font-size:.55rem;
+  border:3px solid var(--repos);
+  background:rgba(20,18,0,.9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  color:var(--repos);
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:.7rem;
+  text-align:center;
+  line-height:1.1;
   letter-spacing:.5px;
+  cursor:pointer;
+  transition:transform .2s,box-shadow .3s,border-color .3s,background .3s;
+  box-shadow:0 0 15px rgba(255,221,51,.15);
+  z-index:1;
+  overflow:hidden;
+  word-break:break-word;
+  padding:4px;
 }
+.repo-btn:hover{
+  transform:scale(1.15) rotate(3deg);
+  box-shadow:0 0 30px rgba(255,221,51,.4);
+  background:var(--repos);
+  color:#000;
+  z-index:5;
+}
+.repo-btn.has-pages{
+  border-color:var(--map);
+  box-shadow:0 0 15px rgba(0,255,65,.2);
+  color:var(--map);
+}
+.repo-btn.has-pages:hover{
+  background:var(--map);
+  color:#000;
+  box-shadow:0 0 30px rgba(0,255,65,.5);
+}
+.repo-btn.has-star{
+  border-color:#ffa500;
+  box-shadow:0 0 15px rgba(255,165,0,.25);
+  color:#ffa500;
+}
+.repo-btn.has-star:hover{
+  background:#ffa500;
+  color:#000;
+  box-shadow:0 0 30px rgba(255,165,0,.5);
+}
+
+/* tooltip on hover */
+.repo-btn::after{
+  content:attr(data-tip);
+  position:absolute;
+  bottom:calc(100% + 8px);
+  left:50%;
+  transform:translateX(-50%);
+  background:#111;
+  border:1px solid var(--repos);
+  color:#ccc;
+  font-family:'DM Mono',monospace;
+  font-size:.6rem;
+  font-weight:400;
+  padding:4px 8px;
+  border-radius:4px;
+  white-space:nowrap;
+  max-width:200px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s;
+  z-index:10;
+}
+.repo-btn:hover::after{
+  opacity:1;
+}
+
+/* breathing animation for special repos */
+@keyframes repoBreathe{
+  0%,100%{box-shadow:0 0 15px rgba(255,221,51,.15)}
+  50%{box-shadow:0 0 25px rgba(255,221,51,.35)}
+}
+.repo-btn.breathing{
+  animation:repoBreathe 3s infinite ease-in-out;
+}
+
 .repos-loading{
   color:#555;
   font-size:.75rem;
   text-align:center;
   padding:2rem;
   letter-spacing:1px;
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 .repos-error{
   color:var(--social);
   font-size:.7rem;
   text-align:center;
   padding:1rem;
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 /* ─── FULLSCREEN MODE ─── */
@@ -351,6 +395,9 @@ body::before{
 }
 .panel.fullscreen .index-logo{
   font-size:3rem;
+}
+.panel.fullscreen .repos-space{
+  min-height:calc(100vh - 120px);
 }
 
 @keyframes panelExpand{
@@ -499,7 +546,7 @@ body::before{
       <span class="panel__icon">📦</span>
       <span class="panel__title">The Repos</span>
     </div>
-    <div id="repos-container" class="repos-grid">
+    <div id="repos-container" class="repos-space">
       <div class="repos-loading">fetching repos from github.com/rudventur...</div>
     </div>
   </section>
@@ -552,13 +599,9 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
   link.addEventListener('click', e => e.preventDefault());
 });
 
-// ─── FETCH & RENDER GITHUB REPOS ───
+// ─── FETCH & RENDER GITHUB REPOS AS CORNER BUTTONS ───
 (async function loadRepos() {
   const container = document.getElementById('repos-container');
-  const langColors = {
-    JavaScript:'#f1e05a', HTML:'#e34c26', CSS:'#563d7c',
-    Python:'#3572A5', TypeScript:'#3178c6', Shell:'#89e051'
-  };
 
   try {
     const res = await fetch('https://api.github.com/users/rudventur/repos?per_page=100&sort=updated');
@@ -570,21 +613,86 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
       return;
     }
 
-    container.innerHTML = repos.map(r => `
-      <a class="repo-card" href="${r.html_url}" target="_blank" rel="noopener">
-        <div class="repo-card__name">${r.name}</div>
-        <div class="repo-card__desc">${r.description || 'No description'}</div>
-        <div class="repo-card__meta">
-          ${r.language ? `<span class="repo-card__lang" style="--lang-color:${langColors[r.language]||'#888'}">${r.language}</span>` : ''}
-          ${r.stargazers_count ? `<span class="repo-card__stars">★ ${r.stargazers_count}</span>` : ''}
-          ${r.has_pages ? '<span class="repo-card__pages">LIVE</span>' : ''}
-        </div>
-      </a>
-    `).join('');
+    container.innerHTML = '';
+
+    // position buttons around the edges/corners of the container
+    const positions = generatePositions(repos.length, container);
+
+    repos.forEach((r, i) => {
+      const btn = document.createElement('a');
+      btn.className = 'repo-btn';
+      if (r.has_pages) btn.classList.add('has-pages');
+      if (r.stargazers_count > 0) btn.classList.add('has-star');
+      if (i === 0) btn.classList.add('breathing'); // most recently updated
+      btn.href = r.html_url;
+      btn.target = '_blank';
+      btn.rel = 'noopener';
+
+      // short label: first 2 initials or abbreviation
+      const label = shortName(r.name);
+      btn.textContent = label;
+
+      // tooltip with full name + description
+      const tip = r.description ? r.name + ' — ' + r.description : r.name;
+      btn.setAttribute('data-tip', tip);
+
+      const pos = positions[i];
+      btn.style.left = pos.x + 'px';
+      btn.style.top = pos.y + 'px';
+
+      container.appendChild(btn);
+    });
   } catch (err) {
     container.innerHTML = '<div class="repos-error">could not load repos — ' + err.message + '</div>';
   }
 })();
+
+// generate positions around edges and corners
+function generatePositions(count, container) {
+  const w = container.offsetWidth || 800;
+  const h = container.offsetHeight || 280;
+  const btnSize = 56;
+  const pad = 6;
+  const positions = [];
+
+  // perimeter path: top → right → bottom → left
+  const perimeterPoints = [];
+  const step = btnSize + pad;
+
+  // top edge (left to right)
+  for (let x = pad; x <= w - btnSize - pad; x += step)
+    perimeterPoints.push({ x, y: pad });
+  // right edge (top to bottom)
+  for (let y = pad + step; y <= h - btnSize - pad; y += step)
+    perimeterPoints.push({ x: w - btnSize - pad, y });
+  // bottom edge (right to left)
+  for (let x = w - btnSize - pad - step; x >= pad; x -= step)
+    perimeterPoints.push({ x, y: h - btnSize - pad });
+  // left edge (bottom to top)
+  for (let y = h - btnSize - pad - step; y >= pad + step; y -= step)
+    perimeterPoints.push({ x: pad, y });
+
+  // distribute repos evenly around the perimeter
+  if (perimeterPoints.length === 0) perimeterPoints.push({ x: pad, y: pad });
+
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(i * perimeterPoints.length / count);
+    positions.push(perimeterPoints[idx % perimeterPoints.length]);
+  }
+
+  return positions;
+}
+
+// abbreviate repo name to fit in a 56px circle
+function shortName(name) {
+  // split on hyphens/dots/camelCase
+  const parts = name.replace(/([a-z])([A-Z])/g, '$1-$2').split(/[-._]/);
+  if (parts.length === 1 && name.length <= 5) return name;
+  if (parts.length >= 2) {
+    return parts.map(p => p.charAt(0).toUpperCase()).join('').slice(0, 3);
+  }
+  return name.slice(0, 4);
+}
 </script>
 
 </body>
