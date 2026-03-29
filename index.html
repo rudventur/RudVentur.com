@@ -16,6 +16,7 @@
   --os:#00e5ff;
   --tools:#c78fff;
   --index:#f5f5f5;
+  --repos:#ffdd33;
 }
 
 body{
@@ -68,7 +69,7 @@ body::before{
   position:relative;z-index:1;
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  grid-template-rows:repeat(2,1fr);
+  grid-template-rows:1fr 1fr auto;
   gap:3px;
   max-width:1400px;
   margin:0 auto;
@@ -110,6 +111,9 @@ body::before{
 
 .panel--index{border-color:#222;background:#0c0c0e}
 .panel--index:hover{border-color:#444;box-shadow:0 0 25px rgba(255,255,255,.03)}
+
+.panel--repos{border-color:#3a3a0a;grid-column:1/-1}
+.panel--repos:hover{border-color:var(--repos);box-shadow:0 0 25px rgba(255,221,51,.08)}
 
 /* ─── PANEL HEADER (clickable fullscreen toggle) ─── */
 .panel__head{
@@ -182,6 +186,8 @@ body::before{
 .panel--os .tool-link:hover{border-left-color:var(--os);color:var(--os)}
 .panel--tools .tool-link:hover{border-left-color:var(--tools);color:var(--tools)}
 .panel--index .tool-link:hover{border-left-color:var(--index);color:var(--index)}
+.panel--repos .panel__title{color:var(--repos)}
+.panel--repos .tool-link:hover{border-left-color:var(--repos);color:var(--repos)}
 
 /* coming soon state */
 .tool-link.soon{
@@ -239,6 +245,82 @@ body::before{
   font-size:.55rem;
   color:#333;
   letter-spacing:1px;
+}
+
+/* ─── REPOS GRID ─── */
+.repos-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:.5rem;
+  flex:1;
+}
+.repo-card{
+  background:#111;
+  border:1px solid #1a1a1a;
+  border-radius:4px;
+  padding:.8rem 1rem;
+  transition:border-color .2s,box-shadow .2s;
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+  text-decoration:none;
+  color:inherit;
+}
+.repo-card:hover{
+  border-color:var(--repos);
+  box-shadow:0 0 12px rgba(255,221,51,.1);
+}
+.repo-card__name{
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:.85rem;
+  color:var(--repos);
+  letter-spacing:.5px;
+}
+.repo-card__desc{
+  font-size:.7rem;
+  color:#777;
+  line-height:1.4;
+  flex:1;
+}
+.repo-card__meta{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  font-size:.6rem;
+  color:#555;
+  margin-top:.2rem;
+}
+.repo-card__lang{
+  display:inline-flex;
+  align-items:center;
+  gap:.25rem;
+}
+.repo-card__lang::before{
+  content:'';
+  display:inline-block;
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--lang-color,#888);
+}
+.repo-card__stars{color:#888}
+.repo-card__pages{
+  color:var(--map);
+  font-size:.55rem;
+  letter-spacing:.5px;
+}
+.repos-loading{
+  color:#555;
+  font-size:.75rem;
+  text-align:center;
+  padding:2rem;
+  letter-spacing:1px;
+}
+.repos-error{
+  color:var(--social);
+  font-size:.7rem;
+  text-align:center;
+  padding:1rem;
 }
 
 /* ─── FULLSCREEN MODE ─── */
@@ -314,7 +396,7 @@ body::before{
 <header class="site-header">
   <h1>RUDVENTUR</h1>
   <div class="tagline">a creative web universe</div>
-  <div class="version">v2.0 — hub index</div>
+  <div class="version">v2.1 — hub index + repos</div>
 </header>
 
 <!-- 6 PANEL GRID -->
@@ -360,9 +442,10 @@ body::before{
       <li><a href="#" onclick="focusPanel('os');return false">→ The OS</a></li>
       <li><a href="#" onclick="focusPanel('tools');return false">→ The Tools</a></li>
       <li><a href="rudventur-social/index.html" style="color:#ff3c78">→ RudVentur Social</a></li>
+      <li><a href="#" onclick="focusPanel('repos');return false" style="color:#ffdd33">→ The Repos</a></li>
     </ul>
     <div class="index-meta">
-      v2.0 &middot; updated 2026-03-28<br>
+      v2.1 &middot; updated 2026-03-29<br>
       <a href="https://github.com/rudventur" target="_blank">github.com/rudventur</a> &middot;
       <a href="https://ko-fi.com/rudventur" target="_blank">ko-fi.com/rudventur</a>
     </div>
@@ -408,6 +491,17 @@ body::before{
       <li><a class="tool-link soon">Popcorn File Burner</a></li>
       <li><a class="tool-link soon">DESCRIBER — 3D Cam Scanner</a></li>
     </ul>
+  </section>
+
+  <!-- PANEL 7 — REPOS (full width row) -->
+  <section class="panel panel--repos">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">📦</span>
+      <span class="panel__title">The Repos</span>
+    </div>
+    <div id="repos-container" class="repos-grid">
+      <div class="repos-loading">fetching repos from github.com/rudventur...</div>
+    </div>
   </section>
 
 </main>
@@ -457,6 +551,40 @@ document.addEventListener('keydown', function(e) {
 document.querySelectorAll('.tool-link.soon').forEach(link => {
   link.addEventListener('click', e => e.preventDefault());
 });
+
+// ─── FETCH & RENDER GITHUB REPOS ───
+(async function loadRepos() {
+  const container = document.getElementById('repos-container');
+  const langColors = {
+    JavaScript:'#f1e05a', HTML:'#e34c26', CSS:'#563d7c',
+    Python:'#3572A5', TypeScript:'#3178c6', Shell:'#89e051'
+  };
+
+  try {
+    const res = await fetch('https://api.github.com/users/rudventur/repos?per_page=100&sort=updated');
+    if (!res.ok) throw new Error('GitHub API ' + res.status);
+    const repos = await res.json();
+
+    if (!repos.length) {
+      container.innerHTML = '<div class="repos-loading">no public repos found</div>';
+      return;
+    }
+
+    container.innerHTML = repos.map(r => `
+      <a class="repo-card" href="${r.html_url}" target="_blank" rel="noopener">
+        <div class="repo-card__name">${r.name}</div>
+        <div class="repo-card__desc">${r.description || 'No description'}</div>
+        <div class="repo-card__meta">
+          ${r.language ? `<span class="repo-card__lang" style="--lang-color:${langColors[r.language]||'#888'}">${r.language}</span>` : ''}
+          ${r.stargazers_count ? `<span class="repo-card__stars">★ ${r.stargazers_count}</span>` : ''}
+          ${r.has_pages ? '<span class="repo-card__pages">LIVE</span>' : ''}
+        </div>
+      </a>
+    `).join('');
+  } catch (err) {
+    container.innerHTML = '<div class="repos-error">could not load repos — ' + err.message + '</div>';
+  }
+})();
 </script>
 
 </body>
