@@ -576,6 +576,71 @@ body {
   padding-left: 18px;
 }
 
+/* ===== TOOLS LAUNCHER TAB ===== */
+.launch-group-label {
+  color: var(--neon-green);
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  margin: 14px 0 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px dashed rgba(0,255,65,0.15);
+}
+
+.launch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.launch-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  background: rgba(0,10,0,0.5);
+  border-left: 3px solid transparent;
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 0.85rem;
+  border-radius: 0 4px 4px 0;
+  transition: all 0.2s;
+}
+
+.launch-link:hover {
+  border-left-color: var(--neon-green);
+  background: rgba(0,40,0,0.6);
+  color: var(--neon-green);
+  padding-left: 16px;
+}
+
+.launch-link .launch-icon { font-size: 1rem; min-width: 22px; text-align: center; }
+.launch-link .launch-name { flex: 1; }
+.launch-link .launch-arrow { color: var(--text-muted); transition: color 0.2s; }
+.launch-link:hover .launch-arrow { color: var(--neon-green); }
+
+.launch-link.soon {
+  color: #335533;
+  font-style: italic;
+  cursor: default;
+}
+.launch-link.soon:hover {
+  border-left-color: transparent;
+  background: rgba(0,10,0,0.5);
+  color: #335533;
+  padding-left: 10px;
+}
+
+.launch-badge {
+  font-size: 0.6rem;
+  color: #446644;
+  border: 1px dashed #335533;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
 /* ===== SCROLLBAR ===== */
 .tab-view::-webkit-scrollbar,
 .saved-descriptions::-webkit-scrollbar {
@@ -745,6 +810,58 @@ Example: 'A chemistry tutorial showing how atoms bond together with colorful 3D 
         <a class="wallet-link" href="https://monzo.com" target="_blank" rel="noopener">🏦 Monzo</a>
         <a class="wallet-link" href="https://www.starlingbank.com" target="_blank" rel="noopener">🏦 Starling</a>
         <a class="wallet-link" href="https://wise.com" target="_blank" rel="noopener">🏦 Wise</a>
+      </div>
+    </div>
+
+    <!-- TOOLS LAUNCHER TAB -->
+    <div class="tab-view" id="view-launch">
+      <h3 style="color:var(--neon-green);margin-bottom:14px;">🚀 RUDVENTUR TOOLS</h3>
+
+      <div class="launch-group-label">🗺️ MAPS & EXPLORATION</div>
+      <div class="launch-list">
+        <a class="launch-link" href="https://rudventur.github.io/map-merger-venti/" target="_blank" rel="noopener">
+          <span class="launch-icon">🗺️</span><span class="launch-name">ArtSpace City / Map Merger</span><span class="launch-arrow">→</span>
+        </a>
+      </div>
+
+      <div class="launch-group-label">👤 USER TOOLS</div>
+      <div class="launch-list">
+        <a class="launch-link" href="https://rudventur.github.io/windows13/useRbox-v2-upgraded.html" target="_blank" rel="noopener">
+          <span class="launch-icon">👤</span><span class="launch-name">useRbox</span><span class="launch-arrow">→</span>
+        </a>
+        <a class="launch-link" href="https://rudventur.github.io/windows13/keyboard-realistic.html" target="_blank" rel="noopener">
+          <span class="launch-icon">⌨️</span><span class="launch-name">Keyboard</span><span class="launch-arrow">→</span>
+        </a>
+      </div>
+
+      <div class="launch-group-label">🖥️ OS</div>
+      <div class="launch-list">
+        <a class="launch-link" href="https://rudventur.github.io/LuxWin13/" target="_blank" rel="noopener">
+          <span class="launch-icon">🪟</span><span class="launch-name">LuxWin13</span><span class="launch-arrow">→</span>
+        </a>
+        <a class="launch-link" href="https://rudventur.github.io/windows13/taskbar-window-system.html" target="_blank" rel="noopener">
+          <span class="launch-icon">🖥️</span><span class="launch-name">Taskbar System</span><span class="launch-arrow">→</span>
+        </a>
+        <a class="launch-link" href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank" rel="noopener">
+          <span class="launch-icon">💻</span><span class="launch-name">Windows13 Master</span><span class="launch-arrow">→</span>
+        </a>
+      </div>
+
+      <div class="launch-group-label">🌍 SOCIAL & CHAT</div>
+      <div class="launch-list">
+        <a class="launch-link soon" href="#coming-soon" onclick="event.preventDefault()">
+          <span class="launch-icon">💬</span><span class="launch-name">RudVentur Social</span><span class="launch-badge">soon</span>
+        </a>
+        <a class="launch-link soon" href="#coming-soon" onclick="event.preventDefault()">
+          <span class="launch-icon">🌐</span><span class="launch-name">Global Chat</span><span class="launch-badge">soon</span>
+        </a>
+      </div>
+
+      <div class="launch-group-label">🔬 SCIENCE</div>
+      <div class="launch-list">
+        <a class="launch-link" href="https://rudventur.github.io/ChemVentur/" target="_blank" rel="noopener">
+          <span class="launch-icon">🧪</span><span class="launch-name">ChemVentur</span><span class="launch-arrow">→</span>
+        </a>
       </div>
     </div>
 
