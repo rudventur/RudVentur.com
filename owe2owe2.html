@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lenting System - The File You Own</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #111; color: #ddd; }
+        h1 { color: #0f0; text-align: center; }
+        .balance { font-size: 1.4em; font-weight: bold; text-align: center; margin: 20px 0; }
+        input, select, button, textarea { width: 100%; padding: 10px; margin: 8px 0; border-radius: 8px; border: none; }
+        button { background: #0f0; color: #000; font-weight: bold; }
+        .transaction { background: #222; padding: 12px; margin: 12px 0; border-radius: 8px; }
+        .attachment { max-width: 100%; margin-top: 8px; border-radius: 8px; }
+        .delete { background: #f44; color: white; padding: 4px 8px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <h1>💛 Lenting System</h1>
+    <p style="text-align:center; color:#888;">One file. Zero cost. You own it.</p>
+
+    <div class="balance" id="balance">Loading balances...</div>
+
+    <h2>Add new lending</h2>
+    <select id="type">
+        <option value="lent">I LENT to someone</option>
+        <option value="borrowed">Someone LENT to me</option>
+    </select>
+    <input type="text" id="person" placeholder="Name of the person (e.g. Alex)">
+    <input type="number" id="amount" placeholder="Amount" step="0.01">
+    <input type="text" id="currency" value="£" placeholder="Currency (£ / $ / €)">
+    <input type="date" id="date">
+    <textarea id="desc" placeholder="What is this for? (optional)"></textarea>
+
+    <input type="file" id="attach" accept="image/*,.pdf">
+    <button onclick="addTransaction()">Record this lending</button>
+
+    <h2>History & Balances</h2>
+    <div id="list"></div>
+
+    <script>
+        let transactions = JSON.parse(localStorage.getItem('lentingTransactions') || '[]');
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function saveData() {
+            localStorage.setItem('lentingTransactions', JSON.stringify(transactions));
+            render();
+        }
+
+        function addTransaction() {
+            const type = document.getElementById('type').value;
+            const person = document.getElementById('person').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const currency = document.getElementById('currency').value.trim() || '£';
+            const date = document.getElementById('date').value || new Date().toISOString().slice(0,10);
+            const desc = document.getElementById('desc').value.trim();
+
+            if (!person || !amount) {
+                alert("Name and amount are required");
+                return;
+            }
+
+            const fileInput = document.getElementById('attach');
+            let attachment = null;
+
+            if (fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    attachment = e.target.result; // base64
+                    pushTransaction(type, person, amount, currency, date, desc, attachment);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                pushTransaction(type, person, amount, currency, date, desc, null);
+            }
+        }
+
+        function pushTransaction(type, person, amount, currency, date, desc, attachment) {
+            transactions.push({
+                id: Date.now(),
+                type: type,
+                person: person,
+                amount: amount,
+                currency: currency,
+                date: date,
+                desc: desc,
+                attachment: attachment
+            });
+            saveData();
+
+            // Clear form
+            document.getElementById('person').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('desc').value = '';
+            document.getElementById('attach').value = '';
+        }
+
+        function render() {
+            const list = document.getElementById('list');
+            list.innerHTML = '';
+
+            // Simple net balance per person
+            const balances = {};
+            transactions.forEach(t => {
+                const key = escapeHtml(t.person) + ' (' + escapeHtml(t.currency) + ')';
+                if (!balances[key]) balances[key] = 0;
+                if (t.type === 'lent') {
+                    balances[key] += t.amount;   // they owe me
+                } else {
+                    balances[key] -= t.amount;   // I owe them
+                }
+            });
+
+            let html = '<h3>Net Balances</h3>';
+            Object.keys(balances).forEach(key => {
+                const bal = balances[key];
+                html += `<div style="color:${bal >= 0 ? '#0f0' : '#f66'}">${key}: ${bal >= 0 ? 'owes me' : 'I owe'} ${Math.abs(bal).toFixed(2)}</div>`;
+            });
+
+            html += '<h3>All Records</h3>';
+            transactions.slice().reverse().forEach(t => {
+                const safePerson = escapeHtml(t.person);
+                const safeDesc = escapeHtml(t.desc);
+                const safeCurrency = escapeHtml(t.currency);
+                let attachHtml = '';
+                if (t.attachment) {
+                    const img = document.createElement('img');
+                    img.src = t.attachment;
+                    img.className = 'attachment';
+                    attachHtml = '<br>' + img.outerHTML;
+                }
+                html += `<div class="transaction">
+                    <strong>${escapeHtml(t.date)} — ${t.type === 'lent' ? 'I lent to' : 'I borrowed from'} ${safePerson}</strong><br>
+                    ${t.amount} ${safeCurrency} ${safeDesc ? '— ' + safeDesc : ''}
+                    ${attachHtml}
+                    <button class="delete" onclick="deleteTx(${t.id})">Delete</button>
+                </div>`;
+            });
+
+            list.innerHTML = html;
+            document.getElementById('balance').innerHTML = 'Your Lenting File is ready. Add records above.';
+        }
+
+        function deleteTx(id) {
+            if (confirm("Delete this record?")) {
+                transactions = transactions.filter(t => t.id !== id);
+                saveData();
+            }
+        }
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
