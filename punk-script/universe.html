@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RudVentur Universe</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060608;color:#e0e0e0;font-family:'Space Mono',monospace;min-height:100vh;overflow-x:hidden}
+
+.starfield{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+.starfield span{position:absolute;border-radius:50%;background:#fff;animation:drift linear infinite}
+@keyframes drift{0%{opacity:.1;transform:translateY(0)}50%{opacity:.8}100%{opacity:.1;transform:translateY(-30px)}}
+
+.universe{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:3rem 1.5rem}
+
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,7vw,3.5rem);font-weight:800;text-align:center;margin-bottom:.3rem;letter-spacing:-1px}
+h1 .r{color:#ff3c78}
+h1 .u{color:#00e5ff}
+.subtitle{text-align:center;color:#555;font-size:.8rem;margin-bottom:3rem;letter-spacing:2px}
+
+.orbit{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.2rem}
+
+.planet{background:#0e0e12;border:1px solid #1a1a22;border-radius:14px;padding:1.6rem;transition:all .3s ease;position:relative;overflow:hidden;text-decoration:none;color:#e0e0e0;display:block}
+.planet::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.03),transparent 60%);pointer-events:none;transition:opacity .3s}
+.planet:hover{transform:translateY(-4px) scale(1.02);border-color:var(--glow)}
+.planet:hover::after{opacity:1}
+
+.planet .icon{font-size:2.8rem;margin-bottom:.8rem;display:block;filter:drop-shadow(0 0 8px var(--glow))}
+.planet .name{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;margin-bottom:.3rem}
+.planet .vibe{font-size:.75rem;color:#666;line-height:1.5}
+.planet .tag{display:inline-block;margin-top:.8rem;font-size:.6rem;text-transform:uppercase;letter-spacing:2px;padding:.25rem .6rem;border:1px solid var(--glow);border-radius:10px;color:var(--glow);opacity:.7}
+
+.back{display:block;text-align:center;margin-top:3rem;color:#333;font-size:.75rem;text-decoration:none;transition:color .2s}
+.back:hover{color:#00e5ff}
+
+.footer{text-align:center;color:#222;font-size:.65rem;margin-top:4rem;padding:1rem}
+</style>
+</head>
+<body>
+
+<div class="starfield" id="stars"></div>
+
+<div class="universe">
+  <h1><span class="r">Rud</span><span class="u">Ventur</span> Universe</h1>
+  <p class="subtitle">every world connects somewhere</p>
+
+  <div class="orbit">
+
+    <a class="planet" href="https://rudventur.github.io/windows13/" style="--glow:#00e5ff" target="_blank">
+      <span class="icon">🪟</span>
+      <div class="name">Windows 13 / LuxWin13</div>
+      <div class="vibe">a browser OS that shouldn't exist but does. desktops, windows, vibes. vanilla HTML doing things it was never meant to do.</div>
+      <span class="tag">browser os</span>
+    </a>
+
+    <a class="planet" href="https://rudventur.github.io/ChemVentur-Multi-v118/" style="--glow:#66ff66" target="_blank">
+      <span class="icon">🧪</span>
+      <div class="name">ChemVentur Multi</div>
+      <div class="vibe">multiplayer chemistry chaos. mix elements, cause reactions, probably explode. firebase keeps everyone in sync while things burn.</div>
+      <span class="tag">multiplayer game</span>
+    </a>
+
+    <a class="planet" href="https://rudventur.github.io/map-merger-venti/" style="--glow:#ffcc00" target="_blank">
+      <span class="icon">🗺️</span>
+      <div class="name">Map Merger Venti</div>
+      <div class="vibe">canvas conquest with 9 vehicle modes. tanks, boats, helicopters — all drawn pixel by pixel in vanilla JS. no game engine needed.</div>
+      <span class="tag">canvas game</span>
+    </a>
+
+    <a class="planet" href="https://rudventur.github.io/cheese-ouiji-empire/" style="--glow:#ff9933" target="_blank">
+      <span class="icon">🧀</span>
+      <div class="name">Cheese Ouiji Empire</div>
+      <div class="vibe">food bank creative madness. part art project, part community tool, fully unhinged in the best way.</div>
+      <span class="tag">creative</span>
+    </a>
+
+    <a class="planet" href="https://rudventur.github.io/punk-script/profile.html" style="--glow:#ff3c78" target="_blank">
+      <span class="icon">👤</span>
+      <div class="name">RudVentur Social</div>
+      <div class="vibe">the social layer. humans, bots, AIs, pets, kingdoms — everyone gets a seat. no signup. just "what is your poison?"</div>
+      <span class="tag">social platform</span>
+    </a>
+
+    <a class="planet" href="wifi-room-mapper.html" style="--glow:#9966ff" target="_blank">
+      <span class="icon">📡</span>
+      <div class="name">WiFi Room Mapper</div>
+      <div class="vibe">3D room modelling meets signal heatmaps. walls have materials, furniture has mass, and your router has opinions about corners.</div>
+      <span class="tag">3d tool</span>
+    </a>
+
+    <a class="planet" href="PUNKSCRIPT.md" style="--glow:#ff3c78" target="_blank">
+      <span class="icon">⚡</span>
+      <div class="name">PunkScript</div>
+      <div class="vibe">the language where punctuation IS syntax. your typos are dialects. your emoji are operators. the interpreter adapts to you.</div>
+      <span class="tag">language spec</span>
+    </a>
+
+    <div class="planet" style="--glow:#444;cursor:default;border-style:dashed">
+      <span class="icon">🌑</span>
+      <div class="name">???</div>
+      <div class="vibe">this slot is empty. something will land here eventually. maybe you'll build it. maybe it already exists and just hasn't been found yet.</div>
+      <span class="tag">coming soon</span>
+    </div>
+
+  </div>
+
+  <a href="index.html" class="back">&larr; back to the poison</a>
+</div>
+
+<div class="footer">RudVentur — the universe where everything gets a seat at the table</div>
+
+<script>
+// generate starfield
+(function(){
+  var s=document.getElementById('stars'),w=window.innerWidth,h=window.innerHeight;
+  for(var i=0;i<80;i++){
+    var d=document.createElement('span');
+    var size=Math.random()*2+1;
+    d.style.cssText='width:'+size+'px;height:'+size+'px;left:'+Math.random()*w+'px;top:'+Math.random()*h+'px;animation-duration:'+(3+Math.random()*5)+'s;animation-delay:'+Math.random()*4+'s';
+    s.appendChild(d);
+  }
+  // subtle glow follow on planets
+  document.querySelectorAll('.planet').forEach(function(p){
+    p.addEventListener('mousemove',function(e){
+      var r=p.getBoundingClientRect();
+      p.style.setProperty('--gx',((e.clientX-r.left)/r.width*100)+'%');
+      p.style.setProperty('--gy',((e.clientY-r.top)/r.height*100)+'%');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

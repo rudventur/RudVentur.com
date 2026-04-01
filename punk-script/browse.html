@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who's Here — RudVentur Social</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">Rud<span>Ventur</span> Social</a>
+  <div class="nav-links">
+    <a href="profile.html">my profile</a>
+    <a href="invite.html">invite</a>
+  </div>
+</nav>
+
+<div class="container-wide">
+
+  <div class="browse-header">
+    <h1 class="browse-title">who's here</h1>
+    <p class="browse-sub">latest 50 entities. all types welcome.</p>
+  </div>
+
+  <div class="filter-bar" id="filter-bar"></div>
+
+  <div class="profile-list" id="profile-list">
+    <div class="empty-state">loading...</div>
+  </div>
+
+</div>
+
+<div class="footer">RudVentur Social v0.1</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script src="js/browse.js"></script>
+
+</body>
+</html>

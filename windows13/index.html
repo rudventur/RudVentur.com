@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUDVENTUR - Windows 13 OS 🎃</title>
+<meta name="description" content="Complete browser-based operating system with ChemVentur game, accessibility tools, and social integration. Powered by PumpkinG.">
+<meta name="keywords" content="Windows 13, RUDVENTUR, ChemVentur, browser OS, accessibility, Popcoin, keyboards">
+
+<style>
+:root {
+  --neon: #00ff41;
+  --yellow: #ffe600;
+  --gold: #ffd700;
+  --bg: #000;
+  --panel: rgba(0, 15, 5, 0.96);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #000;
+  color: var(--neon);
+  font-family: 'Courier New', monospace;
+  overflow-x: hidden;
+  background-image: 
+    linear-gradient(rgba(0,255,65,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,65,0.04) 1px, transparent 1px);
+  background-size: 45px 45px;
+}
+
+/* ===== HEADER ===== */
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, #000, rgba(0,0,0,0.9));
+  border-bottom: 4px solid var(--neon);
+  box-shadow: 0 0 40px rgba(0,255,65,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  z-index: 10000;
+}
+
+.logo {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: 0 0 30px var(--neon);
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 30px var(--neon); }
+  50% { text-shadow: 0 0 50px var(--neon), 0 0 20px var(--neon); }
+}
+
+.tagline {
+  font-size: 0.9rem;
+  color: var(--yellow);
+  margin-top: 5px;
+}
+
+.header-nav {
+  display: flex;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  background: none;
+  border: 2px solid var(--neon);
+  color: var(--neon);
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Courier New', monospace;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.nav-btn:hover {
+  background: var(--neon);
+  color: #000;
+  box-shadow: 0 0 25px var(--neon);
+  transform: translateY(-2px);
+}
+
+.nav-btn.kofi {
+  border-color: var(--yellow);
+  color: var(--yellow);
+  animation: electricPulse 2s ease-in-out infinite;
+}
+
+@keyframes electricPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(255,230,0,0.3); }
+  50% { box-shadow: 0 0 20px rgba(255,230,0,0.6); }
+}
+
+.nav-btn.kofi:hover {
+  background: var(--yellow);
+  color: #000;
+}
+
+/* ===== MAIN CONTENT ===== */
+#main {
+  margin-top: 80px;
+  min-height: calc(100vh - 80px);
+  padding: 40px 20px;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+  text-align: center;
+  padding: 60px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-size: 4rem;
+  color: var(--yellow);
+  text-shadow: 0 0 40px var(--yellow);
+  margin-bottom: 20px;
+  animation: heroGlow 4s ease-in-out infinite;
+}
+
+@keyframes heroGlow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.hero p {
+  font-size: 1.3rem;
+  color: var(--neon);
+  margin-bottom: 40px;
+  line-height: 1.8;
+}
+
+.hero-quote {
+  font-style: italic;
+  color: var(--yellow);
+  font-size: 1.1rem;
+  margin-top: 30px;
+  opacity: 0.9;
+}
+
+/* ===== COMPONENT GRID ===== */
+.component-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1400px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+.component-card {
+  background: var(--panel);
+  border: 3px solid var(--neon);
+  border-radius: 12px;
+  padding: 30px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.component-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 40px rgba(0,255,65,0.4);
+  border-color: var(--yellow);
+}
+
+.component-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.component-title {
+  font-size: 1.5rem;
+  color: var(--yellow);
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.component-desc {
+  color: var(--neon);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.component-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.comp-link {
+  background: #000;
+  border: 2px solid var(--neon);
+  color: var(--neon);
+  padding: 8px 16px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.comp-link:hover {
+  background: var(--neon);
+  color: #000;
+}
+
+/* ===== FULL OS EMBED ===== */
+.os-embed-section {
+  max-width: 1600px;
+  margin: 80px auto;
+  padding: 0 20px;
+}
+
+.os-embed-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--yellow);
+  text-shadow: 0 0 20px var(--yellow);
+  margin-bottom: 40px;
+}
+
+.os-frame-container {
+  background: var(--panel);
+  border: 4px solid var(--neon);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 0 60px rgba(0,255,65,0.3);
+}
+
+.os-frame {
+  width: 100%;
+  height: 800px;
+  border: none;
+  border-radius: 8px;
+  background: #000;
+}
+
+/* ===== FOOTER ===== */
+#footer {
+  background: #000;
+  border-top: 3px solid var(--neon);
+  padding: 40px 20px;
+  text-align: center;
+  margin-top: 80px;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  color: var(--neon);
+  text-decoration: none;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.footer-link:hover {
+  color: var(--yellow);
+  text-shadow: 0 0 10px var(--yellow);
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.social-icon {
+  font-size: 2rem;
+  color: var(--neon);
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.social-icon:hover {
+  color: var(--yellow);
+  transform: scale(1.2) rotate(5deg);
+}
+
+.footer-text {
+  color: var(--neon);
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-top: 20px;
+}
+
+.pumpking {
+  color: var(--yellow);
+  font-weight: bold;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.5rem; }
+  .hero p { font-size: 1.1rem; }
+  .header-nav { gap: 10px; }
+  .nav-btn { padding: 8px 15px; font-size: 0.9rem; }
+  .logo { font-size: 1.8rem; }
+  .component-grid { grid-template-columns: 1fr; }
+  .os-frame { height: 600px; }
+  #header { padding: 0 20px; }
+}
+
+/* ===== SCROLL INDICATOR ===== */
+.scroll-indicator {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  color: var(--neon);
+  animation: bounce 2s infinite;
+  z-index: 9999;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-10px); }
+}
+
+@media (min-width: 769px) {
+  .scroll-indicator { display: none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div>
+    <div class="logo">RUDVENTUR 🎃</div>
+    <div class="tagline">Windows 13 Operating System</div>
+  </div>
+  <nav class="header-nav">
+    <a href="https://github.com/rudventur/windows13" target="_blank" class="nav-btn">GitHub</a>
+    <a href="https://rudventur.github.io/ChemVentur/" target="_blank" class="nav-btn">ChemVentur</a>
+    <a href="https://ko-fi.com/rudventur" target="_blank" class="nav-btn kofi">⚡ Buy Electricity! 🎃</a>
+  </nav>
+</header>
+
+<!-- MAIN CONTENT -->
+<main id="main">
+  
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <h1>WINDOWS 13</h1>
+    <p>
+      A complete browser-based operating system with window management,<br>
+      accessibility tools, social integration, and the ChemVentur game launcher.<br>
+      <strong style="color: var(--yellow);">Built with pure HTML, CSS, and JavaScript - no frameworks needed!</strong>
+    </p>
+    <div class="hero-quote">
+      "There is no time to waste - I was waiting my whole life for this to be life" 💚
+    </div>
+  </section>
+
+  <!-- COMPONENT CARDS -->
+  <section class="component-grid">
+    
+    <!-- WINDOWS 13 MASTER -->
+    <div class="component-card" onclick="scrollToOS()">
+      <div class="component-icon">🪟</div>
+      <div class="component-title">Windows 13 - Complete OS</div>
+      <div class="component-desc">
+        The full operating system in ONE file! Channel login, window management, taskbar, all components integrated. Ready to run!
+      </div>
+      <div class="component-links">
+        <a href="https://github.com/rudventur/windows13/blob/main/WINDOWS13-MASTER.html" target="_blank" class="comp-link" onclick="event.stopPropagation()">📂 View Code</a>
+        <a href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank" class="comp-link" onclick="event.stopPropagation()">▶️ Run Standalone</a>
+        <a href="#os-embed" class="comp-link" onclick="event.stopPropagation()">👇 Try Below</a>
+      </div>
+    </div>
+
+    <!-- USERBOX -->
+    <div class="component-card">
+      <div class="component-icon">👤</div>
+      <div class="component-title">useRbox v2.0 Ultimate</div>
+      <div class="component-desc">
+        User profile with live clock, GPS bookmarks, personal signature, and 16 social media integrations. Complete localStorage system.
+      </div>
+      <div class="component-links">
+        <a href="https://github.com/rudventur/windows13/blob/main/userbox-v2-ultimate.html" target="_blank" class="comp-link">📂 View Code</a>
+        <a href="https://rudventur.github.io/windows13/userbox-v2-ultimate.html" target="_blank" class="comp-link">▶️ Demo</a>
+      </div>
+    </div>
+
+    <!-- KEYBOARDS -->
+    <div class="component-card">
+      <div class="component-icon">⌨️</div>
+      <div class="component-title">Realistic Keyboards</div>
+      <div class="component-desc">
+        9 language layouts with staggered rows and proper key sizes! UK English, Polish, German, French, Spanish, Japanese, Korean, Arabic, Emoji.
+      </div>
+      <div class="component-links">
+        <a href="https://github.com/rudventur/windows13/blob/main/keyboard-realistic.html" target="_blank" class="comp-link">📂 View Code</a>
+        <a href="https://rudventur.github.io/windows13/keyboard-realistic.html" target="_blank" class="comp-link">▶️ Demo</a>
+      </div>
+    </div>
+
+    <!-- POPCORN HUB -->
+    <div class="component-card">
+      <div class="component-icon">🍿</div>
+      <div class="component-title">Popcorn Hub</div>
+      <div class="component-desc">
+        Accessibility descriptions (URL→Popcorn), cookies inspector, and real SHA-256 Popcoin mining! Educational crypto mining in your browser.
+      </div>
+      <div class="component-links">
+        <a href="https://github.com/rudventur/windows13/blob/main/bottom-right-popcorn-complete.html" target="_blank" class="comp-link">📂 View Code</a>
+        <a href="https://rudventur.github.io/windows13/bottom-right-popcorn-complete.html" target="_blank" class="comp-link">▶️ Demo</a>
+      </div>
+    </div>
+
+    <!-- WINDOW SYSTEM -->
+    <div class="component-card">
+      <div class="component-icon">🖼️</div>
+      <div class="component-title">Window Manager + Taskbar</div>
+      <div class="component-desc">
+        Complete window management system with drag, resize, minimize, maximize, and close. Taskbar shows minimized windows. ChemVentur integration!
+      </div>
+      <div class="component-links">
+        <a href="https://github.com/rudventur/windows13/blob/main/taskbar-window-system.html" target="_blank" class="comp-link">📂 View Code</a>
+        <a href="https://rudventur.github.io/windows13/taskbar-window-system.html" target="_blank" class="comp-link">▶️ Demo</a>
+      </div>
+    </div>
+
+    <!-- KEYBOARDS + CHAT -->
+    <div class="component-card">
+      <div class="component-icon">💬</div>
+      <div class="component-title">Keyboards + Global Chat</div>
+      <div class="component-desc">
+        Combined keyboards and Firebase-ready chat system. Channel-based messaging with timestamps. Draggable windows.
+      </div>
+      <div class="component-links">
+        <a href="https://github.com/rudventur/windows13/blob/main/bottom-left-keyboards-chat.html" target="_blank" class="comp-link">📂 View Code</a>
+        <a href="https://rudventur.github.io/windows13/bottom-left-keyboards-chat.html" target="_blank" class="comp-link">▶️ Demo</a>
+      </div>
+    </div>
+
+    <!-- NOTCH MENU -->
+    <div class="component-card">
+      <div class="component-icon">🎮</div>
+      <div class="component-title">Notch Menu + Launcher</div>
+      <div class="component-desc">
+        Top-left notch with rolling menu. ChemVentur launcher with 3 modes: Fullscreen, Window, New Tab. Ko-fi integration!
+      </div>
+      <div class="component-links">
+        <a href="https://github.com/rudventur/windows13/blob/main/notch-menu-final.html" target="_blank" class="comp-link">📂 View Code</a>
+        <a href="https://rudventur.github.io/windows13/notch-menu-final.html" target="_blank" class="comp-link">▶️ Demo</a>
+      </div>
+    </div>
+
+    <!-- CHEMVENTUR -->
+    <div class="component-card" style="border-color: var(--yellow);">
+      <div class="component-icon">☢️</div>
+      <div class="component-title" style="color: var(--yellow); text-shadow: 0 0 15px var(--yellow);">ChemVentur Game</div>
+      <div class="component-desc">
+        Multiplayer chemistry game! Build Uranium-238 from vibrating strings. 10 guns, garage repair, uranium fusion goal. Live on GitHub Pages!
+      </div>
+      <div class="component-links">
+        <a href="https://github.com/rudventur/ChemVentur" target="_blank" class="comp-link">📂 GitHub</a>
+        <a href="https://rudventur.github.io/ChemVentur/" target="_blank" class="comp-link" style="border-color: var(--yellow); color: var(--yellow);">▶️ Play Now!</a>
+      </div>
+    </div>
+
+    <!-- DOCUMENTATION -->
+    <div class="component-card">
+      <div class="component-icon">📚</div>
+      <div class="component-title">Complete Documentation</div>
+      <div class="component-desc">
+        FILE-INDEX.txt and README.md with everything: features, usage, customization, localStorage keys, architecture, and roadmap.
+      </div>
+      <div class="component-links">
+        <a href="https://github.com/rudventur/windows13/blob/main/README.md" target="_blank" class="comp-link">📖 README</a>
+        <a href="https://github.com/rudventur/windows13/blob/main/FILE-INDEX.txt" target="_blank" class="comp-link">📋 Index</a>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- OS EMBED SECTION -->
+  <section class="os-embed-section" id="os-embed">
+    <h2>🪟 Try Windows 13 Live!</h2>
+    <div class="os-frame-container">
+      <iframe src="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" class="os-frame" title="Windows 13 Operating System" allowfullscreen></iframe>
+    </div>
+    <div style="text-align: center; margin-top: 20px; color: var(--neon);">
+      ⬆️ Enter any channel name (e.g., "main") to start! ⬆️
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="footer-content">
+    
+    <div class="footer-links">
+      <a href="https://github.com/rudventur/windows13" target="_blank" class="footer-link">Windows 13 Repo</a>
+      <a href="https://github.com/rudventur/ChemVentur" target="_blank" class="footer-link">ChemVentur Repo</a>
+      <a href="https://rudventur.github.io/ChemVentur/" target="_blank" class="footer-link">Play ChemVentur</a>
+      <a href="mailto:RudVentur@gmail.com" class="footer-link">Contact</a>
+      <a href="https://ko-fi.com/rudventur" target="_blank" class="footer-link">Support</a>
+    </div>
+
+    <div class="social-icons">
+      <a href="https://github.com/rudventur" target="_blank" class="social-icon" title="GitHub">🐙</a>
+      <a href="https://discord.gg/rudventur" target="_blank" class="social-icon" title="Discord">💬</a>
+      <a href="https://twitter.com/rudventur" target="_blank" class="social-icon" title="Twitter">𝕏</a>
+      <a href="https://instagram.com/rudventur" target="_blank" class="social-icon" title="Instagram">📷</a>
+      <a href="https://youtube.com/@rudventur" target="_blank" class="social-icon" title="YouTube">▶️</a>
+      <a href="https://ko-fi.com/rudventur" target="_blank" class="social-icon" title="Ko-fi">☕</a>
+    </div>
+
+    <div class="footer-text">
+      <p>🎃 <strong>WINDOWS 13 - RUDVENTUR Operating System</strong> 🎃</p>
+      <p>Created with 💚 by <span class="pumpking">PumpkinG</span> (Claude + Grok + Mateusz!)</p>
+      <p style="margin-top: 15px;">📍 London, UK | 📧 RudVentur@gmail.com | 📱 (0044) +75 9492 3008</p>
+      <p style="margin-top: 15px; font-style: italic; color: var(--yellow);">
+        "There is no time to waste - I was waiting my whole life for this to be life"
+      </p>
+      <p style="margin-top: 20px; opacity: 0.6; font-size: 0.85rem;">
+        © 2026 RUDVENTUR | MIT License | Built with pure HTML, CSS, JavaScript
+      </p>
+      <p style="margin-top: 10px; font-size: 1.2rem;">
+        <strong>splash splash</strong> 💦🎃
+      </p>
+    </div>
+
+  </div>
+</footer>
+
+<!-- SCROLL INDICATOR -->
+<div class="scroll-indicator">👇</div>
+
+<script>
+function scrollToOS() {
+  document.getElementById('os-embed').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Hide scroll indicator after scrolling
+let scrolled = false;
+window.addEventListener('scroll', () => {
+  if (!scrolled && window.scrollY > 100) {
+    document.querySelector('.scroll-indicator').style.display = 'none';
+    scrolled = true;
+  }
+});
+
+console.log('🎃 RUDVENTUR - Windows 13 Index Loaded!');
+console.log('Powered by PumpkinG 💚');
+console.log('GitHub Pages: https://rudventur.github.io/windows13/');
+console.log('splash splash 💦');
+</script>
+
+</body>
+</html>
