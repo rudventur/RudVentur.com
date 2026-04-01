@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RudVentur Universe Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0c;color:#ccc;font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden}
+
+/* grid bg */
+body::before{content:'';position:fixed;inset:0;background-image:
+  linear-gradient(rgba(0,255,65,.04) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(0,255,65,.04) 1px,transparent 1px);
+  background-size:50px 50px;z-index:0;pointer-events:none}
+
+/* scanline */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(
+  0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);
+  z-index:999;pointer-events:none}
+
+a{color:inherit;text-decoration:none}
+
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+
+/* ─── header ─── */
+.header{text-align:center;margin-bottom:2.5rem;padding:2rem 0}
+.header h1{font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,5vw,2.8rem);font-weight:900;letter-spacing:2px;
+  color:#00ff41;text-shadow:0 0 20px rgba(0,255,65,.3),0 0 60px rgba(0,255,65,.1)}
+.header h1 .pumpkin{color:#ff9933;text-shadow:0 0 20px rgba(255,153,51,.4)}
+.header .sub{color:#555;font-size:.8rem;margin-top:.5rem;letter-spacing:3px;text-transform:uppercase}
+
+/* ─── ko-fi ─── */
+.kofi{display:inline-flex;align-items:center;gap:.4rem;border:1px solid #ff9933;border-radius:6px;padding:.4rem .9rem;font-size:.75rem;color:#ff9933;transition:all .2s;margin:.3rem}
+.kofi:hover{background:#ff9933;color:#0a0a0c;box-shadow:0 0 15px rgba(255,153,51,.3)}
+.kofi-row{text-align:center;margin-bottom:2rem}
+
+/* ─── section headers ─── */
+.section-title{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;color:#00ff41;
+  text-shadow:0 0 10px rgba(0,255,65,.2);margin-bottom:1.2rem;letter-spacing:2px;
+  border-bottom:1px solid #1a1a1a;padding-bottom:.5rem}
+.section-title.gold{color:#ff9933;text-shadow:0 0 10px rgba(255,153,51,.2)}
+.section-title.cyan{color:#00e5ff;text-shadow:0 0 10px rgba(0,229,255,.2)}
+
+/* ─── grid ─── */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:2.5rem}
+
+/* ─── cards ─── */
+.card{background:#0e0e12;border:1px solid #1a2a1a;border-radius:10px;padding:1.4rem;
+  transition:all .3s ease;position:relative;overflow:hidden;display:block}
+.card:hover{transform:translateY(-3px) scale(1.01)}
+
+/* green variant */
+.card.green{border-color:#0a3a0a}
+.card.green:hover{border-color:#00ff41;box-shadow:0 0 20px rgba(0,255,65,.1)}
+
+/* gold / pumpkin variant */
+.card.gold{border-color:#3a2a0a}
+.card.gold:hover{border-color:#ff9933;box-shadow:0 0 20px rgba(255,153,51,.15)}
+
+/* cyan variant */
+.card.cyan{border-color:#0a2a3a}
+.card.cyan:hover{border-color:#00e5ff;box-shadow:0 0 20px rgba(0,229,255,.15)}
+
+/* pink variant */
+.card.pink{border-color:#3a0a2a}
+.card.pink:hover{border-color:#ff3c78;box-shadow:0 0 20px rgba(255,60,120,.15)}
+
+.card .icon{font-size:2.4rem;margin-bottom:.7rem;display:block;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.15));
+  animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+.card .title{font-family:'Orbitron',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:.4rem;color:#eee}
+.card .desc{font-size:.75rem;color:#777;line-height:1.5;margin-bottom:.7rem}
+
+.card .features{list-style:none;margin-bottom:.7rem}
+.card .features li{font-size:.7rem;color:#555;padding:.15rem 0}
+.card .features li::before{content:'▸ ';color:#00ff41}
+.card.gold .features li::before{color:#ff9933}
+.card.cyan .features li::before{color:#00e5ff}
+.card.pink .features li::before{color:#ff3c78}
+
+.card .status{display:inline-block;font-size:.6rem;text-transform:uppercase;letter-spacing:2px;
+  padding:.2rem .6rem;border-radius:8px;border:1px solid #333;color:#555}
+.card .status.live{border-color:#00ff41;color:#00ff41}
+.card .status.wip{border-color:#ff9933;color:#ff9933}
+.card .status.spec{border-color:#00e5ff;color:#00e5ff}
+.card .status.new{border-color:#ff3c78;color:#ff3c78}
+
+/* ─── mystery card ─── */
+.card.mystery{border-style:dashed;border-color:#222;cursor:default}
+.card.mystery:hover{border-color:#444;box-shadow:none;transform:translateY(-2px)}
+.card.mystery .icon{filter:grayscale(1) brightness(.5);animation:none}
+
+/* ─── footer ─── */
+.footer{text-align:center;padding:2rem 1rem;border-top:1px solid #111;margin-top:1rem}
+.footer p{color:#333;font-size:.65rem;margin-bottom:.8rem}
+
+/* ─── responsive ─── */
+@media(max-width:480px){
+  .grid{grid-template-columns:1fr}
+  .header h1{font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="header">
+    <h1>🎃 <span class="pumpkin">RUDVENTUR</span> — Universe Index</h1>
+    <div class="sub">every world. every experiment. one map.</div>
+  </div>
+
+  <div class="kofi-row">
+    <a class="kofi" href="https://ko-fi.com/rudventur" target="_blank">☕ Buy Rudy a Coffee</a>
+    <a class="kofi" href="https://ko-fi.com/rudventur" target="_blank">🎃 Support the Chaos</a>
+  </div>
+
+  <!-- ═══ GAMES & APPS ═══ -->
+  <div class="section-title">GAMES &amp; APPS</div>
+  <div class="grid">
+
+    <a class="card green" href="https://rudventur.github.io/ChemVentur-Multi-v118/" target="_blank">
+      <span class="icon">🧪</span>
+      <div class="title">ChemVentur Multi</div>
+      <div class="desc">Multiplayer chemistry game. Mix elements, cause reactions, try not to explode. Firebase keeps everyone in sync.</div>
+      <ul class="features">
+        <li>Real-time multiplayer via Firebase</li>
+        <li>Element mixing & chain reactions</li>
+        <li>Vanilla JS — no game engine</li>
+      </ul>
+      <span class="status live">live</span>
+    </a>
+
+    <a class="card green" href="https://rudventur.github.io/map-merger-venti/" target="_blank">
+      <span class="icon">🗺️</span>
+      <div class="title">Map Merger Venti</div>
+      <div class="desc">Canvas conquest with 9 vehicle modes. Tanks, boats, helicopters — all vanilla JS, pixel by pixel.</div>
+      <ul class="features">
+        <li>9 vehicle types</li>
+        <li>Canvas-based terrain rendering</li>
+        <li>Zero dependencies</li>
+      </ul>
+      <span class="status live">live</span>
+    </a>
+
+    <a class="card gold" href="https://rudventur.github.io/cheese-ouiji-empire/" target="_blank">
+      <span class="icon">🧀</span>
+      <div class="title">Cheese Ouiji Empire</div>
+      <div class="desc">Food bank creative project. Part art, part community tool, fully unhinged in the best way.</div>
+      <ul class="features">
+        <li>Creative community tool</li>
+        <li>Pure HTML vibes</li>
+      </ul>
+      <span class="status live">live</span>
+    </a>
+
+  </div>
+
+  <!-- ═══ BROWSER OS ═══ -->
+  <div class="section-title gold">BROWSER OS EXPERIMENTS</div>
+  <div class="grid">
+
+    <a class="card gold" href="https://rudventur.github.io/windows13/" target="_blank">
+      <span class="icon">🪟</span>
+      <div class="title">Windows 13 / LuxWin13</div>
+      <div class="desc">A browser OS that shouldn't exist but does. Desktops, windows, taskbars — vanilla HTML doing things it was never meant to do.</div>
+      <ul class="features">
+        <li>Full windowing system in the browser</li>
+        <li>Desktop icons, taskbar, start menu</li>
+        <li>No frameworks. Just audacity.</li>
+      </ul>
+      <span class="status live">live</span>
+    </a>
+
+  </div>
+
+  <!-- ═══ TOOLS ═══ -->
+  <div class="section-title cyan">TOOLS</div>
+  <div class="grid">
+
+    <a class="card cyan" href="https://rudventur.github.io/punk-script/wifi-room-mapper.html" target="_blank">
+      <span class="icon">📡</span>
+      <div class="title">WiFi Room Mapper</div>
+      <div class="desc">3D room modelling meets WiFi signal heatmaps. Walls have materials, furniture has mass, routers have opinions about corners.</div>
+      <ul class="features">
+        <li>Canvas 3D projection + 2D floor plan</li>
+        <li>7 wall materials with dB attenuation</li>
+        <li>Signal interpolation heatmap</li>
+        <li>Gyroscope camera control</li>
+      </ul>
+      <span class="status live">live</span>
+    </a>
+
+    <a class="card cyan" href="https://rudventur.github.io/punk-script/unit_architect.html" target="_blank">
+      <span class="icon">🏗️</span>
+      <div class="title">Unit Architect</div>
+      <div class="desc">Architectural unit planning tool. Currently a stub — the foundation is laid.</div>
+      <ul class="features">
+        <li>Unit layout planning</li>
+      </ul>
+      <span class="status wip">stub</span>
+    </a>
+
+    <a class="card cyan" href="https://rudventur.github.io/punk-script/universe.html" target="_blank">
+      <span class="icon">🌌</span>
+      <div class="title">Universe Map</div>
+      <div class="desc">Starfield overview of every RudVentur project. Glowing cards, mouse-follow lighting, animated stars.</div>
+      <ul class="features">
+        <li>Animated starfield background</li>
+        <li>Project cards with glow effects</li>
+        <li>The pretty version of this page</li>
+      </ul>
+      <span class="status live">live</span>
+    </a>
+
+  </div>
+
+  <!-- ═══ SOCIAL & LANGUAGE ═══ -->
+  <div class="section-title" style="color:#ff3c78;text-shadow:0 0 10px rgba(255,60,120,.2)">SOCIAL &amp; LANGUAGE</div>
+  <div class="grid">
+
+    <a class="card pink" href="https://rudventur.github.io/punk-script/" target="_blank">
+      <span class="icon">👤</span>
+      <div class="title">RudVentur Social</div>
+      <div class="desc">"what is your poison?" — the social layer. Humans, bots, AIs, pets, kingdoms. No signup. No walls. Just pick your entity.</div>
+      <ul class="features">
+        <li>6 entity types — human to directory</li>
+        <li>Firebase profiles, no auth</li>
+        <li>Public browse + invite system</li>
+      </ul>
+      <span class="status new">v0.1</span>
+    </a>
+
+    <a class="card pink" href="https://rudventur.github.io/punk-script/PUNKSCRIPT.md" target="_blank">
+      <span class="icon">⚡</span>
+      <div class="title">PunkScript</div>
+      <div class="desc">The language where punctuation IS syntax. Typos are dialects. Emoji are operators. The interpreter adapts to you.</div>
+      <ul class="features">
+        <li>Emoticon operators — :@D, >:@(, :/</li>
+        <li>Personal dictionary per user</li>
+        <li>Spelling forgiveness built in</li>
+        <li>Spec v0.2</li>
+      </ul>
+      <span class="status spec">spec</span>
+    </a>
+
+    <a class="card pink" href="https://rudventur.github.io/punk-script/" target="_blank">
+      <span class="icon">📱</span>
+      <div class="title">3D Cam Scanner</div>
+      <div class="desc">Phone-based 3D scanner. Camera + pedometer → .obj mesh. Walk through spaces to scan them. 100% on-device, zero cloud.</div>
+      <ul class="features">
+        <li>Flutter / Dart</li>
+        <li>3 quality modes (800–12000 points)</li>
+        <li>AR model viewer</li>
+      </ul>
+      <span class="status spec">source</span>
+    </a>
+
+    <!-- mystery -->
+    <div class="card mystery">
+      <span class="icon">🌑</span>
+      <div class="title">???</div>
+      <div class="desc">This slot is empty. Something will land here. Maybe you'll build it. Maybe it already exists and hasn't been found yet.</div>
+      <span class="status">coming soon</span>
+    </div>
+
+  </div>
+
+  <!-- ═══ footer ═══ -->
+  <div class="footer">
+    <a class="kofi" href="https://ko-fi.com/rudventur" target="_blank">☕ Ko-fi</a>
+    <a class="kofi" href="https://github.com/rudventur" target="_blank">⌨ GitHub</a>
+    <p style="margin-top:1rem">RudVentur — the universe where everything gets a seat at the table</p>
+  </div>
+
+</div>
+
+</body>
+</html>

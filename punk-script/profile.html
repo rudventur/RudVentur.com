@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — RudVentur Social</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">Rud<span>Ventur</span> Social</a>
+  <div class="nav-links">
+    <a href="browse.html">who's here</a>
+    <a href="invite.html">invite</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="profile-header">
+    <div class="type-badge large">
+      <span id="profile-type-icon"></span>
+      <span id="profile-type-label"></span>
+    </div>
+  </div>
+
+  <div id="profile-form">
+
+    <!-- Avatar -->
+    <div class="form-section">
+      <h3>avatar</h3>
+      <div class="avatar-section">
+        <div class="avatar-preview" id="avatar-preview">😀</div>
+        <div class="avatar-controls">
+          <div class="avatar-tabs">
+            <button class="avatar-tab active" id="tab-emoji">emoji</button>
+            <button class="avatar-tab" id="tab-url">image url</button>
+          </div>
+          <div id="emoji-panel">
+            <div class="emoji-grid" id="emoji-grid"></div>
+          </div>
+          <div id="url-panel" style="display:none">
+            <input type="text" id="avatar-url" placeholder="paste image url">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core fields -->
+    <div class="form-section">
+      <h3>the basics</h3>
+      <div class="field">
+        <label for="name">Name / Handle</label>
+        <input type="text" id="name" placeholder="what do they call you?">
+      </div>
+      <div class="field">
+        <label for="bio">One-line bio</label>
+        <input type="text" id="bio" placeholder="sum it up">
+      </div>
+    </div>
+
+    <!-- Type-specific fields -->
+    <div class="form-section" id="type-fields-section" style="display:none">
+      <h3 id="type-fields-title"></h3>
+      <div id="type-fields"></div>
+    </div>
+
+  </div>
+
+  <!-- Save -->
+  <div class="btn-group" style="justify-content:center;margin:1.5rem 0">
+    <button class="btn btn-primary" id="save-btn">that's me.</button>
+  </div>
+
+  <!-- Share -->
+  <div class="form-section" id="share-section" style="display:none">
+    <h3>share your profile</h3>
+    <div class="invite-link-display" id="share-link"></div>
+    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;text-align:center">click to copy</p>
+  </div>
+
+  <!-- Connections (shell) -->
+  <div class="connections-shell">
+    <h3>connections</h3>
+    <div class="empty-state">no connections yet. that's okay. this is just the beginning.</div>
+  </div>
+
+  <!-- RudVentur Universe -->
+  <div class="linked-projects">
+    <h3>RudVentur Universe</h3>
+    <div class="universe-links" id="universe-links"></div>
+  </div>
+
+</div>
+
+<div class="footer">RudVentur Social v0.1</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script src="js/profile.js"></script>
+
+</body>
+</html>
