@@ -2,491 +2,679 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RUDVENTUR — Universe Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RudVentur — Universe Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=VT323&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#000;--n:#0f0;--p:#010;--g:#001100;--gold:#ffd700;--pink:#ff3c78;--cyan:#00e5ff;--purple:#c78fff}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--n);font-family:'Courier New',monospace;overflow:hidden}
+*{margin:0;padding:0;box-sizing:border-box}
 
-/* ═══ LOGIN ═══ */
-#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:#000;z-index:99999}
-#login h1{font-size:clamp(2.5rem,8vw,4.5rem);margin:0;text-shadow:0 0 80px var(--n),0 0 160px rgba(0,255,0,.15);letter-spacing:4px}
-#login .sub{color:#060;font-size:.85rem;letter-spacing:3px;margin-top:-8px}
-#pass{padding:14px;width:440px;max-width:90%;font-size:1.1rem;background:#000;color:var(--n);border:3px solid var(--n);outline:none;border-radius:6px;font-family:inherit;text-align:center}
-#pass::placeholder{color:#040}
-#pass:focus{box-shadow:0 0 20px rgba(0,255,0,.2)}
-.login-btn{background:#000;border:3px solid var(--n);color:var(--n);padding:12px 40px;font-size:1rem;font-family:inherit;font-weight:900;cursor:pointer;border-radius:6px;letter-spacing:2px;transition:.2s}
-.login-btn:hover{background:var(--n);color:#000;box-shadow:0 0 30px rgba(0,255,0,.3)}
+:root{
+  --bg:#0a0a0a;
+  --map:#00ff41;
+  --user:#ff9933;
+  --social:#ff3c78;
+  --os:#00e5ff;
+  --tools:#c78fff;
+  --index:#f5f5f5;
+  --repos:#ffdd33;
+  --bank:#ffc800;
+  --chem:#00ff88;
+}
 
-/* ═══ NOTCH (top-left) ═══ */
-#notch{position:fixed;top:0;left:0;background:var(--n);color:#000;padding:12px 18px;font-weight:900;font-size:.9rem;box-shadow:0 0 60px rgba(0,255,0,.12);cursor:pointer;border-radius:0 0 18px 0;z-index:9999;letter-spacing:1px;transition:.2s;user-select:none}
-#notch:hover{box-shadow:0 0 40px rgba(0,255,0,.4);padding-right:24px}
+body{
+  background:var(--bg);
+  color:#ccc;
+  font-family:'DM Mono',monospace;
+  min-height:100vh;
+  overflow-x:hidden;
+}
 
-/* ═══ NOTCH MENU ═══ */
-#menu{position:fixed;top:52px;left:0;background:#000;border:3px solid var(--n);padding:10px;display:none;z-index:9998;border-radius:0 12px 12px 12px;width:320px;max-height:80vh;overflow-y:auto}
-.menu-zone{display:block;width:100%;margin:4px 0;padding:10px 12px;background:#000;color:var(--n);border:2px solid var(--n);text-align:left;cursor:pointer;border-radius:8px;font-family:inherit;font-weight:bold;font-size:.85rem;transition:.2s}
-.menu-zone:hover{background:var(--n);color:#000}
-.menu-sub{margin-left:12px;margin-top:4px;display:none;padding:8px;border-left:3px solid var(--n);background:rgba(0,255,0,.02)}
-.menu-tool{display:block;width:100%;padding:8px 10px;margin:4px 0;background:var(--p);color:var(--n);border:1px dashed var(--n);cursor:pointer;border-radius:6px;font-family:inherit;font-size:.8rem;text-align:left;transition:.15s}
-.menu-tool:hover{background:var(--n);color:#000}
-.menu-tool.soon{color:#040;border-color:#030;cursor:default;font-style:italic}
-.menu-tool.soon:hover{background:var(--p);color:#040}
-.menu-tool.soon::after{content:' [soon]';font-size:.65rem}
+/* subtle grid bg */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:60px 60px;
+  z-index:0;pointer-events:none;
+}
 
-/* ═══ R BUTTON (top-right) ═══ */
-#rbtn{position:fixed;top:12px;right:12px;width:52px;height:52px;background:var(--n);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;cursor:pointer;box-shadow:0 0 50px rgba(0,255,0,.12);z-index:9999;transition:.2s;user-select:none;border:none}
-#rbtn:hover{box-shadow:0 0 40px rgba(0,255,0,.5);transform:scale(1.08)}
+/* ─── HEADER ─── */
+.site-header{
+  position:relative;z-index:2;
+  text-align:center;
+  padding:2.5rem 1rem 1.5rem;
+}
+.site-header h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.2rem,6vw,4rem);
+  letter-spacing:4px;
+  color:var(--index);
+  text-shadow:0 0 30px rgba(255,255,255,.08);
+}
+.site-header .tagline{
+  font-size:.8rem;
+  color:#555;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  margin-top:.3rem;
+}
+.site-header .version{
+  font-size:.6rem;
+  color:#333;
+  margin-top:.5rem;
+  letter-spacing:2px;
+}
 
-/* ═══ USER PANEL ═══ */
-#upanel{position:fixed;top:50px;right:10px;background:#000;border:3px solid var(--n);padding:16px;z-index:9999;box-shadow:0 0 40px rgba(0,255,0,.12);border-radius:12px;display:none;width:320px;font-size:.85rem}
-#upanel .uc{position:absolute;top:8px;right:10px;color:#f44;cursor:pointer;font-size:1.4rem;background:none;border:none;font-family:inherit}
-#upanel input{width:100%;background:#000;color:var(--n);border:1px solid var(--n);padding:8px;margin:5px 0;font-family:inherit;font-size:.85rem;border-radius:4px}
+/* ─── GRID ─── */
+.universe-grid{
+  position:relative;z-index:1;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:1fr 1fr auto;
+  gap:3px;
+  max-width:1400px;
+  margin:0 auto;
+  padding:0 3px 3px;
+  min-height:calc(100vh - 140px);
+}
 
-/* ═══ KEYBOARD BTN (bottom-left) ═══ */
-#kbbtn{position:fixed;bottom:52px;left:12px;background:var(--n);color:#000;padding:8px 12px;border-radius:8px;font-weight:900;cursor:pointer;z-index:99999;font-size:1.2rem;border:none;font-family:inherit;transition:.2s}
-#kbbtn:hover{box-shadow:0 0 20px rgba(0,255,0,.4)}
+/* ─── PANELS ─── */
+.panel{
+  background:#0e0e10;
+  border:1px solid #1a1a1a;
+  padding:1.8rem 1.5rem;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .3s,box-shadow .3s,transform .2s;
+  display:flex;
+  flex-direction:column;
+}
+.panel:hover{
+  transform:translateY(-1px);
+  z-index:2;
+}
 
-/* ═══ POPCORN BTN (bottom-right) ═══ */
-#popbtn{position:fixed;bottom:52px;right:12px;background:var(--n);color:#000;padding:8px 12px;border-radius:8px;cursor:pointer;z-index:99999;font-size:1.3rem;border:none;transition:.2s}
-#popbtn:hover{box-shadow:0 0 20px rgba(0,255,0,.4);transform:scale(1.1)}
+/* panel accent borders */
+.panel--map{border-color:#0a3a0a}
+.panel--map:hover{border-color:var(--map);box-shadow:0 0 25px rgba(0,255,65,.08)}
 
-/* ═══ DASHBOARD ═══ */
-#dash{display:none;padding:60px 14px 60px;overflow:auto;height:100vh}
-.dash-title{text-align:center;font-size:1rem;color:var(--n);margin-bottom:18px;letter-spacing:2px;text-shadow:0 0 20px rgba(0,255,0,.15)}
-.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:1200px;margin:0 auto}
+.panel--user{border-color:#3a2a0a}
+.panel--user:hover{border-color:var(--user);box-shadow:0 0 25px rgba(255,153,51,.08)}
 
-/* ═══ ZONE PANELS ═══ */
-.zone{background:var(--p);border:2px solid #0a0;border-radius:10px;padding:14px;min-height:180px;transition:.25s;position:relative}
-.zone:hover{border-color:var(--n);box-shadow:0 0 25px rgba(0,255,0,.08)}
-.zone-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed #0a0;cursor:pointer;user-select:none;transition:.2s}
-.zone-head:hover{opacity:.7}
-.zone-head::after{content:'⛶';margin-left:auto;color:#040;font-size:.7rem}
-.zone-icon{font-size:1.2rem}
-.zone-label{font-weight:900;font-size:.9rem;letter-spacing:1px}
+.panel--social{border-color:#3a0a1a}
+.panel--social:hover{border-color:var(--social);box-shadow:0 0 25px rgba(255,60,120,.08)}
 
-/* zone accent colors */
-.zone.map{border-color:#0a3a0a}.zone.map .zone-label{color:#0f0}
-.zone.user{border-color:#3a2a0a}.zone.user .zone-label{color:var(--gold)}
-.zone.social{border-color:#3a0a1a}.zone.social .zone-label{color:var(--pink)}
-.zone.os{border-color:#0a2a3a}.zone.os .zone-label{color:var(--cyan)}
-.zone.tools{border-color:#2a0a3a}.zone.tools .zone-label{color:var(--purple)}
-.zone.idx{border-color:#222}.zone.idx .zone-label{color:#eee}
+.panel--os{border-color:#0a2a3a}
+.panel--os:hover{border-color:var(--os);box-shadow:0 0 25px rgba(0,229,255,.08)}
 
-.zone.map:hover{border-color:#0f0;box-shadow:0 0 20px rgba(0,255,0,.1)}
-.zone.user:hover{border-color:var(--gold);box-shadow:0 0 20px rgba(255,215,0,.1)}
-.zone.social:hover{border-color:var(--pink);box-shadow:0 0 20px rgba(255,60,120,.1)}
-.zone.os:hover{border-color:var(--cyan);box-shadow:0 0 20px rgba(0,229,255,.1)}
-.zone.tools:hover{border-color:var(--purple);box-shadow:0 0 20px rgba(199,143,255,.1)}
-.zone.idx:hover{border-color:#888;box-shadow:0 0 20px rgba(255,255,255,.05)}
+.panel--tools{border-color:#2a0a3a}
+.panel--tools:hover{border-color:var(--tools);box-shadow:0 0 25px rgba(199,143,255,.08)}
 
-/* zone tool links */
-.ztool{display:block;padding:6px 8px;color:#0a0;text-decoration:none;font-size:.78rem;border-left:2px solid transparent;transition:.2s;margin:2px 0}
-.ztool:hover{color:var(--n);border-left-color:var(--n);padding-left:14px;background:rgba(0,255,0,.03)}
-.zone.user .ztool:hover{color:var(--gold);border-left-color:var(--gold)}
-.zone.social .ztool:hover{color:var(--pink);border-left-color:var(--pink)}
-.zone.os .ztool:hover{color:var(--cyan);border-left-color:var(--cyan)}
-.zone.tools .ztool:hover{color:var(--purple);border-left-color:var(--purple)}
-.ztool.soon{color:#030;font-style:italic;cursor:default}
-.ztool.soon:hover{color:#040;border-left-color:transparent;padding-left:8px;background:none}
-.ztool.soon::after{content:' — soon';font-size:.6rem;color:#020}
+.panel--index{border-color:#222;background:#0c0c0e}
+.panel--index:hover{border-color:#444;box-shadow:0 0 25px rgba(255,255,255,.03)}
 
-/* index zone */
-.idx-logo{font-size:1.6rem;text-align:center;font-weight:900;color:#eee;letter-spacing:3px;text-shadow:0 0 20px rgba(255,255,255,.06);margin-bottom:4px}
-.idx-sub{text-align:center;color:#555;font-size:.7rem;letter-spacing:2px;margin-bottom:10px}
-.idx-link{display:block;text-align:center;color:#555;text-decoration:none;font-size:.75rem;padding:3px;transition:.2s}
-.idx-link:hover{color:#eee}
-.idx-meta{text-align:center;font-size:.55rem;color:#333;margin-top:10px;letter-spacing:1px}
-.idx-meta a{color:#444;text-decoration:none}
-.idx-meta a:hover{color:#888}
+.panel--repos{border-color:#3a3a0a;grid-column:1/-1}
+.panel--repos:hover{border-color:var(--repos);box-shadow:0 0 25px rgba(255,221,51,.08)}
 
-/* ═══ FULLSCREEN ZONE ═══ */
-.zone.fullscreen{position:fixed!important;inset:0!important;z-index:10000!important;border-radius:0!important;overflow-y:auto;padding:24px;animation:zExpand .2s ease-out}
-.zone.fullscreen .zone-head::after{content:'✕';color:#888;font-size:.9rem}
-.zone.fullscreen .ztool{font-size:1rem;padding:10px 12px}
-.zone.fullscreen .zone-label{font-size:1.4rem}
-.zone.fullscreen .idx-logo{font-size:2.8rem}
-@keyframes zExpand{from{opacity:.7;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+/* bank panel — VT323 dark punk, neon gold */
+.panel--bank{
+  border-color:#3a2e00;
+  background:
+    repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(255,200,0,.015) 3px,rgba(255,200,0,.015) 4px),
+    #0d0b05;
+}
+.panel--bank:hover{border-color:var(--bank);box-shadow:0 0 30px rgba(255,200,0,.18),inset 0 0 20px rgba(255,200,0,.04)}
+.panel--bank .panel__title{
+  font-family:'VT323',monospace;
+  font-weight:400;
+  font-size:clamp(1.1rem,2vw,1.5rem);
+  color:var(--bank);
+  text-shadow:0 0 12px rgba(255,200,0,.4);
+  letter-spacing:3px;
+}
+.panel--bank .tool-link{
+  font-family:'VT323',monospace;
+  font-size:1.05rem;
+  color:#b89500;
+  letter-spacing:1px;
+}
+.panel--bank .tool-link:hover{
+  border-left-color:var(--bank);
+  color:var(--bank);
+  text-shadow:0 0 8px rgba(255,200,0,.5);
+  background:rgba(255,200,0,.04);
+}
+.panel--bank .bank-tagline{
+  font-family:'VT323',monospace;
+  color:#8a7000;
+  font-size:.95rem;
+  text-align:center;
+  letter-spacing:2px;
+  margin-bottom:.8rem;
+  border-bottom:1px dashed #3a2e00;
+  padding-bottom:.4rem;
+}
 
-/* ═══ FLOATING WINDOWS ═══ */
-.win{position:fixed;background:var(--p);border:3px solid var(--n);border-radius:12px;box-shadow:0 0 40px rgba(0,255,0,.04);min-width:340px;min-height:180px;overflow:hidden;resize:both;z-index:9997;display:none}
-.win-bar{height:38px;background:var(--n);color:#000;display:flex;align-items:center;justify-content:space-between;padding:0 10px;cursor:move;font-weight:900;font-size:.85rem}
-.win-bar button{background:none;border:1px solid #000;color:#000;padding:4px 8px;cursor:pointer;font-family:inherit;font-size:.8rem;border-radius:4px;font-weight:bold}
-.win-bar button:hover{background:#000;color:var(--n)}
-.win-body{padding:10px;background:#000;color:var(--n);height:calc(100% - 38px);overflow:auto}
-.win-body iframe{width:100%;height:100%;border:none}
+/* chemventur panel — green neon */
+.panel--chem{border-color:#0a3a2a;grid-column:1/-1}
+.panel--chem:hover{border-color:var(--chem);box-shadow:0 0 25px rgba(0,255,136,.08)}
+.panel--chem .panel__title{color:var(--chem)}
+.panel--chem .tool-link:hover{border-left-color:var(--chem);color:var(--chem)}
+.chem-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:.5rem;
+  flex:1;
+}
+.chem-btn{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  padding:.7rem .9rem;
+  background:#0f1a14;
+  border:1px solid #1a3a2a;
+  border-left:2px solid transparent;
+  border-radius:4px;
+  color:#8aaa98;
+  text-decoration:none;
+  font-size:.78rem;
+  transition:all .2s;
+}
+.chem-btn:hover{
+  border-color:var(--chem);
+  border-left-color:var(--chem);
+  color:var(--chem);
+  background:rgba(0,255,136,.04);
+  padding-left:1.1rem;
+}
+.chem-btn .chem-icon{font-size:1rem}
 
-/* ═══ TASKBAR ═══ */
-#taskbar{position:fixed;bottom:0;left:0;width:100%;height:42px;background:linear-gradient(to top,#010,#020);border-top:2px solid #0f4;box-shadow:0 0 20px rgba(0,255,0,.15);display:flex;align-items:center;padding:0 70px;overflow-x:auto;z-index:9998;gap:6px}
-.tb-item{background:#020;color:#0f4;border:1.5px solid #0f4;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit;white-space:nowrap;box-shadow:0 0 8px rgba(0,255,0,.15);transition:.2s}
-.tb-item:hover{background:#0f4;color:#000;box-shadow:0 0 18px #0f4}
-#taskbar::-webkit-scrollbar{height:6px}
-#taskbar::-webkit-scrollbar-thumb{background:#0f4;border-radius:3px}
+/* ─── PANEL HEADER (clickable fullscreen toggle) ─── */
+.panel__head{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  cursor:pointer;
+  user-select:none;
+  margin-bottom:1.2rem;
+  padding-bottom:.6rem;
+  border-bottom:1px solid #1a1a1a;
+  transition:opacity .2s;
+}
+.panel__head:hover{opacity:.75}
+.panel__head::after{
+  content:'⛶';
+  font-size:.7rem;
+  margin-left:auto;
+  color:#333;
+  transition:color .3s;
+}
+.panel__head:hover::after{color:#888}
 
-/* ═══ CLOCK ═══ */
-#clock{position:fixed;bottom:48px;right:12px;color:#040;font-size:.65rem;z-index:99999;letter-spacing:1px}
+.panel__icon{
+  font-size:1.4rem;
+  line-height:1;
+}
+.panel__title{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:clamp(.85rem,1.5vw,1.1rem);
+  text-transform:uppercase;
+  letter-spacing:2px;
+}
+.panel--map .panel__title{color:var(--map)}
+.panel--user .panel__title{color:var(--user)}
+.panel--social .panel__title{color:var(--social)}
+.panel--os .panel__title{color:var(--os)}
+.panel--tools .panel__title{color:var(--tools)}
+.panel--index .panel__title{color:var(--index)}
 
-/* ═══ HIDDEN UTILITY ═══ */
-.h{display:none!important}
+/* ─── TOOL LINKS ─── */
+.tool-list{
+  list-style:none;
+  flex:1;
+}
+.tool-list li{
+  margin-bottom:.15rem;
+}
+.tool-link{
+  display:block;
+  padding:.45rem .5rem;
+  color:#aaa;
+  text-decoration:none;
+  font-size:.78rem;
+  border-left:2px solid transparent;
+  transition:all .2s;
+  letter-spacing:.5px;
+}
+.tool-link:hover{
+  color:#fff;
+  background:rgba(255,255,255,.03);
+  padding-left:.8rem;
+}
 
-/* ═══ MOBILE ═══ */
-@media(max-width:800px){
-  .dash-grid{grid-template-columns:1fr}
-  #menu{width:85vw}
-  #upanel{width:85vw;right:4px}
-  .win{min-width:90vw!important;left:5vw!important}
+/* accent link borders on hover */
+.panel--map .tool-link:hover{border-left-color:var(--map);color:var(--map)}
+.panel--user .tool-link:hover{border-left-color:var(--user);color:var(--user)}
+.panel--social .tool-link:hover{border-left-color:var(--social);color:var(--social)}
+.panel--os .tool-link:hover{border-left-color:var(--os);color:var(--os)}
+.panel--tools .tool-link:hover{border-left-color:var(--tools);color:var(--tools)}
+.panel--index .tool-link:hover{border-left-color:var(--index);color:var(--index)}
+.panel--repos .panel__title{color:var(--repos)}
+.panel--repos .tool-link:hover{border-left-color:var(--repos);color:var(--repos)}
+
+/* coming soon state */
+.tool-link.soon{
+  color:#444;
+  font-style:italic;
+  cursor:default;
+}
+.tool-link.soon:hover{
+  color:#555;
+  background:none;
+  border-left-color:transparent;
+  padding-left:.5rem;
+}
+.tool-link.soon::after{
+  content:' — soon';
+  font-size:.6rem;
+  color:#333;
+}
+
+/* ─── INDEX PANEL (panel 6) ─── */
+.index-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(1.4rem,2.5vw,2rem);
+  color:var(--index);
+  letter-spacing:3px;
+  text-align:center;
+  margin-bottom:.3rem;
+}
+.index-sub{
+  text-align:center;
+  color:#555;
+  font-size:.7rem;
+  letter-spacing:2px;
+  margin-bottom:1.2rem;
+}
+.index-zones{
+  list-style:none;
+  margin-bottom:1rem;
+}
+.index-zones li{
+  text-align:center;
+  margin-bottom:.3rem;
+}
+.index-zones a{
+  color:#666;
+  text-decoration:none;
+  font-size:.75rem;
+  letter-spacing:1px;
+  transition:color .2s;
+}
+.index-zones a:hover{color:var(--index)}
+.index-meta{
+  margin-top:auto;
+  text-align:center;
+  font-size:.55rem;
+  color:#333;
+  letter-spacing:1px;
+}
+
+/* ─── REPOS GRID ─── */
+.repos-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:.5rem;
+  flex:1;
+}
+.repo-card{
+  background:#111;
+  border:1px solid #1a1a1a;
+  border-radius:4px;
+  padding:.8rem 1rem;
+  transition:border-color .2s,box-shadow .2s;
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+  text-decoration:none;
+  color:inherit;
+}
+.repo-card:hover{
+  border-color:var(--repos);
+  box-shadow:0 0 12px rgba(255,221,51,.1);
+}
+.repo-card__name{
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:.85rem;
+  color:var(--repos);
+  letter-spacing:.5px;
+}
+.repo-card__desc{
+  font-size:.7rem;
+  color:#777;
+  line-height:1.4;
+  flex:1;
+}
+.repo-card__meta{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  font-size:.6rem;
+  color:#555;
+  margin-top:.2rem;
+}
+.repo-card__lang{
+  display:inline-flex;
+  align-items:center;
+  gap:.25rem;
+}
+.repo-card__lang::before{
+  content:'';
+  display:inline-block;
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--lang-color,#888);
+}
+.repo-card__stars{color:#888}
+.repo-card__pages{
+  color:var(--map);
+  font-size:.55rem;
+  letter-spacing:.5px;
+}
+.repos-loading{
+  color:#555;
+  font-size:.75rem;
+  text-align:center;
+  padding:2rem;
+  letter-spacing:1px;
+}
+.repos-error{
+  color:var(--social);
+  font-size:.7rem;
+  text-align:center;
+  padding:1rem;
+}
+
+/* ─── FULLSCREEN MODE ─── */
+.panel.fullscreen{
+  position:fixed!important;
+  inset:0!important;
+  z-index:1000!important;
+  border-radius:0!important;
+  overflow-y:auto;
+  transform:none!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  padding:2.5rem;
+  animation:panelExpand .25s ease-out;
+}
+.panel.fullscreen .panel__head::after{
+  content:'✕';
+  color:#666;
+  font-size:.9rem;
+}
+.panel.fullscreen .panel__head:hover::after{color:#fff}
+.panel.fullscreen .tool-link{
+  font-size:1rem;
+  padding:.7rem .8rem;
+}
+.panel.fullscreen .panel__title{
+  font-size:1.6rem;
+}
+.panel.fullscreen .index-logo{
+  font-size:3rem;
+}
+
+@keyframes panelExpand{
+  from{opacity:.7;transform:scale(.95)}
+  to{opacity:1;transform:scale(1)}
+}
+
+/* ─── FOOTER BAR ─── */
+.footer-bar{
+  position:relative;z-index:2;
+  text-align:center;
+  padding:1rem;
+  font-size:.55rem;
+  color:#2a2a2a;
+  letter-spacing:2px;
+}
+.footer-bar a{color:#444;text-decoration:none;transition:color .2s}
+.footer-bar a:hover{color:#888}
+
+/* ─── MOBILE ─── */
+@media(max-width:900px){
+  .universe-grid{
+    grid-template-columns:1fr;
+    grid-template-rows:auto;
+    min-height:auto;
+    padding:0 .5rem .5rem;
+  }
+  .panel{
+    min-height:auto;
+    padding:1.4rem 1.2rem;
+  }
+}
+@media(max-width:480px){
+  .site-header{padding:1.5rem .5rem 1rem}
+  .site-header h1{letter-spacing:2px}
+  .panel{padding:1.2rem 1rem}
 }
 </style>
 </head>
 <body>
 
-<!-- ═══ LOGIN SCREEN ═══ -->
-<div id="login">
+<!-- HEADER -->
+<header class="site-header">
   <h1>RUDVENTUR</h1>
-  <div class="sub">a creative web universe</div>
-  <input id="pass" placeholder="enter channel name..." autocomplete="off">
-  <button class="login-btn" onclick="doLogin()">ENTER</button>
+  <div class="tagline">a creative web universe</div>
+  <div class="version">v3.0 — all repos consolidated</div>
+</header>
+
+<!-- 6 PANEL GRID -->
+<main class="universe-grid">
+
+  <!-- PANEL 1 — MAP ZONE (top left) -->
+  <section class="panel panel--map">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">🗺️</span>
+      <span class="panel__title">The Map</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="map-merger-venti/index.html" target="_blank">Map Merger Venti (ArtSpace City)</a></li>
+      <li><a class="tool-link" href="map-merger-venti/translator_v7.html" target="_blank">↳ Translator v7</a></li>
+      <li><a class="tool-link" href="map-merger-venti/snout-first.html" target="_blank">↳ SnoutFirst</a></li>
+      <li><a class="tool-link soon">Browser</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 2 — THE BANK (top middle) -->
+  <section class="panel panel--bank">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">💰</span>
+      <span class="panel__title">The Bank</span>
+    </div>
+    <div class="bank-tagline">// RUDVENTUR LEDGER //</div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="https://rudventur.github.io/bank/" target="_blank">▸ Bank / Lending Ledger</a></li>
+      <li><a class="tool-link" href="owe2owe1.html" target="_blank">▸ Peoples Bank (owe2owe1)</a></li>
+      <li><a class="tool-link" href="owe2owe2.html" target="_blank">▸ Lenting System (owe2owe2)</a></li>
+      <li><a class="tool-link soon">▸ Popcoin Vault</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 3 — USER ZONE (top right) -->
+  <section class="panel panel--user">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">👤</span>
+      <span class="panel__title">The User</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox v2 (upgraded)</a></li>
+      <li><a class="tool-link" href="windows13/userbox-v2-ultimate.html" target="_blank">useRbox v2 (ultimate)</a></li>
+      <!-- PLACEHOLDER: useRbox 2.0 — paste link here when ready -->
+      <li><a class="tool-link soon">useRbox 2.0</a></li>
+      <li><a class="tool-link" href="map-merger-venti/translator_v7.html" target="_blank">Translator v7</a></li>
+      <li><a class="tool-link soon">Maps</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 4 — SOCIAL ZONE (bottom left) -->
+  <section class="panel panel--social">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">💬</span>
+      <span class="panel__title">The Social</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="punk-script/index.html" target="_blank">RudVentur Social (punk-script)</a></li>
+      <li><a class="tool-link" href="global-chat-v5/index.html" target="_blank">Global Chat v5</a></li>
+      <li><a class="tool-link" href="punk-script/index.html" target="_blank">Prompter / PunkScript</a></li>
+      <li><a class="tool-link" href="windows13/keyboard-realistic.html" target="_blank">Keyboards</a></li>
+      <li><a class="tool-link soon">Weather App</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 5 — OS ZONE (bottom middle) -->
+  <section class="panel panel--os">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">🖥️</span>
+      <span class="panel__title">The OS</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="LuxWin13/notch-menu-final.html" target="_blank">LuxWin13</a></li>
+      <li><a class="tool-link" href="windows13/taskbar-window-system.html" target="_blank">Taskbar &amp; Windows System</a></li>
+      <li><a class="tool-link" href="windows13/WINDOWS13-MASTER.html" target="_blank">WINDOWS13 Master</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 6 — TOOLS ZONE (bottom right) -->
+  <section class="panel panel--tools">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">🔧</span>
+      <span class="panel__title">The Tools</span>
+    </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="bottom-right-popcorn-complete.html" target="_blank">Popcorn Hub (full)</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/bank/" target="_blank">💰 Bank / Ledger</a></li>
+      <li><a class="tool-link soon">Minner Wallet</a></li>
+      <li><a class="tool-link soon">Prompter Architect</a></li>
+      <li><a class="tool-link soon">Cookies Inspector</a></li>
+      <li><a class="tool-link soon">Popcorn File Burner</a></li>
+      <li><a class="tool-link soon">DESCRIBER — 3D Cam Scanner</a></li>
+    </ul>
+  </section>
+
+  <!-- PANEL 7 — CHEMVENTUR (full width row) -->
+  <section class="panel panel--chem">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">🧪</span>
+      <span class="panel__title">ChemVentur</span>
+    </div>
+    <div class="chem-grid">
+      <a class="chem-btn" href="ChemVentur-Multi-v118/index.html" target="_blank"><span class="chem-icon">⚗️</span>ChemVentur Multi v118</a>
+      <a class="chem-btn" href="ChemVentur/index.html" target="_blank"><span class="chem-icon">🧬</span>ChemVentur (classic)</a>
+      <a class="chem-btn" href="https://github.com/rudventur/punk-script/blob/main/type-game.html" target="_blank" rel="noopener"><span class="chem-icon">⌨️</span>Type Game (punk-script)</a>
+      <a class="chem-btn" href="https://www.tinkercad.com" target="_blank" rel="noopener"><span class="chem-icon">🔧</span>Tinkercad</a>
+      <a class="chem-btn" href="https://zoo.dev" target="_blank" rel="noopener"><span class="chem-icon">🦓</span>Zoo.dev</a>
+      <a class="chem-btn" href="https://www.soldat.pl" target="_blank" rel="noopener"><span class="chem-icon">🎮</span>Soldat.pl</a>
+    </div>
+  </section>
+
+  <!-- PANEL 8 — REPOS (full width row) -->
+  <section class="panel panel--repos">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">📦</span>
+      <span class="panel__title">The Repos</span>
+    </div>
+    <div id="repos-container" class="repos-grid">
+      <div class="repos-loading">fetching repos from github.com/rudventur...</div>
+    </div>
+  </section>
+
+</main>
+
+<div class="footer-bar">
+  RUDVENTUR — everything connected. everything open. everything possible in a browser.
+  &middot; <a href="https://ko-fi.com/rudventur" target="_blank">☕ ko-fi</a>
+  &middot; <a href="https://github.com/rudventur" target="_blank">github</a>
 </div>
-
-<!-- ═══ NOTCH (top-left) ═══ -->
-<div id="notch" onclick="toggleMenu()">RUDVENTUR</div>
-
-<!-- ═══ NOTCH MENU ═══ -->
-<div id="menu">
-  <button class="menu-zone" onclick="toggleSub(this)">🗺️ THE MAP</button>
-  <div class="menu-sub">
-    <button class="menu-tool" onclick="openUrl('Map Merger Venti','https://rudventur.github.io/map-merger-venti/')">Map Merger Venti (ArtSpace City)</button>
-    <button class="menu-tool soon">Browser</button>
-  </div>
-
-  <button class="menu-zone" onclick="toggleSub(this)">👤 THE USER</button>
-  <div class="menu-sub">
-    <button class="menu-tool" onclick="openUrl('useRbox','https://rudventur.github.io/windows13/useRbox-v2-upgraded.html')">useRbox</button>
-    <button class="menu-tool soon">Translator Maps</button>
-    <button class="menu-tool soon">Maps</button>
-  </div>
-
-  <button class="menu-zone" onclick="toggleSub(this)">💬 THE SOCIAL</button>
-  <div class="menu-sub">
-    <button class="menu-tool soon">RudVentur Social</button>
-    <button class="menu-tool" onclick="openUrl('Keyboards','https://rudventur.github.io/windows13/keyboard-realistic.html')">Keyboards</button>
-    <button class="menu-tool soon">Global Chat / Prompter Chat</button>
-  </div>
-
-  <button class="menu-zone" onclick="toggleSub(this)">🖥️ THE OS</button>
-  <div class="menu-sub">
-    <button class="menu-tool" onclick="openUrl('LuxWin13','https://rudventur.github.io/LuxWin13/')">LuxWin13</button>
-    <button class="menu-tool" onclick="openUrl('Taskbar System','https://rudventur.github.io/windows13/taskbar-window-system.html')">Taskbar &amp; Windows System</button>
-    <button class="menu-tool" onclick="openUrl('WINDOWS13 Master','https://rudventur.github.io/windows13/WINDOWS13-MASTER.html')">WINDOWS13 Master</button>
-  </div>
-
-  <button class="menu-zone" onclick="toggleSub(this)">🔧 THE TOOLS</button>
-  <div class="menu-sub">
-    <button class="menu-tool" onclick="openUrl('Popcorn Hub','bottom-right-popcorn-complete.html')">Popcorn Hub</button>
-    <button class="menu-tool soon">Minner Wallet</button>
-    <button class="menu-tool soon">Prompter Architect</button>
-    <button class="menu-tool soon">Cookies Inspector</button>
-    <button class="menu-tool soon">Popcorn File Burner</button>
-    <button class="menu-tool soon">DESCRIBER — 3D Cam Scanner</button>
-  </div>
-
-  <button class="menu-zone" onclick="openUrl('ChemVentur','https://rudventur.github.io/ChemVentur-Multi-v118/')">🧪 CHEMVENTUR</button>
-  <button class="menu-zone" style="border-color:#444;color:#888" onclick="customUrl()">🔗 CUSTOM URL</button>
-</div>
-
-<!-- ═══ R BUTTON (top-right) ═══ -->
-<button id="rbtn" onclick="toggleUser()">R</button>
-
-<!-- ═══ USER PANEL ═══ -->
-<div id="upanel">
-  <button class="uc" onclick="this.parentNode.style.display='none'">✕</button>
-  <b>Username:</b><input id="uname" value="Rudy">
-  <b>Channel:</b><input id="uchan" readonly style="background:#111!important;color:#060!important;cursor:not-allowed">
-  <b>Time:</b> <span id="utime">--:--</span><br>
-  <b>Location:</b> <span id="uloc">???</span> <span onclick="getGPS()" style="cursor:pointer;color:var(--n)">[GPS]</span><br>
-  Lat: <input id="ulat"> Lon: <input id="ulon">
-</div>
-
-<!-- ═══ DASHBOARD ═══ -->
-<div id="dash">
-  <div class="dash-title">RUDVENTUR — UNIVERSE HUB</div>
-  <div class="dash-grid">
-
-    <!-- MAP ZONE -->
-    <div class="zone map">
-      <div class="zone-head" onclick="toggleZoneFS(this)">
-        <span class="zone-icon">🗺️</span>
-        <span class="zone-label">THE MAP</span>
-      </div>
-      <a class="ztool" href="https://rudventur.github.io/map-merger-venti/" target="_blank">Map Merger Venti (ArtSpace City)</a>
-      <a class="ztool soon">Browser</a>
-    </div>
-
-    <!-- USER ZONE -->
-    <div class="zone user">
-      <div class="zone-head" onclick="toggleZoneFS(this)">
-        <span class="zone-icon">👤</span>
-        <span class="zone-label">THE USER</span>
-      </div>
-      <a class="ztool" href="https://rudventur.github.io/windows13/useRbox-v2-upgraded.html" target="_blank">useRbox</a>
-      <a class="ztool soon">Translator Maps</a>
-      <a class="ztool soon">Maps</a>
-    </div>
-
-    <!-- INDEX ZONE -->
-    <div class="zone idx">
-      <div class="zone-head" onclick="toggleZoneFS(this)">
-        <span class="zone-icon">◉</span>
-        <span class="zone-label">THE INDEX</span>
-      </div>
-      <div class="idx-logo">RUDVENTUR</div>
-      <div class="idx-sub">a creative web universe</div>
-      <a class="idx-link" href="#" onclick="focusZone('map');return false">→ The Map</a>
-      <a class="idx-link" href="#" onclick="focusZone('user');return false">→ The User</a>
-      <a class="idx-link" href="#" onclick="focusZone('social');return false">→ The Social</a>
-      <a class="idx-link" href="#" onclick="focusZone('os');return false">→ The OS</a>
-      <a class="idx-link" href="#" onclick="focusZone('tools');return false">→ The Tools</a>
-      <div class="idx-meta">
-        v2.0 · 2026<br>
-        <a href="https://github.com/rudventur" target="_blank">github</a> ·
-        <a href="https://ko-fi.com/rudventur" target="_blank">ko-fi</a>
-      </div>
-    </div>
-
-    <!-- SOCIAL ZONE -->
-    <div class="zone social">
-      <div class="zone-head" onclick="toggleZoneFS(this)">
-        <span class="zone-icon">💬</span>
-        <span class="zone-label">THE SOCIAL</span>
-      </div>
-      <a class="ztool soon">RudVentur Social</a>
-      <a class="ztool" href="https://rudventur.github.io/windows13/keyboard-realistic.html" target="_blank">Keyboards</a>
-      <a class="ztool soon">Global Chat / Prompter Chat</a>
-    </div>
-
-    <!-- OS ZONE -->
-    <div class="zone os">
-      <div class="zone-head" onclick="toggleZoneFS(this)">
-        <span class="zone-icon">🖥️</span>
-        <span class="zone-label">THE OS</span>
-      </div>
-      <a class="ztool" href="https://rudventur.github.io/LuxWin13/" target="_blank">LuxWin13</a>
-      <a class="ztool" href="https://rudventur.github.io/windows13/taskbar-window-system.html" target="_blank">Taskbar &amp; Windows System</a>
-      <a class="ztool" href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank">WINDOWS13 Master</a>
-    </div>
-
-    <!-- TOOLS ZONE -->
-    <div class="zone tools">
-      <div class="zone-head" onclick="toggleZoneFS(this)">
-        <span class="zone-icon">🔧</span>
-        <span class="zone-label">THE TOOLS</span>
-      </div>
-      <a class="ztool" href="bottom-right-popcorn-complete.html" target="_blank">Popcorn Hub</a>
-      <a class="ztool soon">Minner Wallet</a>
-      <a class="ztool soon">Prompter Architect</a>
-      <a class="ztool soon">Cookies Inspector</a>
-      <a class="ztool soon">Popcorn File Burner</a>
-      <a class="ztool soon">DESCRIBER — 3D Cam Scanner</a>
-    </div>
-
-  </div>
-</div>
-
-<!-- ═══ TASKBAR ═══ -->
-<div id="taskbar"></div>
-
-<!-- ═══ CORNER BUTTONS ═══ -->
-<button id="kbbtn" onclick="openUrl('Keyboards','https://rudventur.github.io/windows13/keyboard-realistic.html')">⌨</button>
-<button id="popbtn" onclick="openUrl('Popcorn Hub','bottom-right-popcorn-complete.html')">🍿</button>
-<div id="clock"></div>
 
 <script>
-/* ═══ GLOBALS ═══ */
-let channel = null;
-const $ = s => document.querySelector(s);
-const $$ = s => document.querySelectorAll(s);
-let winZ = 9997;
-
-/* ═══ LOGIN ═══ */
-$('#pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-(function(){ const last = localStorage.getItem('rv_channel'); if (last) $('#pass').value = last; })();
-
-function doLogin() {
-  const v = $('#pass').value.trim();
-  if (!v) return;
-  channel = v;
-  $('#uchan').value = channel;
-  localStorage.setItem('rv_channel', channel);
-  $('#login').remove();
-  $('#dash').style.display = 'block';
-  startClock();
-}
-
-/* ═══ CLOCK ═══ */
-let clockInt;
-function startClock() {
-  const tick = () => {
-    const now = new Date();
-    $('#clock').textContent = now.toLocaleTimeString();
-    if ($('#utime')) $('#utime').textContent = now.toLocaleTimeString();
-  };
-  tick();
-  clockInt = setInterval(tick, 1000);
-}
-
-/* ═══ NOTCH MENU ═══ */
-function toggleMenu() {
-  const m = $('#menu');
-  m.style.display = m.style.display === 'block' ? 'none' : 'block';
-}
-
-function toggleSub(btn) {
-  const sub = btn.nextElementSibling;
-  if (!sub) return;
-  sub.style.display = sub.style.display === 'block' ? 'none' : 'block';
-}
-
-// Close menu on outside click
-document.addEventListener('click', e => {
-  const m = $('#menu'), n = $('#notch');
-  if (m && n && m.style.display === 'block' && !m.contains(e.target) && !n.contains(e.target)) m.style.display = 'none';
-});
-
-/* ═══ USER PANEL ═══ */
-function toggleUser() {
-  const u = $('#upanel');
-  u.style.display = u.style.display === 'block' ? 'none' : 'block';
-}
-
-function getGPS() {
-  if (!navigator.geolocation) return alert('No GPS');
-  navigator.geolocation.getCurrentPosition(p => {
-    $('#ulat').value = p.coords.latitude.toFixed(6);
-    $('#ulon').value = p.coords.longitude.toFixed(6);
-    $('#uloc').textContent = p.coords.latitude.toFixed(4) + ', ' + p.coords.longitude.toFixed(4);
-  }, () => alert('GPS error'));
-}
-
-/* ═══ CUSTOM URL ═══ */
-function customUrl() {
-  const u = prompt('URL (with https://)');
-  if (u) openUrl('Custom', u);
-  $('#menu').style.display = 'none';
-}
-
-/* ═══ FLOATING WINDOWS ═══ */
-function openUrl(title, url) {
-  $('#menu').style.display = 'none';
-  const id = 'w_' + title.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now().toString(36).slice(-4);
-  const w = document.createElement('div');
-  w.className = 'win';
-  w.id = id;
-  w.style.display = 'block';
-  w.style.left = (100 + Math.random() * 200) + 'px';
-  w.style.top = (60 + Math.random() * 120) + 'px';
-  w.style.width = '680px';
-  w.style.height = '440px';
-  w.style.zIndex = ++winZ;
-  w.innerHTML = `<div class="win-bar" onmousedown="dragStart(event,'${id}')">
-    <span>${title}</span>
-    <div style="display:flex;gap:6px">
-      <button onclick="window.open('${url}','_blank')">MAX</button>
-      <button onclick="minimizeWin('${id}')">_</button>
-      <button onclick="closeWin('${id}')">✕</button>
-    </div>
-  </div>
-  <div class="win-body"><iframe src="${url}"></iframe></div>`;
-  document.body.appendChild(w);
-  w.addEventListener('mousedown', () => { w.style.zIndex = ++winZ; });
-}
-
-function closeWin(id) {
-  const w = $('#' + id);
-  if (w) w.remove();
-  // Remove from taskbar
-  const tb = document.querySelector(`.tb-item[data-win="${id}"]`);
-  if (tb) tb.remove();
-}
-
-function minimizeWin(id) {
-  const w = $('#' + id);
-  if (!w) return;
-  w.style.display = 'none';
-  // Add to taskbar
-  const title = w.querySelector('.win-bar span').textContent;
-  const tb = document.createElement('button');
-  tb.className = 'tb-item';
-  tb.textContent = title;
-  tb.dataset.win = id;
-  tb.onclick = () => {
-    w.style.display = 'block';
-    w.style.zIndex = ++winZ;
-    tb.remove();
-  };
-  $('#taskbar').appendChild(tb);
-}
-
-/* ═══ WINDOW DRAGGING ═══ */
-let drag = { id: null, x: 0, y: 0 };
-
-function dragStart(e, id) {
-  const el = $('#' + id);
-  if (!el) return;
-  drag.id = id;
-  drag.x = e.clientX - el.offsetLeft;
-  drag.y = e.clientY - el.offsetTop;
-  el.style.zIndex = ++winZ;
-  document.addEventListener('mousemove', dragMove);
-  document.addEventListener('mouseup', dragEnd, { once: true });
-}
-
-function dragMove(e) {
-  if (!drag.id) return;
-  const el = $('#' + drag.id);
-  if (!el) return;
-  el.style.left = (e.clientX - drag.x) + 'px';
-  el.style.top = (e.clientY - drag.y) + 'px';
-}
-
-function dragEnd() {
-  drag.id = null;
-  document.removeEventListener('mousemove', dragMove);
-}
-
-/* ═══ ZONE FULLSCREEN ═══ */
-function toggleZoneFS(headEl) {
-  const zone = headEl.closest('.zone');
-  if (zone.classList.contains('fullscreen')) {
-    zone.classList.remove('fullscreen');
+// Toggle fullscreen on panel head click
+function toggleFullscreen(headEl) {
+  const panel = headEl.closest('.panel');
+  if (panel.classList.contains('fullscreen')) {
+    panel.classList.remove('fullscreen');
     document.body.style.overflow = '';
   } else {
-    $$('.zone.fullscreen').forEach(z => z.classList.remove('fullscreen'));
-    zone.classList.add('fullscreen');
+    // close any other fullscreen panel first
+    document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
+    panel.classList.add('fullscreen');
     document.body.style.overflow = 'hidden';
   }
 }
 
-function focusZone(name) {
-  const zone = document.querySelector('.zone.' + name);
-  if (!zone) return;
-  $$('.zone.fullscreen').forEach(z => z.classList.remove('fullscreen'));
-  zone.classList.add('fullscreen');
+// Focus a panel (from index links) — scroll to it or fullscreen it
+function focusPanel(name) {
+  const panel = document.querySelector('.panel--' + name);
+  if (!panel) return;
+  // close any fullscreen first
+  document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
+  document.body.style.overflow = '';
+  // fullscreen the target
+  panel.classList.add('fullscreen');
   document.body.style.overflow = 'hidden';
 }
 
-/* ═══ ESC KEY ═══ */
-document.addEventListener('keydown', e => {
+// ESC to close fullscreen
+document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
-    $$('.zone.fullscreen').forEach(z => z.classList.remove('fullscreen'));
+    document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
     document.body.style.overflow = '';
-    $('#menu').style.display = 'none';
-    $('#upanel').style.display = 'none';
   }
 });
 
-/* ═══ PREVENT SOON LINKS ═══ */
-$$('.ztool.soon').forEach(a => a.addEventListener('click', e => e.preventDefault()));
-$$('.menu-tool.soon').forEach(b => b.addEventListener('click', e => e.preventDefault()));
+// Prevent "soon" links from navigating
+document.querySelectorAll('.tool-link.soon').forEach(link => {
+  link.addEventListener('click', e => e.preventDefault());
+});
+
+// ─── FETCH & RENDER GITHUB REPOS ───
+(async function loadRepos() {
+  const container = document.getElementById('repos-container');
+  const langColors = {
+    JavaScript:'#f1e05a', HTML:'#e34c26', CSS:'#563d7c',
+    Python:'#3572A5', TypeScript:'#3178c6', Shell:'#89e051'
+  };
+
+  try {
+    const res = await fetch('https://api.github.com/users/rudventur/repos?per_page=100&sort=updated');
+    if (!res.ok) throw new Error('GitHub API ' + res.status);
+    const repos = await res.json();
+
+    if (!repos.length) {
+      container.innerHTML = '<div class="repos-loading">no public repos found</div>';
+      return;
+    }
+
+    container.innerHTML = repos.map(r => `
+      <a class="repo-card" href="${r.html_url}" target="_blank" rel="noopener">
+        <div class="repo-card__name">${r.name}</div>
+        <div class="repo-card__desc">${r.description || 'No description'}</div>
+        <div class="repo-card__meta">
+          ${r.language ? `<span class="repo-card__lang" style="--lang-color:${langColors[r.language]||'#888'}">${r.language}</span>` : ''}
+          ${r.stargazers_count ? `<span class="repo-card__stars">★ ${r.stargazers_count}</span>` : ''}
+          ${r.has_pages ? '<span class="repo-card__pages">LIVE</span>' : ''}
+        </div>
+      </a>
+    `).join('');
+  } catch (err) {
+    container.innerHTML = '<div class="repos-error">could not load repos — ' + err.message + '</div>';
+  }
+})();
 </script>
 
 </body>
