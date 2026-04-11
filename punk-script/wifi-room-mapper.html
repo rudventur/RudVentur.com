@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>WiFi Room Mapper v0.1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --border:#30363d;
+  --text:#e6edf3;
+  --muted:#8b949e;
+  --good:#39d353;
+  --ok:#d29922;
+  --bad:#f85149;
+  --accent:#58a6ff;
+  --panel:#1c2128;
+  --hover:#21262d;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  height:100vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+header{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:10px 16px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+  flex-shrink:0;
+  z-index:10;
+}
+
+.logo{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:18px;
+  color:var(--accent);
+  letter-spacing:1px;
+}
+.version{font-size:10px;color:var(--muted);margin-top:2px}
+
+.signal-live{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+  color:var(--muted);
+}
+.signal-val{
+  font-size:16px;
+  font-weight:500;
+  color:var(--good);
+  min-width:60px;
+  text-align:right;
+}
+.pulse{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--good);
+  animation:pulse 1.5s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+
+.layout{
+  display:flex;
+  flex:1;
+  overflow:hidden;
+}
+
+/* ── LEFT PANEL ── */
+.left-panel{
+  width:220px;
+  background:var(--panel);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+  flex-shrink:0;
+}
+
+.panel-section{
+  border-bottom:1px solid var(--border);
+  padding:12px;
+}
+
+.panel-title{
+  font-family:'Syne',sans-serif;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+
+.tool-btn{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  padding:7px 10px;
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  cursor:pointer;
+  border-radius:4px;
+  margin-bottom:5px;
+  transition:all 0.15s;
+  text-align:left;
+}
+.tool-btn:hover,.tool-btn.active{background:var(--hover);border-color:var(--accent);color:var(--accent)}
+.tool-btn .icon{font-size:14px;width:18px;text-align:center}
+
+.wall-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px;
+}
+
+.wall-btn{
+  padding:5px 4px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--muted);
+  font-family:'DM Mono',monospace;
+  font-size:9px;
+  cursor:pointer;
+  border-radius:3px;
+  text-align:center;
+  transition:all 0.15s;
+}
+.wall-btn:hover{border-color:var(--accent);color:var(--text)}
+.wall-btn.selected{background:var(--accent);color:#000;border-color:var(--accent)}
+
+.slider-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:8px;
+  font-size:11px;
+}
+.slider-row label{color:var(--muted);width:14px}
+.slider-row input[type=range]{
+  flex:1;
+  accent-color:var(--accent);
+  height:3px;
+}
+.slider-row span{color:var(--text);width:28px;text-align:right;font-size:10px}
+
+.material-sel{
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  padding:5px 8px;
+  border-radius:4px;
+  margin-bottom:6px;
+  cursor:pointer;
+}
+
+.checkbox-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+  color:var(--muted);
+  margin-bottom:6px;
+  cursor:pointer;
+}
+.checkbox-row input{accent-color:var(--accent)}
+
+/* ── CANVAS ── */
+.canvas-wrap{
+  flex:1;
+  position:relative;
+  overflow:hidden;
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(88,166,255,0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(57,211,83,0.03) 0%, transparent 40%);
+}
+
+#mainCanvas{
+  width:100%;
+  height:100%;
+  cursor:crosshair;
+  touch-action:none;
+}
+
+.canvas-hint{
+  position:absolute;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:10px;
+  color:var(--muted);
+  background:rgba(13,17,23,0.8);
+  padding:6px 14px;
+  border-radius:20px;
+  border:1px solid var(--border);
+  pointer-events:none;
+  letter-spacing:1px;
+}
+
+/* ── RIGHT PANEL ── */
+.right-panel{
+  width:220px;
+  background:var(--panel);
+  border-left:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+  flex-shrink:0;
+}
+
+.pin-list{
+  padding:8px;
+  flex:1;
+  overflow-y:auto;
+}
+
+.pin-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 8px;
+  border-radius:4px;
+  margin-bottom:4px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  font-size:10px;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.pin-item:hover{border-color:var(--accent)}
+.pin-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pin-info{flex:1}
+.pin-dbm{font-size:12px;font-weight:500}
+.pin-sub{color:var(--muted);font-size:9px}
+.pin-del{color:var(--bad);cursor:pointer;padding:2px 4px;opacity:0.5}
+.pin-del:hover{opacity:1}
+
+/* ── SCRUB BAR ── */
+.scrub-bar{
+  position:absolute;
+  bottom:50px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(22,27,34,0.95);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 16px;
+  width:340px;
+  display:none;
+  backdrop-filter:blur(8px);
+}
+.scrub-bar.visible{display:block}
+.scrub-title{font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:1px}
+.scrub-track{position:relative;margin-bottom:8px}
+.scrub-track input[type=range]{
+  width:100%;
+  accent-color:var(--accent);
+}
+.scrub-info{
+  display:flex;
+  justify-content:space-between;
+  font-size:10px;
+}
+.scrub-dbm{font-size:18px;font-weight:500}
+.scrub-pos{color:var(--muted)}
+
+/* ── GYRO STATUS ── */
+.gyro-badge{
+  font-size:9px;
+  padding:3px 8px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  color:var(--muted);
+  cursor:pointer;
+}
+.gyro-badge.active{border-color:var(--good);color:var(--good)}
+
+/* ── MODALS ── */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:20px;
+  width:300px;
+  font-size:12px;
+}
+.modal h3{
+  font-family:'Syne',sans-serif;
+  font-size:14px;
+  margin-bottom:14px;
+  color:var(--accent);
+}
+.modal label{color:var(--muted);font-size:10px;display:block;margin-bottom:3px;margin-top:10px}
+.modal input,.modal select{
+  width:100%;
+  background:var(--bg);
+  border:1px solid var(--border);
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:4px;
+}
+.modal-btns{
+  display:flex;gap:8px;
+  margin-top:16px;
+}
+.btn-primary{
+  flex:1;padding:8px;
+  background:var(--accent);
+  color:#000;
+  border:none;
+  border-radius:4px;
+  font-family:'Syne',sans-serif;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.btn-secondary{
+  flex:1;padding:8px;
+  background:transparent;
+  color:var(--muted);
+  border:1px solid var(--border);
+  border-radius:4px;
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  cursor:pointer;
+}
+
+/* signal bars */
+.bars{display:flex;gap:2px;align-items:flex-end;height:16px}
+.bar{width:4px;border-radius:1px;background:var(--border)}
+.bar.lit{background:var(--good)}
+.bar:nth-child(1){height:4px}
+.bar:nth-child(2){height:7px}
+.bar:nth-child(3){height:10px}
+.bar:nth-child(4){height:13px}
+.bar:nth-child(5){height:16px}
+
+.tap-bars{display:flex;gap:6px;margin:10px 0}
+.tap-bar-btn{
+  flex:1;
+  padding:8px 4px;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:4px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  font-size:9px;
+  color:var(--muted);
+  transition:all 0.15s;
+}
+.tap-bar-btn:hover,.tap-bar-btn.selected{border-color:var(--accent);color:var(--text)}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">📶 WiFi Mapper</div>
+    <div class="version">v0.1 — RudVentur</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-left:24px">
+    <button class="tool-btn active" id="btnMode3d" style="width:auto;padding:5px 12px" onclick="setViewMode('3d')">3D View</button>
+    <button class="tool-btn" id="btnMode2d" style="width:auto;padding:5px 12px" onclick="setViewMode('2d')">Floor Plan</button>
+    <button class="tool-btn" id="btnModeEnv" style="width:auto;padding:5px 12px" onclick="setViewMode('env')">Surroundings</button>
+  </div>
+  <div class="signal-live">
+    <div class="pulse" id="livePulse"></div>
+    <div>
+      <div class="signal-val" id="liveDbm">— dBm</div>
+      <div style="font-size:9px;color:var(--muted)" id="liveType">no data</div>
+    </div>
+    <button class="gyro-badge" id="gyroBtn" onclick="toggleGyro()">GYRO OFF</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="left-panel">
+
+    <div class="panel-section">
+      <div class="panel-title">Tools</div>
+      <button class="tool-btn active" id="toolSelect" onclick="setTool('select')"><span class="icon">🖱️</span>Select / Move</button>
+      <button class="tool-btn" id="toolPin" onclick="setTool('pin')"><span class="icon">📍</span>Drop Pin</button>
+      <button class="tool-btn" id="toolLine" onclick="setTool('line')"><span class="icon">〰️</span>Draw Line</button>
+      <button class="tool-btn" id="toolFurn" onclick="setTool('furniture')"><span class="icon">🛋️</span>Add Furniture</button>
+      <button class="tool-btn" id="toolEnv" onclick="setTool('env')"><span class="icon">🌳</span>Env Object</button>
+      <button class="tool-btn" id="toolOrbit" onclick="setTool('orbit')"><span class="icon">🔄</span>Orbit / Pan</button>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Room Size</div>
+      <div class="slider-row"><label>W</label><input type="range" min="3" max="20" value="8" id="roomW" oninput="updateRoom()"><span id="roomWv">8m</span></div>
+      <div class="slider-row"><label>D</label><input type="range" min="3" max="20" value="6" id="roomD" oninput="updateRoom()"><span id="roomDv">6m</span></div>
+      <div class="slider-row"><label>H</label><input type="range" min="2" max="5" value="3" step="0.5" id="roomH" oninput="updateRoom()"><span id="roomHv">3m</span></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Walls</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px">Click wall to select, then set material</div>
+      <div class="wall-grid">
+        <button class="wall-btn" id="wallN" onclick="selectWall('N')">North</button>
+        <button class="wall-btn" id="wallS" onclick="selectWall('S')">South</button>
+        <button class="wall-btn" id="wallE" onclick="selectWall('E')">East</button>
+        <button class="wall-btn" id="wallW" onclick="selectWall('W')">West</button>
+        <button class="wall-btn" id="wallFL" onclick="selectWall('FL')">Floor</button>
+        <button class="wall-btn" id="wallCL" onclick="selectWall('CL')">Ceiling</button>
+      </div>
+      <select class="material-sel" id="wallMaterial" onchange="setWallMaterial()">
+        <option value="concrete">Concrete (−12dB)</option>
+        <option value="brick">Brick (−10dB)</option>
+        <option value="stud" selected>Stud/Plaster (−3dB)</option>
+        <option value="wood">Wood (−5dB)</option>
+        <option value="glass">Glass (−2dB)</option>
+        <option value="metal">Metal (−20dB)</option>
+        <option value="open">Open/None (0dB)</option>
+      </select>
+      <div id="wallInfo" style="font-size:10px;color:var(--muted)">No wall selected</div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Furniture</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        <button class="wall-btn" onclick="addFurniture('sofa')">🛋️ Sofa</button>
+        <button class="wall-btn" onclick="addFurniture('table')">🪑 Table</button>
+        <button class="wall-btn" onclick="addFurniture('fridge')">🧊 Fridge</button>
+        <button class="wall-btn" onclick="addFurniture('radiator')">🌡️ Radiator</button>
+        <button class="wall-btn" onclick="addFurniture('tv')">📺 TV</button>
+        <button class="wall-btn" onclick="addFurniture('door')">🚪 Door</button>
+        <button class="wall-btn" onclick="addFurniture('window')">🪟 Window</button>
+        <button class="wall-btn" onclick="addFurniture('router')">📡 Router</button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Interference</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px">Things that kill signal</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        <button class="wall-btn" onclick="addFurniture('microwave')">📡 Microwave</button>
+        <button class="wall-btn" onclick="addFurniture('fishtank')">🐠 Fish Tank</button>
+        <button class="wall-btn" onclick="addFurniture('fusebox')">⚡ Fuse Box</button>
+        <button class="wall-btn" onclick="addFurniture('baby')">👶 Baby Mon.</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-wrap">
+    <canvas id="mainCanvas"></canvas>
+    <div class="canvas-hint" id="canvasHint">drag to orbit · scroll to zoom · click to drop pin</div>
+
+    <!-- SCRUB BAR -->
+    <div class="scrub-bar" id="scrubBar">
+      <div class="scrub-title">SIGNAL WALK — scrub to replay</div>
+      <div class="scrub-track">
+        <input type="range" id="scrubSlider" min="0" max="100" value="0" oninput="updateScrub()">
+      </div>
+      <div class="scrub-info">
+        <div>
+          <div class="scrub-dbm" id="scrubDbm">—</div>
+          <div class="scrub-pos" id="scrubPos">position 0%</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div class="bars" id="scrubBars">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          </div>
+          <button class="btn-secondary" style="padding:3px 10px;font-size:9px" onclick="closeScrub()">✕ close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+    <div class="panel-section">
+      <div class="panel-title">Signal Pins <span id="pinCount" style="color:var(--accent)">0</span></div>
+      <button class="tool-btn" onclick="showScrub()" style="margin-bottom:4px"><span class="icon">▶️</span>Play Walk</button>
+      <button class="tool-btn" onclick="clearPins()" style="color:var(--bad)"><span class="icon">🗑️</span>Clear All</button>
+    </div>
+    <div class="pin-list" id="pinList">
+      <div style="font-size:10px;color:var(--muted);padding:8px">Drop pins in the room to see them here...</div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Surroundings</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px">Switch to Surroundings view</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        <button class="wall-btn" onclick="addEnvObj('tree')">🌳 Tree</button>
+        <button class="wall-btn" onclick="addEnvObj('building')">🏢 Building</button>
+        <button class="wall-btn" onclick="addEnvObj('fence')">🚧 Metal Fence</button>
+        <button class="wall-btn" onclick="addEnvObj('neighbour')">📶 Neighbour AP</button>
+        <button class="wall-btn" onclick="addEnvObj('tower')">📡 Cell Tower</button>
+        <button class="wall-btn" onclick="addEnvObj('car')">🚗 Parked Car</button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Legend</div>
+      <div style="font-size:10px;line-height:2">
+        <span style="color:var(--good)">●</span> Excellent (> −60dBm)<br>
+        <span style="color:#9be15d">●</span> Good (−60 to −70)<br>
+        <span style="color:var(--ok)">●</span> Fair (−70 to −80)<br>
+        <span style="color:#e05252">●</span> Poor (−80 to −90)<br>
+        <span style="color:var(--bad)">●</span> Dead (< −90dBm)
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PIN MODAL -->
+<div class="modal-overlay" id="pinModal">
+  <div class="modal">
+    <h3>📍 Drop Signal Pin</h3>
+
+    <div id="autoSignalRow" style="font-size:11px;color:var(--good);margin-bottom:8px;display:none">
+      ✓ Live signal detected: <span id="autoDbmVal">—</span>
+    </div>
+
+    <label>Signal Strength (dBm)</label>
+    <input type="number" id="pinDbm" value="-65" min="-100" max="-20" placeholder="-65">
+
+    <label>Or tap bars</label>
+    <div class="tap-bars" id="tapBars">
+      <button class="tap-bar-btn" onclick="tapBar(1,this)"><div class="bars"><div class="bar lit"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>1</button>
+      <button class="tap-bar-btn" onclick="tapBar(2,this)"><div class="bars"><div class="bar lit"></div><div class="bar lit"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>2</button>
+      <button class="tap-bar-btn" onclick="tapBar(3,this)"><div class="bars"><div class="bar lit"></div><div class="bar lit"></div><div class="bar lit"></div><div class="bar"></div><div class="bar"></div></div>3</button>
+      <button class="tap-bar-btn" onclick="tapBar(4,this)"><div class="bars"><div class="bar lit"></div><div class="bar lit"></div><div class="bar lit"></div><div class="bar lit"></div><div class="bar"></div></div>4</button>
+      <button class="tap-bar-btn" onclick="tapBar(5,this)"><div class="bars"><div class="bar lit"></div><div class="bar lit"></div><div class="bar lit"></div><div class="bar lit"></div><div class="bar lit"></div></div>5</button>
+    </div>
+
+    <label>Note (optional)</label>
+    <input type="text" id="pinNote" placeholder="e.g. near radiator, corner, doorway">
+
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="confirmPin()">DROP PIN</button>
+      <button class="btn-secondary" onclick="closeModal('pinModal')">cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// WiFi Room Mapper v0.1
+// ═══════════════════════════════════════
+
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+
+// ── State ──────────────────────────────
+const state = {
+  viewMode: '3d',       // '3d' | '2d' | 'env'
+  tool: 'select',
+  selected: null,       // { type:'furniture'|'pin', index:N }
+  dragging: null,       // { offsetX, offsetZ } during move
+  room: { w: 8, d: 6, h: 3 },
+  walls: { N:'stud', S:'stud', E:'stud', W:'stud', FL:'concrete', CL:'stud' },
+  selectedWall: null,
+  pins: [],
+  furniture: [],
+  envObjects: [],
+  lines: [],
+  lineStart: null,
+  pendingPin: null,
+  camera: { rotX: 0.45, rotY: -0.6, zoom: 1, panX: 0, panY: 0 },
+  drag: { active: false, last: null, button: 0 },
+  gyroActive: false,
+  liveDbm: null,
+  liveTimer: null,
+  liveHoldTime: 0,
+  scrubPath: [],
+};
+
+// ── Wall material dB loss ──────────────
+const MAT_DB = { concrete:-12, brick:-10, stud:-3, wood:-5, glass:-2, metal:-20, open:0 };
+const MAT_COLOR = {
+  concrete:'rgba(120,120,130,0.35)', brick:'rgba(180,80,60,0.35)',
+  stud:'rgba(200,180,140,0.2)', wood:'rgba(160,120,60,0.3)',
+  glass:'rgba(100,180,255,0.15)', metal:'rgba(80,80,120,0.5)', open:'rgba(0,0,0,0)'
+};
+
+// ── Furniture definitions ──────────────
+const FURN_INFO = {
+  sofa:   { icon:'🛋️', db:-1, color:'#5a3a1a', w:1.8, d:0.8, h:0.8 },
+  table:  { icon:'🪑', db:-0.5, color:'#8b6914', w:1.2, d:0.8, h:0.75 },
+  fridge: { icon:'🧊', db:-8, color:'#aae', w:0.7, d:0.7, h:1.8 },
+  radiator:{ icon:'🌡️', db:-5, color:'#d44', w:1.0, d:0.15, h:0.6 },
+  tv:     { icon:'📺', db:-3, color:'#222', w:1.2, d:0.1, h:0.7 },
+  door:   { icon:'🚪', db:-3, color:'#7a5c2e', w:0.9, d:0.1, h:2.1 },
+  window: { icon:'🪟', db:-2, color:'rgba(100,200,255,0.3)', w:1.2, d:0.1, h:1.2 },
+  router: { icon:'📡', db:+20, color:'#39d353', w:0.3, d:0.3, h:0.1 },
+  microwave:{ icon:'📡', db:-10, color:'#888', w:0.5, d:0.4, h:0.3 },
+  fishtank: { icon:'🐠', db:-8, color:'rgba(0,100,200,0.4)', w:1.0, d:0.4, h:0.5 },
+  fusebox:  { icon:'⚡', db:-5, color:'#444', w:0.3, d:0.1, h:0.5 },
+  baby:     { icon:'👶', db:-7, color:'#ffd', w:0.2, d:0.2, h:0.2 },
+};
+
+const ENV_INFO = {
+  tree:     { icon:'🌳', db:-3, label:'Tree (wet leaves)' },
+  building: { icon:'🏢', db:-15, label:'Concrete building' },
+  fence:    { icon:'🚧', db:-12, label:'Metal fence' },
+  neighbour:{ icon:'📶', db:-5, label:'Neighbour AP (interference)' },
+  tower:    { icon:'📡', db:-2, label:'Cell tower' },
+  car:      { icon:'🚗', db:-4, label:'Parked car' },
+};
+
+// ── Resize ─────────────────────────────
+function resize() {
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  draw();
+}
+window.addEventListener('resize', resize);
+
+// ── 3D projection ──────────────────────
+function project(x, y, z) {
+  const { rotX, rotY, zoom, panX, panY } = state.camera;
+  // Rotate around Y
+  const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+  const x1 = x * cosY - z * sinY;
+  const z1 = x * sinY + z * cosY;
+  // Rotate around X
+  const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+  const y2 = y * cosX - z1 * sinX;
+  const z2 = y * sinX + z1 * cosX;
+  // Perspective
+  const fov = 6 / (z2 + 8);
+  const scale = zoom * 55 * fov;
+  return {
+    sx: canvas.width/2 + panX + x1 * scale,
+    sy: canvas.height/2 + panY - y2 * scale,
+    scale
+  };
+}
+
+// ── Draw ───────────────────────────────
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (state.viewMode === '3d') draw3D();
+  else if (state.viewMode === '2d') draw2D();
+  else drawEnv();
+}
+
+function draw3D() {
+  const { w, d, h } = state.room;
+  const hw = w/2, hd = d/2;
+
+  // Build room corners
+  // Bottom face: 0=FL, ceiling: top
+  const corners = [
+    [-hw, 0, -hd], [hw, 0, -hd], [hw, 0, hd], [-hw, 0, hd], // bottom
+    [-hw, h, -hd], [hw, h, -hd], [hw, h, hd], [-hw, h, hd], // top
+  ];
+  const P = corners.map(([x,y,z]) => project(x, y, z));
+
+  // Faces: [indices, wall key]
+  const faces = [
+    { idx:[0,1,5,4], wall:'N', label:'N' },
+    { idx:[2,3,7,6], wall:'S', label:'S' },
+    { idx:[1,2,6,5], wall:'E', label:'E' },
+    { idx:[3,0,4,7], wall:'W', label:'W' },
+    { idx:[0,1,2,3], wall:'FL', label:'FL' },
+    { idx:[4,5,6,7], wall:'CL', label:'CL' },
+  ];
+
+  // Sort faces back-to-front (painter's)
+  faces.forEach(f => {
+    const avgZ = f.idx.reduce((s,i) => s + corners[i][2] + corners[i][0]*0.01, 0) / 4;
+    f.depth = avgZ;
+  });
+  faces.sort((a,b) => b.depth - a.depth);
+
+  faces.forEach(f => {
+    const mat = state.walls[f.wall];
+    const pts = f.idx.map(i => P[i]);
+    ctx.beginPath();
+    ctx.moveTo(pts[0].sx, pts[0].sy);
+    pts.slice(1).forEach(p => ctx.lineTo(p.sx, p.sy));
+    ctx.closePath();
+    ctx.fillStyle = state.selectedWall === f.wall
+      ? 'rgba(88,166,255,0.25)' : MAT_COLOR[mat];
+    ctx.fill();
+    ctx.strokeStyle = state.selectedWall === f.wall ? '#58a6ff' : 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = state.selectedWall === f.wall ? 2 : 1;
+    ctx.stroke();
+
+    // Label
+    const cx = pts.reduce((s,p)=>s+p.sx,0)/4;
+    const cy = pts.reduce((s,p)=>s+p.sy,0)/4;
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = '10px DM Mono,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${f.wall} · ${mat}`, cx, cy);
+  });
+
+  // Furniture
+  state.furniture.forEach(f => drawFurniture3D(f));
+
+  // Signal lines
+  if (state.lines.length > 0) {
+    state.lines.forEach(line => {
+      const p1 = project(line.x1 - hw, line.y1, line.z1 - hd);
+      const p2 = project(line.x2 - hw, line.y2, line.z2 - hd);
+      const dbm = (line.dbm1 + line.dbm2) / 2;
+      ctx.beginPath();
+      ctx.moveTo(p1.sx, p1.sy);
+      ctx.lineTo(p2.sx, p2.sy);
+      ctx.strokeStyle = dbmColor(dbm);
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4,3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  }
+
+  // Pins
+  state.pins.forEach((pin, i) => {
+    const p = project(pin.x - hw, pin.y, pin.z - hd);
+    const col = dbmColor(pin.dbm);
+    // Glow
+    const grad = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, 16);
+    grad.addColorStop(0, col.replace(')', ',0.3)').replace('rgb','rgba'));
+    grad.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, 16, 0, Math.PI*2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    // Pin
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, 7, 0, Math.PI*2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Label
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px DM Mono,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${pin.dbm}`, p.sx, p.sy - 12);
+    // Stem
+    ctx.beginPath();
+    ctx.moveTo(p.sx, p.sy + 7);
+    ctx.lineTo(p.sx, p.sy + 18);
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Scrub position indicator
+  if (document.getElementById('scrubBar').classList.contains('visible') && state.scrubPath.length > 1) {
+    const t = parseInt(document.getElementById('scrubSlider').value) / 100;
+    const idx = Math.floor(t * (state.scrubPath.length - 1));
+    const pin = state.scrubPath[idx];
+    if (pin) {
+      const p = project(pin.x - hw, pin.y, pin.z - hd);
+      ctx.beginPath();
+      ctx.arc(p.sx, p.sy, 12, 0, Math.PI*2);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3,3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+}
+
+function drawFurniture3D(f) {
+  const { w, d, h } = state.room;
+  const hw = w/2, hd = d/2;
+  const info = FURN_INFO[f.type] || FURN_INFO.table;
+  const fw = info.w/2, fd = info.d/2, fh = info.h;
+  const fx = f.x - hw, fz = f.z - hd;
+
+  // Simple box for furniture
+  const corners = [
+    [fx-fw, f.y,    fz-fd], [fx+fw, f.y,    fz-fd],
+    [fx+fw, f.y,    fz+fd], [fx-fw, f.y,    fz+fd],
+    [fx-fw, f.y+fh, fz-fd], [fx+fw, f.y+fh, fz-fd],
+    [fx+fw, f.y+fh, fz+fd], [fx-fw, f.y+fh, fz+fd],
+  ];
+  const P = corners.map(([x,y,z]) => project(x,y,z));
+  const faces3 = [[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7],[4,5,6,7]];
+  faces3.forEach(fi => {
+    const pts = fi.map(i => P[i]);
+    ctx.beginPath();
+    ctx.moveTo(pts[0].sx, pts[0].sy);
+    pts.slice(1).forEach(p => ctx.lineTo(p.sx, p.sy));
+    ctx.closePath();
+    ctx.fillStyle = info.color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  });
+  // Icon label
+  const top = P[4];
+  ctx.font = '14px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(info.icon, top.sx, top.sy - 4);
+}
+
+function draw2D() {
+  const { w, d } = state.room;
+  const scale = Math.min((canvas.width - 80) / w, (canvas.height - 80) / d);
+  const ox = (canvas.width - w*scale)/2;
+  const oy = (canvas.height - d*scale)/2;
+
+  // Floor
+  ctx.fillStyle = 'rgba(88,166,255,0.05)';
+  ctx.fillRect(ox, oy, w*scale, d*scale);
+  ctx.strokeStyle = 'rgba(88,166,255,0.5)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(ox, oy, w*scale, d*scale);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let x=1; x<w; x++) { ctx.beginPath(); ctx.moveTo(ox+x*scale,oy); ctx.lineTo(ox+x*scale,oy+d*scale); ctx.stroke(); }
+  for (let z=1; z<d; z++) { ctx.beginPath(); ctx.moveTo(ox,oy+z*scale); ctx.lineTo(ox+w*scale,oy+z*scale); ctx.stroke(); }
+
+  // Furniture 2D
+  state.furniture.forEach((f, fi) => {
+    const info = FURN_INFO[f.type] || FURN_INFO.table;
+    const isSel = state.selected && state.selected.type === 'furniture' && state.selected.index === fi;
+    ctx.fillStyle = info.color;
+    ctx.strokeStyle = isSel ? '#58a6ff' : 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = isSel ? 2.5 : 1;
+    ctx.fillRect(ox+(f.x-info.w/2)*scale, oy+(f.z-info.d/2)*scale, info.w*scale, info.d*scale);
+    ctx.strokeRect(ox+(f.x-info.w/2)*scale, oy+(f.z-info.d/2)*scale, info.w*scale, info.d*scale);
+    if (isSel) { ctx.shadowColor = '#58a6ff'; ctx.shadowBlur = 8; }
+    ctx.font = '12px serif';
+    ctx.textAlign='center';
+    ctx.fillText(info.icon, ox+f.x*scale, oy+f.z*scale+5);
+    ctx.shadowBlur = 0;
+  });
+
+  // Signal heatmap (if pins exist)
+  if (state.pins.length > 0) {
+    for (let px=0; px<w*scale; px+=8) {
+      for (let pz=0; pz<d*scale; pz+=8) {
+        const wx = px/scale, wz = pz/scale;
+        const dbm = interpolateDbm(wx, wz);
+        if (dbm !== null) {
+          ctx.fillStyle = dbmColor(dbm) + '55';
+          ctx.fillRect(ox+px, oy+pz, 8, 8);
+        }
+      }
+    }
+  }
+
+  // Lines
+  state.lines.forEach(line => {
+    ctx.beginPath();
+    ctx.moveTo(ox+line.x1*scale, oy+line.z1*scale);
+    ctx.lineTo(ox+line.x2*scale, oy+line.z2*scale);
+    ctx.strokeStyle = dbmColor((line.dbm1+line.dbm2)/2);
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4,3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Pins 2D
+  state.pins.forEach((pin, pi) => {
+    const col = dbmColor(pin.dbm);
+    const isSel = state.selected && state.selected.type === 'pin' && state.selected.index === pi;
+    ctx.beginPath();
+    ctx.arc(ox+pin.x*scale, oy+pin.z*scale, isSel ? 9 : 6, 0, Math.PI*2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = isSel ? '#58a6ff' : '#fff';
+    ctx.lineWidth = isSel ? 2.5 : 1.5;
+    ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 10px DM Mono,monospace'; ctx.textAlign='center';
+    ctx.fillText(pin.dbm, ox+pin.x*scale, oy+pin.z*scale-10);
+  });
+
+  // Scale bar
+  ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(ox,oy+d*scale+20); ctx.lineTo(ox+scale,oy+d*scale+20); ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='9px DM Mono,monospace'; ctx.textAlign='center';
+  ctx.fillText('1m', ox+scale/2, oy+d*scale+35);
+}
+
+function drawEnv() {
+  const cx = canvas.width/2, cy = canvas.height/2;
+  const scale = 60;
+
+  // Compass ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, scale*3, 0, Math.PI*2);
+  ctx.strokeStyle='rgba(88,166,255,0.1)'; ctx.lineWidth=1; ctx.stroke();
+  ['N','E','S','W'].forEach((d,i) => {
+    const a = i*Math.PI/2 - Math.PI/2;
+    ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='bold 11px DM Mono,monospace'; ctx.textAlign='center';
+    ctx.fillText(d, cx+Math.cos(a)*scale*3.3, cy+Math.sin(a)*scale*3.3+4);
+  });
+
+  // Building footprint
+  const { w, d } = state.room;
+  const bw = w*scale*0.1, bd = d*scale*0.1;
+  ctx.fillStyle='rgba(88,166,255,0.15)';
+  ctx.strokeStyle='rgba(88,166,255,0.6)';
+  ctx.lineWidth=2;
+  ctx.fillRect(cx-bw/2, cy-bd/2, bw, bd);
+  ctx.strokeRect(cx-bw/2, cy-bd/2, bw, bd);
+  ctx.fillStyle='rgba(88,166,255,0.6)'; ctx.font='9px DM Mono,monospace'; ctx.textAlign='center';
+  ctx.fillText('YOUR ROOM', cx, cy+4);
+
+  // Env objects
+  state.envObjects.forEach(obj => {
+    const ex = cx + obj.dx * scale, ey = cy + obj.dz * scale;
+    ctx.font='20px serif'; ctx.textAlign='center';
+    ctx.fillText(ENV_INFO[obj.type]?.icon || '?', ex, ey);
+    ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='9px DM Mono,monospace';
+    ctx.fillText(ENV_INFO[obj.type]?.label || obj.type, ex, ey+16);
+    // dB indicator
+    const db = ENV_INFO[obj.type]?.db || 0;
+    ctx.fillStyle = db < -5 ? '#f85149' : '#d29922';
+    ctx.fillText(`${db}dB`, ex, ey+26);
+  });
+
+  // Signal rings from centre
+  if (state.pins.length > 0) {
+    const avgDbm = state.pins.reduce((s,p)=>s+p.dbm,0)/state.pins.length;
+    [1,2,3].forEach((r,i) => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r*scale*0.8, 0, Math.PI*2);
+      ctx.strokeStyle = dbmColor(avgDbm + i*10) + '44';
+      ctx.lineWidth=1;
+      ctx.setLineDash([3,5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  }
+
+  ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='center';
+  ctx.fillText('click anywhere to place environment object', cx, canvas.height-20);
+}
+
+// ── dBm colour ─────────────────────────
+function dbmColor(dbm) {
+  if (dbm > -60) return '#39d353';
+  if (dbm > -70) return '#9be15d';
+  if (dbm > -80) return '#d29922';
+  if (dbm > -90) return '#e05252';
+  return '#f85149';
+}
+
+function dbmBars(dbm) {
+  if (dbm > -60) return 5;
+  if (dbm > -70) return 4;
+  if (dbm > -80) return 3;
+  if (dbm > -90) return 2;
+  return 1;
+}
+
+// ── Signal interpolation (IDW) ─────────
+function interpolateDbm(x, z) {
+  if (state.pins.length === 0) return null;
+  let num = 0, den = 0;
+  state.pins.forEach(p => {
+    const dist = Math.sqrt((p.x-x)**2 + (p.z-z)**2) + 0.01;
+    const w = 1/(dist*dist);
+    num += p.dbm * w;
+    den += w;
+  });
+  return num/den;
+}
+
+// ── Live WiFi reading ──────────────────
+function startLiveReading() {
+  if ('connection' in navigator) {
+    const conn = navigator.connection;
+    updateLiveSignal(conn);
+    conn.addEventListener('change', () => updateLiveSignal(conn));
+  }
+  // Simulate if no API
+  setInterval(() => {
+    if (!('connection' in navigator)) {
+      const fake = -55 - Math.random()*30;
+      state.liveDbm = Math.round(fake);
+      document.getElementById('liveDbm').textContent = `${state.liveDbm} dBm`;
+      document.getElementById('liveType').textContent = 'simulated';
+      document.getElementById('liveDbm').style.color = dbmColor(state.liveDbm);
+    }
+    // Hold detection for auto-pin
+    if (state.tool === 'pin') {
+      state.liveHoldTime++;
+      if (state.liveHoldTime >= 10) { // ~1s
+        // Flash pulse
+        document.getElementById('livePulse').style.background = '#fff';
+        setTimeout(()=>document.getElementById('livePulse').style.background='var(--good)', 200);
+      }
+    }
+  }, 100);
+}
+
+function updateLiveSignal(conn) {
+  const type = conn.effectiveType || conn.type || '?';
+  // Map connection quality to approximate dBm
+  const map = {'4g':-55,'3g':-72,'2g':-85,'slow-2g':-93,'wifi':-60};
+  const dbm = map[type] || -65;
+  state.liveDbm = dbm + Math.round((Math.random()-0.5)*8);
+  document.getElementById('liveDbm').textContent = `${state.liveDbm} dBm`;
+  document.getElementById('liveType').textContent = type;
+  document.getElementById('liveDbm').style.color = dbmColor(state.liveDbm);
+}
+
+// ── Gyroscope ──────────────────────────
+function toggleGyro() {
+  if (!state.gyroActive) {
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission().then(r => {
+        if (r === 'granted') enableGyro();
+      });
+    } else {
+      enableGyro();
+    }
+  } else {
+    window.removeEventListener('deviceorientation', handleGyro);
+    state.gyroActive = false;
+    document.getElementById('gyroBtn').textContent = 'GYRO OFF';
+    document.getElementById('gyroBtn').classList.remove('active');
+  }
+}
+
+function enableGyro() {
+  window.addEventListener('deviceorientation', handleGyro);
+  state.gyroActive = true;
+  document.getElementById('gyroBtn').textContent = 'GYRO ON';
+  document.getElementById('gyroBtn').classList.add('active');
+}
+
+function handleGyro(e) {
+  if (!e.beta || !e.gamma) return;
+  state.camera.rotX = (e.beta - 45) * Math.PI / 180;
+  state.camera.rotY = e.gamma * Math.PI / 180;
+  draw();
+}
+
+// ── Screen coords → room coords ───────
+function screenToRoom(cx, cy) {
+  const { w, d } = state.room;
+  let rx, rz;
+  if (state.viewMode === '2d') {
+    const scale = Math.min((canvas.width-80)/w, (canvas.height-80)/d);
+    const ox = (canvas.width-w*scale)/2, oy = (canvas.height-d*scale)/2;
+    rx = (cx-ox)/scale; rz = (cy-oy)/scale;
+  } else {
+    rx = w/2 + (cx - canvas.width/2) / 60 / state.camera.zoom;
+    rz = d/2 + (cy - canvas.height/2) / 60 / state.camera.zoom;
+  }
+  return { rx, rz };
+}
+
+// ── Hit test: find furniture or pin under cursor ──
+function hitTest(cx, cy) {
+  const { rx, rz } = screenToRoom(cx, cy);
+  const { w, d } = state.room;
+  // Check furniture (reverse order = topmost first)
+  for (let i = state.furniture.length - 1; i >= 0; i--) {
+    const f = state.furniture[i];
+    const info = FURN_INFO[f.type] || FURN_INFO.table;
+    const hw = info.w/2, hd = info.d/2;
+    if (rx >= f.x - hw && rx <= f.x + hw && rz >= f.z - hd && rz <= f.z + hd) {
+      return { type: 'furniture', index: i, offsetX: rx - f.x, offsetZ: rz - f.z };
+    }
+  }
+  // Check pins (0.3m hit radius)
+  for (let i = state.pins.length - 1; i >= 0; i--) {
+    const p = state.pins[i];
+    if (Math.hypot(rx - p.x, rz - p.z) < 0.3) {
+      return { type: 'pin', index: i, offsetX: rx - p.x, offsetZ: rz - p.z };
+    }
+  }
+  return null;
+}
+
+// ── Mouse / Touch ──────────────────────
+canvas.addEventListener('mousedown', e => {
+  state.drag = { active: true, last: { x:e.clientX, y:e.clientY }, button: e.button };
+
+  if (e.button === 0 && state.tool === 'select') {
+    const hit = hitTest(e.clientX, e.clientY);
+    if (hit) {
+      state.selected = { type: hit.type, index: hit.index };
+      state.dragging = { offsetX: hit.offsetX, offsetZ: hit.offsetZ };
+      canvas.style.cursor = 'grabbing';
+      draw();
+    } else {
+      state.selected = null;
+      state.dragging = null;
+      draw();
+    }
+  } else if (e.button === 0 && state.tool === 'pin') {
+    handleClick(e.clientX, e.clientY);
+  } else if (e.button === 0 && state.tool === 'env' && state.viewMode === 'env') {
+    handleEnvClick(e.clientX, e.clientY);
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (!state.drag.active) return;
+
+  // Dragging a selected object
+  if (state.dragging && state.tool === 'select') {
+    const { rx, rz } = screenToRoom(e.clientX, e.clientY);
+    const { w, d } = state.room;
+    const nx = Math.max(0.1, Math.min(w - 0.1, rx - state.dragging.offsetX));
+    const nz = Math.max(0.1, Math.min(d - 0.1, rz - state.dragging.offsetZ));
+    if (state.selected.type === 'furniture') {
+      state.furniture[state.selected.index].x = nx;
+      state.furniture[state.selected.index].z = nz;
+    } else if (state.selected.type === 'pin') {
+      state.pins[state.selected.index].x = parseFloat(nx.toFixed(2));
+      state.pins[state.selected.index].z = parseFloat(nz.toFixed(2));
+    }
+    draw();
+    return;
+  }
+
+  if (state.drag.button === 0 && (state.tool === 'orbit' || state.tool === 'select' && !state.dragging)) {
+    const dx = e.clientX - state.drag.last.x;
+    const dy = e.clientY - state.drag.last.y;
+    if (state.tool === 'orbit') {
+      state.camera.rotY += dx * 0.008;
+      state.camera.rotX += dy * 0.008;
+      state.camera.rotX = Math.max(-1.4, Math.min(1.4, state.camera.rotX));
+      draw();
+    }
+  } else if (state.drag.button === 2) {
+    state.camera.panX += e.clientX - state.drag.last.x;
+    state.camera.panY += e.clientY - state.drag.last.y;
+    draw();
+  }
+  state.drag.last = { x:e.clientX, y:e.clientY };
+});
+
+canvas.addEventListener('mouseup', () => {
+  state.drag.active = false;
+  if (state.dragging) {
+    state.dragging = null;
+    canvas.style.cursor = state.tool === 'select' ? 'default' : (state.tool === 'orbit' ? 'grab' : 'crosshair');
+    if (state.selected && state.selected.type === 'pin') updatePinList();
+  }
+});
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('wheel', e => {
+  state.camera.zoom *= e.deltaY > 0 ? 0.92 : 1.08;
+  state.camera.zoom = Math.max(0.3, Math.min(4, state.camera.zoom));
+  draw();
+});
+
+// Touch support
+let lastTouches = [];
+canvas.addEventListener('touchstart', e => {
+  lastTouches = Array.from(e.touches).map(t => ({ x:t.clientX, y:t.clientY }));
+  if (e.touches.length === 1) {
+    if (state.tool === 'select') {
+      const hit = hitTest(e.touches[0].clientX, e.touches[0].clientY);
+      if (hit) {
+        state.selected = { type: hit.type, index: hit.index };
+        state.dragging = { offsetX: hit.offsetX, offsetZ: hit.offsetZ };
+        draw();
+      } else {
+        state.selected = null;
+        state.dragging = null;
+      }
+    } else if (state.tool === 'pin') {
+      handleClick(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }
+}, { passive:true });
+
+canvas.addEventListener('touchmove', e => {
+  const touches = Array.from(e.touches).map(t => ({ x:t.clientX, y:t.clientY }));
+
+  // Dragging selected object on touch
+  if (touches.length === 1 && state.dragging && state.tool === 'select') {
+    const { rx, rz } = screenToRoom(touches[0].x, touches[0].y);
+    const { w, d } = state.room;
+    const nx = Math.max(0.1, Math.min(w - 0.1, rx - state.dragging.offsetX));
+    const nz = Math.max(0.1, Math.min(d - 0.1, rz - state.dragging.offsetZ));
+    if (state.selected.type === 'furniture') {
+      state.furniture[state.selected.index].x = nx;
+      state.furniture[state.selected.index].z = nz;
+    } else if (state.selected.type === 'pin') {
+      state.pins[state.selected.index].x = parseFloat(nx.toFixed(2));
+      state.pins[state.selected.index].z = parseFloat(nz.toFixed(2));
+    }
+    draw();
+  } else if (touches.length === 1 && state.tool === 'orbit') {
+    const dx = touches[0].x - lastTouches[0].x;
+    const dy = touches[0].y - lastTouches[0].y;
+    state.camera.rotY += dx * 0.008;
+    state.camera.rotX += dy * 0.008;
+    draw();
+  } else if (touches.length === 2 && lastTouches.length === 2) {
+    const d1 = Math.hypot(lastTouches[1].x-lastTouches[0].x, lastTouches[1].y-lastTouches[0].y);
+    const d2 = Math.hypot(touches[1].x-touches[0].x, touches[1].y-touches[0].y);
+    state.camera.zoom *= d2/d1;
+    state.camera.zoom = Math.max(0.3, Math.min(4, state.camera.zoom));
+    draw();
+  }
+  lastTouches = touches;
+}, { passive:true });
+
+canvas.addEventListener('touchend', () => {
+  if (state.dragging) {
+    state.dragging = null;
+    if (state.selected && state.selected.type === 'pin') updatePinList();
+  }
+});
+
+// ── Click handlers ─────────────────────
+function handleClick(cx, cy) {
+  if (state.viewMode !== '3d' && state.viewMode !== '2d') return;
+  const { w, d } = state.room;
+  const { rx, rz } = screenToRoom(cx, cy);
+  if (state.viewMode === '2d' && (rx<0||rx>w||rz<0||rz>d)) return;
+  const clampedX = Math.max(0.1, Math.min(w-0.1, rx));
+  const clampedZ = Math.max(0.1, Math.min(d-0.1, rz));
+  state.pendingPin = { x: parseFloat(clampedX.toFixed(2)), y: 0, z: parseFloat(clampedZ.toFixed(2)) };
+  // Pre-fill with live reading
+  if (state.liveDbm) {
+    document.getElementById('pinDbm').value = state.liveDbm;
+    document.getElementById('autoDbmVal').textContent = `${state.liveDbm} dBm`;
+    document.getElementById('autoSignalRow').style.display = 'block';
+  } else {
+    document.getElementById('autoSignalRow').style.display = 'none';
+  }
+  document.getElementById('pinModal').classList.add('open');
+}
+
+function handleEnvClick(cx, cy) {
+  const dx = (cx - canvas.width/2) / 60;
+  const dz = (cy - canvas.height/2) / 60;
+  const type = prompt('Environment object type:\ntree, building, fence, neighbour, tower, car') || 'tree';
+  if (ENV_INFO[type]) {
+    state.envObjects.push({ type, dx, dz });
+    draw();
+  }
+}
+
+// ── Tools ──────────────────────────────
+function setTool(t) {
+  state.tool = t;
+  state.selected = null;
+  state.dragging = null;
+  ['select','pin','line','furniture','env','orbit'].forEach(x => {
+    document.getElementById('tool'+x.charAt(0).toUpperCase()+x.slice(1))?.classList.remove('active');
+  });
+  document.getElementById('tool'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.add('active');
+  canvas.style.cursor = t === 'orbit' ? 'grab' : (t === 'select' ? 'default' : 'crosshair');
+  document.getElementById('canvasHint').textContent = {
+    select: 'click to select · drag to move furniture & pins',
+    pin: 'click to drop signal pin',
+    line: 'click two pins to draw a signal line',
+    furniture: 'click to place selected furniture',
+    env: 'switch to Surroundings view, then click to place',
+    orbit: 'drag to orbit · right-drag to pan · scroll to zoom'
+  }[t];
+  draw();
+}
+
+function setViewMode(m) {
+  state.viewMode = m;
+  ['3d','2d','env'].forEach(x => document.getElementById('btnMode'+x.toUpperCase().replace('3D','3d').replace('2D','2d').replace('ENV','Env'))?.classList.remove('active'));
+  const idMap = {'3d':'btnMode3d','2d':'btnMode2d','env':'btnModeEnv'};
+  document.getElementById(idMap[m])?.classList.add('active');
+  draw();
+}
+
+// ── Room ───────────────────────────────
+function updateRoom() {
+  state.room.w = parseFloat(document.getElementById('roomW').value);
+  state.room.d = parseFloat(document.getElementById('roomD').value);
+  state.room.h = parseFloat(document.getElementById('roomH').value);
+  document.getElementById('roomWv').textContent = state.room.w+'m';
+  document.getElementById('roomDv').textContent = state.room.d+'m';
+  document.getElementById('roomHv').textContent = state.room.h+'m';
+  draw();
+}
+
+// ── Walls ──────────────────────────────
+function selectWall(w) {
+  state.selectedWall = w;
+  document.querySelectorAll('.wall-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('wall'+w).classList.add('selected');
+  document.getElementById('wallMaterial').value = state.walls[w];
+  document.getElementById('wallInfo').textContent = `${w} · ${state.walls[w]} · ${MAT_DB[state.walls[w]]}dB loss`;
+  draw();
+}
+
+function setWallMaterial() {
+  if (!state.selectedWall) return;
+  const mat = document.getElementById('wallMaterial').value;
+  state.walls[state.selectedWall] = mat;
+  document.getElementById('wallInfo').textContent = `${state.selectedWall} · ${mat} · ${MAT_DB[mat]}dB loss`;
+  draw();
+}
+
+// ── Furniture ──────────────────────────
+function addFurniture(type) {
+  const { w, d } = state.room;
+  state.furniture.push({
+    type,
+    x: w/2 + (Math.random()-0.5)*w*0.5,
+    y: 0,
+    z: d/2 + (Math.random()-0.5)*d*0.5,
+  });
+  draw();
+}
+
+function addEnvObj(type) {
+  const angle = Math.random()*Math.PI*2;
+  const dist = 2 + Math.random()*2;
+  state.envObjects.push({ type, dx: Math.cos(angle)*dist, dz: Math.sin(angle)*dist });
+  if (state.viewMode !== 'env') setViewMode('env');
+  draw();
+}
+
+// ── Pins ───────────────────────────────
+function tapBar(bars, btn) {
+  document.querySelectorAll('.tap-bar-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const map = {1:-90,2:-80,3:-70,4:-60,5:-50};
+  document.getElementById('pinDbm').value = map[bars];
+}
+
+function confirmPin() {
+  if (!state.pendingPin) return;
+  const dbm = parseInt(document.getElementById('pinDbm').value) || -65;
+  const note = document.getElementById('pinNote').value;
+  const pin = { ...state.pendingPin, dbm, note, id: Date.now() };
+  state.pins.push(pin);
+  // Build scrub path
+  state.scrubPath = [...state.pins];
+  // Build lines between consecutive pins
+  if (state.pins.length > 1) {
+    const a = state.pins[state.pins.length-2];
+    const b = state.pins[state.pins.length-1];
+    state.lines.push({ x1:a.x,y1:a.y,z1:a.z, x2:b.x,y2:b.y,z2:b.z, dbm1:a.dbm,dbm2:b.dbm });
+  }
+  closeModal('pinModal');
+  updatePinList();
+  document.getElementById('pinNote').value = '';
+  draw();
+}
+
+function updatePinList() {
+  const list = document.getElementById('pinList');
+  document.getElementById('pinCount').textContent = state.pins.length;
+  if (state.pins.length === 0) {
+    list.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:8px">Drop pins in the room to see them here...</div>';
+    return;
+  }
+  list.innerHTML = state.pins.map((p,i) => `
+    <div class="pin-item">
+      <div class="pin-dot" style="background:${dbmColor(p.dbm)}"></div>
+      <div class="pin-info">
+        <div class="pin-dbm" style="color:${dbmColor(p.dbm)}">${p.dbm} dBm</div>
+        <div class="pin-sub">${p.note || `pin ${i+1}`} · (${p.x},${p.z})</div>
+      </div>
+      <span class="pin-del" onclick="deletePin(${i})">✕</span>
+    </div>
+  `).join('');
+}
+
+function deletePin(i) {
+  state.pins.splice(i,1);
+  state.lines = state.lines.filter((_,j)=>j!==i);
+  state.scrubPath = [...state.pins];
+  updatePinList();
+  draw();
+}
+
+function clearPins() {
+  state.pins = []; state.lines = []; state.scrubPath = [];
+  updatePinList(); draw();
+}
+
+// ── Scrub ──────────────────────────────
+function showScrub() {
+  if (state.scrubPath.length < 2) {
+    alert('Drop at least 2 pins first to create a signal walk!');
+    return;
+  }
+  document.getElementById('scrubBar').classList.add('visible');
+  document.getElementById('scrubSlider').max = 100;
+  document.getElementById('scrubSlider').value = 0;
+  updateScrub();
+}
+
+function closeScrub() {
+  document.getElementById('scrubBar').classList.remove('visible');
+}
+
+function updateScrub() {
+  const t = parseInt(document.getElementById('scrubSlider').value) / 100;
+  const idx = Math.floor(t * (state.scrubPath.length - 1));
+  const pin = state.scrubPath[Math.min(idx, state.scrubPath.length-1)];
+  if (!pin) return;
+  document.getElementById('scrubDbm').textContent = `${pin.dbm} dBm`;
+  document.getElementById('scrubDbm').style.color = dbmColor(pin.dbm);
+  document.getElementById('scrubPos').textContent = `pin ${idx+1} of ${state.scrubPath.length} · (${pin.x}, ${pin.z})`;
+  const bars = dbmBars(pin.dbm);
+  document.querySelectorAll('#scrubBars .bar').forEach((b,i) => {
+    b.classList.toggle('lit', i < bars);
+    b.style.background = i < bars ? dbmColor(pin.dbm) : 'var(--border)';
+  });
+  draw();
+}
+
+// ── Modal ──────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  state.pendingPin = null;
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ── Init ───────────────────────────────
+resize();
+startLiveReading();
+setTool('select');
+
+// Demo pin to show it's working
+setTimeout(() => {
+  state.pins.push({ x:3, y:0, z:2, dbm:-58, note:'near router', id:1 });
+  state.pins.push({ x:6, y:0, z:4, dbm:-72, note:'middle room', id:2 });
+  state.pins.push({ x:7.5, y:0, z:5.5, dbm:-85, note:'far corner', id:3 });
+  state.lines.push({x1:3,y1:0,z1:2,x2:6,y2:0,z2:4,dbm1:-58,dbm2:-72});
+  state.lines.push({x1:6,y1:0,z1:4,x2:7.5,y2:0,z2:5.5,dbm1:-72,dbm2:-85});
+  state.scrubPath = [...state.pins];
+  state.furniture.push({type:'router',x:2,y:1,z:1});
+  state.furniture.push({type:'sofa',x:4,y:0,z:4.5});
+  updatePinList();
+  draw();
+}, 300);
+</script>
+</body>
+</html>

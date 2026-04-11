@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invite — RudVentur Social</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">Rud<span>Ventur</span> Social</a>
+  <div class="nav-links">
+    <a href="browse.html">who's here</a>
+    <a href="profile.html">my profile</a>
+  </div>
+</nav>
+
+<div class="invite-page">
+
+  <h1 class="invite-title">bring someone in</h1>
+  <p class="invite-sub">share this link. no signup. no pressure. just a warm hello.</p>
+
+  <div class="invite-box" id="invite-box">
+    <div class="field">
+      <label for="invite-msg">invite message (optional)</label>
+      <textarea id="invite-msg" placeholder="say something nice. or don't. up to you." rows="2"></textarea>
+    </div>
+
+    <div class="invite-link-display" id="invite-link">create a profile first to generate your invite link</div>
+    <div class="copied-msg" id="copied-msg">copied!</div>
+
+    <div class="btn-group" style="justify-content:center">
+      <button class="btn" id="copy-btn">copy link</button>
+    </div>
+  </div>
+
+  <p id="no-profile-msg" style="color:var(--text-muted);font-size:0.8rem;margin-top:1.5rem;display:none">
+    you don't have a profile yet. <a href="index.html">pick your poison</a> first.
+  </p>
+
+</div>
+
+<div class="footer">RudVentur Social v0.1</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script>
+(function() {
+  const uid = getMyUID();
+  const linkEl = document.getElementById('invite-link');
+  const copyBtn = document.getElementById('copy-btn');
+  const copiedMsg = document.getElementById('copied-msg');
+
+  if (!uid) {
+    document.getElementById('invite-box').style.display = 'none';
+    document.getElementById('no-profile-msg').style.display = 'block';
+    return;
+  }
+
+  const base = window.location.href.replace(/invite\.html.*/, 'index.html');
+  const link = base + '?invited_by=' + uid;
+  linkEl.textContent = link;
+
+  linkEl.onclick = copyLink;
+  copyBtn.onclick = copyLink;
+
+  function copyLink() {
+    navigator.clipboard.writeText(link).then(function() {
+      copiedMsg.classList.add('show');
+      setTimeout(function() { copiedMsg.classList.remove('show'); }, 2000);
+    }).catch(function() {
+      var ta = document.createElement('textarea');
+      ta.value = link;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      copiedMsg.classList.add('show');
+      setTimeout(function() { copiedMsg.classList.remove('show'); }, 2000);
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

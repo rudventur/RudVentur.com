@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peoples Bank - Ownings Only</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin:0; padding:16px; background:#0a0a0a; color:#eee; line-height:1.5; }
+        h1 { color:#0f0; text-align:center; }
+        .info { text-align:center; color:#888; margin-bottom:20px; }
+        input, textarea, button, select { width:100%; padding:12px; margin:8px 0; border-radius:8px; border:none; font-size:1em; }
+        button { background:#0f0; color:#000; font-weight:bold; cursor:pointer; }
+        .owes { background:#222; padding:14px; margin:12px 0; border-radius:8px; }
+        .positive { color:#0f0; }
+        .negative { color:#f66; }
+        img { max-width:100%; border-radius:8px; margin-top:8px; }
+    </style>
+</head>
+<body>
+    <h1>💚 Peoples Bank</h1>
+    <p class="info">Just records of what people owe each other.<br>No fees. No middle-man. You own the file.</p>
+
+    <h2>Add an Owing</h2>
+    <select id="direction">
+        <option value="owes_me">Someone owes ME</option>
+        <option value="i_owe">I owe someone</option>
+    </select>
+    <input type="text" id="person" placeholder="Person's name">
+    <input type="number" id="amount" placeholder="Amount" step="0.01">
+    <input type="text" id="currency" value="£" placeholder="Currency">
+    <input type="date" id="date">
+    <textarea id="reason" placeholder="Why? (food, rent, favour...)"></textarea>
+    <input type="file" id="proof" accept="image/*">
+    <button onclick="addOwing()">Record this owing</button>
+
+    <h2>Current Ownings</h2>
+    <div id="balances"></div>
+    <div id="list"></div>
+
+    <script>
+        let records = JSON.parse(localStorage.getItem('peoplesBank') || '[]');
+
+        function save() {
+            localStorage.setItem('peoplesBank', JSON.stringify(records));
+            showAll();
+        }
+
+        function addOwing() {
+            const direction = document.getElementById('direction').value;
+            const person = document.getElementById('person').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const currency = document.getElementById('currency').value.trim() || '£';
+            const date = document.getElementById('date').value || new Date().toISOString().slice(0,10);
+            const reason = document.getElementById('reason').value.trim();
+
+            if (!person || !amount) return alert("Name and amount needed");
+
+            const fileInput = document.getElementById('proof');
+            let proof = null;
+
+            if (fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    proof = e.target.result;
+                    pushRecord(direction, person, amount, currency, date, reason, proof);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                pushRecord(direction, person, amount, currency, date, reason, null);
+            }
+        }
+
+        function pushRecord(direction, person, amount, currency, date, reason, proof) {
+            records.push({
+                id: Date.now(),
+                direction: direction,
+                person: person,
+                amount: amount,
+                currency: currency,
+                date: date,
+                reason: reason,
+                proof: proof
+            });
+            save();
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('person').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('reason').value = '';
+            document.getElementById('proof').value = '';
+        }
+
+        function showAll() {
+            const balancesDiv = document.getElementById('balances');
+            const listDiv = document.getElementById('list');
+            balancesDiv.innerHTML = '<h3>Net Ownings</h3>';
+            listDiv.innerHTML = '';
+
+            const net = {};
+            records.forEach(r => {
+                const key = r.person + ' (' + r.currency + ')';
+                if (!net[key]) net[key] = 0;
+                if (r.direction === 'owes_me') net[key] += r.amount;
+                else net[key] -= r.amount;
+            });
+
+            Object.keys(net).sort().forEach(key => {
+                const bal = net[key];
+                balancesDiv.innerHTML += `<div class="owes ${bal >= 0 ? 'positive' : 'negative'}">
+                    ${key}: ${bal >= 0 ? 'owes me' : 'I owe'} ${Math.abs(bal).toFixed(2)}
+                </div>`;
+            });
+
+            records.slice().reverse().forEach(r => {
+                let html = `<div class="owes">
+                    <strong>${r.date}</strong> — ${r.direction === 'owes_me' ? r.person + ' owes me' : 'I owe ' + r.person}<br>
+                    ${r.amount} ${r.currency} ${r.reason ? 'for ' + r.reason : ''}
+                    ${r.proof ? `<br><img src="${r.proof}">` : ''}
+                    <br><button onclick="deleteRecord(${r.id})" style="background:#c00;color:white;padding:4px 8px;margin-top:8px;">Remove</button>
+                </div>`;
+                listDiv.innerHTML += html;
+            });
+        }
+
+        function deleteRecord(id) {
+            if (confirm("Remove this record forever?")) {
+                records = records.filter(r => r.id !== id);
+                save();
+            }
+        }
+
+        // Load on start
+        showAll();
+    </script>
+</body>
+</html>

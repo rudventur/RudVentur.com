@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🎃 SPLASH SPLASH v5 – rudventur.com</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;overflow:hidden;font-family:'Courier New',monospace;user-select:none;}
+canvas{display:block;}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;transition:opacity 0.4s;}
+.screen.hidden{opacity:0;pointer-events:none;}
+
+/* INTRO */
+#introScreen{background:radial-gradient(ellipse at 50% 40%,#0a003a,#000 70%);}
+.logo{font-size:clamp(2.2rem,6vw,5rem);font-weight:900;letter-spacing:6px;
+  background:linear-gradient(90deg,#9b30ff,#e879f9,#00ff41,#ffaa00,#00aaff,#9b30ff);
+  background-size:400%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:lg 5s linear infinite;}
+@keyframes lg{from{background-position:0%}to{background-position:400%}}
+.isub{color:#a78bfa;font-size:clamp(0.65rem,1.8vw,0.9rem);letter-spacing:4px;margin:5px 0;}
+.wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(560px,92vw);margin:12px 0;}
+.wcard{padding:10px 6px;border:2px solid;border-radius:12px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.wcard:hover{transform:scale(1.06);}
+.wi{font-size:clamp(1.5rem,3vw,2rem);display:block;margin-bottom:3px;}
+.wn{font-weight:bold;letter-spacing:1px;font-size:clamp(0.6rem,1.4vw,0.8rem);}
+.wd{font-size:0.58rem;opacity:0.6;margin-top:2px;}
+.bb{padding:clamp(8px,2vw,13px) clamp(16px,4vw,40px);font-size:clamp(0.82rem,2vw,1.1rem);
+  font-family:'Courier New',monospace;font-weight:bold;letter-spacing:3px;cursor:pointer;
+  border-radius:40px;border:3px solid;transition:all 0.22s;margin:4px;}
+.bg{border-color:#00ff41;color:#00ff41;background:rgba(0,255,65,0.07);}
+.bg:hover{background:#00ff41;color:#000;box-shadow:0 0 26px #00ff41;}
+.by{border-color:#ffaa00;color:#ffaa00;background:rgba(255,170,0,0.07);}
+.by:hover{background:#ffaa00;color:#000;}
+
+/* ── CINEMATIC WARP ── */
+#warpScreen{position:fixed;inset:0;z-index:70;background:#000;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.3s;}
+#warpScreen.show{opacity:1;pointer-events:all;}
+#warpCanvas{position:absolute;inset:0;width:100%;height:100%;}
+#cockpitView{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;opacity:0;transition:opacity 0.8s;}
+#cockpitView.show{opacity:1;}
+.cockpit-frame{position:relative;width:min(520px,90vw);height:min(320px,55vw);
+  border:6px solid #334;border-radius:50% 50% 40% 40%/30% 30% 40% 40%;
+  background:radial-gradient(ellipse at 50% 30%,#000820,#000);
+  box-shadow:0 0 0 8px #223,0 0 0 14px #112,0 0 60px rgba(100,180,255,0.3),inset 0 0 40px rgba(0,50,100,0.5);
+  overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cockpit-stars{position:absolute;inset:0;}
+.cockpit-char{font-size:clamp(3rem,8vw,5rem);z-index:2;animation:cwave 0.5s ease-in-out infinite alternate;}
+@keyframes cwave{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-8px) rotate(8deg)}}
+.cockpit-label{color:#88aaff;font-size:clamp(0.65rem,1.5vw,0.85rem);letter-spacing:4px;
+  margin-top:14px;text-shadow:0 0 12px #88aaff;}
+#planetCutscene{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;opacity:0;transition:opacity 1s;}
+#planetCutscene.show{opacity:1;}
+.planet-big{font-size:clamp(5rem,18vw,12rem);animation:pspin 8s linear infinite;
+  filter:drop-shadow(0 0 40px var(--pglow,#fff));}
+@keyframes pspin{from{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.04)}to{transform:rotate(-3deg) scale(1)}}
+.planet-name{font-size:clamp(1.4rem,5vw,3rem);font-weight:900;letter-spacing:6px;
+  color:var(--pglow,#fff);text-shadow:0 0 30px var(--pglow,#fff);margin-top:10px;}
+.planet-desc{color:#aaa;font-size:clamp(0.6rem,1.5vw,0.85rem);letter-spacing:3px;margin-top:8px;}
+.planet-diff{font-size:0.75rem;letter-spacing:2px;margin-top:6px;padding:3px 14px;
+  border-radius:20px;border:1px solid;display:inline-block;}
+
+/* ── TALLY ── */
+#tallyScreen{background:rgba(0,0,0,0.96);z-index:60;}
+.tbox{background:rgba(0,20,0,0.95);border:3px solid #00ff41;border-radius:18px;
+  padding:28px 36px;text-align:center;max-width:min(460px,90vw);
+  box-shadow:0 0 50px rgba(0,255,65,0.4);}
+.ttitle{color:#00ff41;font-size:clamp(1.4rem,4vw,2.2rem);font-weight:900;
+  letter-spacing:4px;text-shadow:0 0 20px #00ff41;margin-bottom:14px;}
+.trow{display:flex;justify-content:space-between;padding:7px 0;
+  border-bottom:1px solid rgba(0,255,65,0.2);font-size:clamp(0.78rem,2vw,0.95rem);}
+.tlabel{color:#a78bfa;}.tval{color:#00ff41;font-weight:bold;}
+.shipfly{font-size:3.5rem;animation:sf 1.5s ease-in-out infinite alternate;}
+@keyframes sf{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-14px) rotate(5deg)}}
+
+/* ── SOLAR MAP — canvas based ── */
+#solarMap{position:fixed;inset:0;z-index:55;background:#000;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.5s;}
+#solarMap.show{opacity:1;pointer-events:all;}
+#smCanvas{display:block;}
+
+/* HUD */
+#hud{position:fixed;top:8px;left:50%;transform:translateX(-50%);
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;
+  background:rgba(0,0,0,0.82);border:2px solid #00ff41;border-radius:28px;
+  padding:5px 16px;z-index:10;box-shadow:0 0 18px rgba(0,255,65,0.3);max-width:98vw;}
+#hud span{font-size:clamp(0.58rem,1.3vw,0.8rem);color:#00ff41;letter-spacing:1px;}
+.hd{color:rgba(0,255,65,0.25);}
+
+/* PROGRESS */
+#prog{position:fixed;top:8px;right:12px;background:rgba(0,0,0,0.82);
+  border:2px solid #00ff41;border-radius:10px;padding:5px 12px;z-index:10;
+  font-size:0.68rem;color:#00ff41;line-height:1.7;text-align:center;}
+#progFill{width:100px;height:6px;background:#001100;border:1px solid #00ff41;
+  border-radius:3px;margin-top:3px;overflow:hidden;}
+#progBar{height:100%;background:linear-gradient(90deg,#00ff41,#00aaff);
+  transition:width 0.4s;border-radius:3px;width:0%;}
+
+/* GUN HUD */
+#gunHud{position:fixed;top:48px;left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;background:rgba(0,0,0,0.82);border:2px solid #9b30ff;
+  border-radius:18px;padding:4px 14px;z-index:10;flex-wrap:wrap;justify-content:center;}
+.gs{display:flex;flex-direction:column;align-items:center;padding:3px 8px;
+  border:2px solid transparent;border-radius:8px;transition:all 0.15s;cursor:pointer;min-width:52px;}
+.gs.act{border-color:#e879f9;background:rgba(232,121,249,0.15);box-shadow:0 0 10px rgba(232,121,249,0.4);}
+.gs.emp{opacity:0.28;}
+.gi{font-size:1.2rem;line-height:1;}.gn{font-size:0.52rem;color:#a78bfa;letter-spacing:1px;margin-top:1px;}
+.ga{font-size:0.6rem;font-weight:bold;margin-top:1px;}
+.ga.low{color:#ff4444;animation:aw 0.5s ease-in-out infinite;}
+@keyframes aw{0%,100%{opacity:1}50%{opacity:0.2}}
+.ga.ok{color:#00ff41;}.ga.inf{color:#ffaa00;}
+
+/* ABILITY */
+#abilityBar{position:fixed;top:92px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.72);border:1px solid rgba(155,48,255,0.45);
+  border-radius:14px;padding:3px 12px;z-index:10;
+  font-size:clamp(0.52rem,1.2vw,0.68rem);color:#e879f9;letter-spacing:2px;}
+
+/* BOSS BAR */
+#bossBar{position:fixed;bottom:62px;left:50%;transform:translateX(-50%);
+  width:min(460px,88vw);display:none;z-index:10;}
+#bossBar .bn{color:#ff4444;text-align:center;font-size:0.82rem;letter-spacing:3px;
+  margin-bottom:3px;text-shadow:0 0 10px #ff4444;}
+#bossBar .bt{background:#111;border:2px solid #ff4444;border-radius:8px;height:14px;}
+#bossBar .bf{height:100%;border-radius:6px;background:linear-gradient(90deg,#ff0000,#ff8800);transition:width 0.3s;}
+
+/* HEAD PICKER */
+#headPicker{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);
+  display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:center;
+  background:rgba(0,0,0,0.88);border:2px solid #9b30ff;border-radius:26px;
+  padding:4px 12px;z-index:10;max-width:98vw;}
+#headPicker span{font-size:0.58rem;color:#a78bfa;letter-spacing:2px;}
+.hopt{font-size:1.1rem;cursor:pointer;padding:2px 4px;border-radius:6px;
+  border:2px solid transparent;transition:all 0.14s;line-height:1;}
+.hopt:hover{transform:scale(1.2);border-color:#9b30ff;}
+.hopt.sel{border-color:#e879f9;background:rgba(232,121,249,0.2);}
+
+/* MOBILE */
+#mob{position:fixed;bottom:62px;z-index:10;display:flex;gap:12px;}
+.dpad{display:flex;flex-direction:column;gap:3px;align-items:center;}
+.dr{display:flex;gap:3px;}
+.mb{width:42px;height:42px;background:rgba(0,0,0,0.78);border:2px solid #00ff41;
+  border-radius:8px;color:#00ff41;font-size:0.88rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;transition:all 0.1s;}
+.mb:active,.mb.pr{transform:scale(0.88);background:rgba(0,255,65,0.15);}
+.mb.fire{border-color:#ff4444;color:#ff4444;}
+.mb.ab{border-color:#e879f9;color:#e879f9;}
+
+/* PAUSE */
+#pauseOv{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:40;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#pauseOv.hidden{display:none;}
+#pauseOv h2{color:#e879f9;font-size:3rem;margin-bottom:18px;text-shadow:0 0 28px #e879f9;}
+
+/* WORLD TITLE */
+#wTitle{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:clamp(1.8rem,5vw,3.5rem);font-weight:900;letter-spacing:5px;
+  text-align:center;z-index:30;pointer-events:none;opacity:0;transition:opacity 0.5s;}
+
+/* PICKUP */
+#pickPop{position:fixed;top:120px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.92);border:2px solid #ffaa00;border-radius:10px;
+  padding:6px 16px;z-index:20;font-size:0.8rem;color:#ffaa00;letter-spacing:2px;
+  opacity:0;transition:opacity 0.3s;pointer-events:none;}
+#pickPop.show{opacity:1;}
+
+/* AI HUD */
+/* ── QUEST / FIX-IT PANEL ── */
+#questPanel{position:fixed;top:50%;right:14px;transform:translateY(-50%);
+  background:rgba(0,0,0,0.92);border:2px solid #ffff00;border-radius:14px;
+  padding:10px 14px;z-index:10;display:none;max-width:220px;
+  box-shadow:0 0 20px rgba(255,255,0,0.25);}
+#questPanel .qt{color:#ffff00;font-size:0.7rem;letter-spacing:3px;font-weight:bold;
+  text-shadow:0 0 10px #ffff00;margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.qitem{padding:5px 0;border-bottom:1px solid rgba(255,255,0,0.12);
+  font-size:0.62rem;color:#aaa;letter-spacing:1px;display:flex;align-items:flex-start;gap:6px;
+  transition:color 0.3s;}
+.qitem.done{color:#00ff41;text-decoration:line-through;opacity:0.6;}
+.qitem.active{color:#ffff00;}
+.qitem .qi{font-size:0.85rem;flex-shrink:0;}
+.qitem .qtext{line-height:1.4;}
+.qitem .qhint{display:block;font-size:0.52rem;color:#666;margin-top:2px;letter-spacing:0.5px;}
+.qitem.active .qhint{color:#888;}
+#questPanel .qprog{margin-top:7px;font-size:0.58rem;color:#666;text-align:right;letter-spacing:1px;}
+#questPanel .qbar{height:4px;background:#111;border-radius:2px;margin-top:4px;overflow:hidden;}
+#questPanel .qfill{height:100%;background:linear-gradient(90deg,#ffff00,#00ff41);
+  border-radius:2px;transition:width 0.5s;}
+/* Quest complete flash */
+#questFlash{position:fixed;inset:0;background:rgba(255,255,0,0.08);
+  z-index:45;pointer-events:none;opacity:0;transition:opacity 0.2s;}
+#questFlash.pop{opacity:1;}
+/* Ohm equation floating */
+.ohm-float{position:fixed;pointer-events:none;font-family:'Courier New',monospace;
+  font-size:clamp(0.7rem,1.5vw,0.9rem);font-weight:bold;color:#ffff00;
+  text-shadow:0 0 12px #ffff00;z-index:35;animation:ohmrise 2.5s ease-out forwards;}
+@keyframes ohmrise{0%{opacity:1;transform:translateY(0) scale(1)}
+  80%{opacity:1;transform:translateY(-60px) scale(1.1)}
+  100%{opacity:0;transform:translateY(-90px) scale(0.9)}}
+  border:2px solid #ff4444;border-radius:10px;padding:6px 12px;
+  z-index:10;display:none;font-size:0.68rem;color:#ff4444;line-height:1.9;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- INTRO -->
+<div id="introScreen" class="screen">
+  <div class="isub">rudventur.com presents</div>
+  <div class="logo">🌊 SPLASH SPLASH 🌊</div>
+  <div class="isub" style="letter-spacing:5px;margin-bottom:8px;">v5 · GUNS · SHIP · ⚡ OHM MISSIONS</div>
+  <div class="wgrid">
+    <div class="wcard" style="border-color:#00ff41;color:#00ff41;" onclick="startGame('green')">
+      <span class="wi">🌿</span><div class="wn">GREEN ZONE</div><div class="wd">Hills · Wind · Butterflies</div></div>
+    <div class="wcard" style="border-color:#87ceeb;color:#87ceeb;" onclick="startGame('sky')">
+      <span class="wi">☁️</span><div class="wn">SKY WORLD</div><div class="wd">🐦 Fly · Storm · Lightning</div></div>
+    <div class="wcard" style="border-color:#00aaff;color:#00aaff;" onclick="startGame('water')">
+      <span class="wi">🌊</span><div class="wn">DEEP OCEAN</div><div class="wd">Swim · Coral · Sharks</div></div>
+    <div class="wcard" style="border-color:#ff4400;color:#ff4400;" onclick="startGame('volcano')">
+      <span class="wi">🌋</span><div class="wn">VOLCANO LAIR</div><div class="wd">Lava · Ash · OHM KING ⚡</div></div>
+    <div class="wcard" style="border-color:#9b30ff;color:#9b30ff;" onclick="startGame('space')">
+      <span class="wi">🌌</span><div class="wn">DEEP SPACE</div><div class="wd">Zero-G · Asteroids · Stations</div></div>
+    <div class="wcard" style="border-color:#ff0000;color:#ff0000;" onclick="startGame('ai')">
+      <span class="wi">🤖</span><div class="wn">AI CENTRE</div><div class="wd">⚠️ DEFEND THE CORE!</div></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+    <button class="bb bg" onclick="startGame('green')">▶ QUICK START</button>
+    <button class="bb by" onclick="showLB()">🏆 SCORES</button>
+    <button class="bb" style="border-color:#9b30ff;color:#9b30ff;" onclick="openSolarMapFromIntro()">🪐 SOLAR MAP</button>
+  </div>
+  <div style="color:#444;font-size:0.6rem;margin-top:10px;letter-spacing:1px;text-align:center;line-height:2.1;">
+    ← → MOVE &nbsp;·&nbsp; ↑ JUMP &nbsp;·&nbsp; ↓ SQUAT/DIVE &nbsp;·&nbsp; SPACE FIRE<br/>
+    X ABILITY &nbsp;·&nbsp; C WAVE &nbsp;·&nbsp; 1–4 SWITCH GUN &nbsp;·&nbsp; Walk over 📦 to PICKUP<br/>
+    Score 500 → 🛸 SHIP APPEARS → walk inside to ESCAPE!
+  </div>
+  <div style="color:#00ff41;font-size:0.7rem;margin-top:8px;letter-spacing:2px;text-shadow:0 0 12px #00ff41;">rudventur.com 🎃</div>
+</div>
+
+<!-- WARP CINEMATIC -->
+<div id="warpScreen">
+  <canvas id="warpCanvas"></canvas>
+  <div id="cockpitView">
+    <div class="cockpit-frame">
+      <canvas class="cockpit-stars" id="cockpitStars"></canvas>
+      <div class="cockpit-char" id="cockpitChar">🎃</div>
+    </div>
+    <div class="cockpit-label">DESTINATION: <span id="destLabel">???</span></div>
+  </div>
+  <div id="planetCutscene">
+    <div class="planet-big" id="cutscenePlanet">🪐</div>
+    <div class="planet-name" id="cutsceneName">UNKNOWN</div>
+    <div class="planet-desc" id="cutsceneDesc">A new world awaits...</div>
+    <div class="planet-diff" id="cutsceneDiff" style="border-color:#888;color:#888;">★★★</div>
+  </div>
+</div>
+
+<!-- SOLAR MAP — canvas-based, smooth, performant -->
+<div id="solarMap">
+  <canvas id="smCanvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+  <button class="bb" onclick="closeSolarMap()"
+    style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+           border-color:#556;color:#889;font-size:0.8rem;z-index:2;">✕ CLOSE</button>
+</div>
+
+<!-- TALLY -->
+<div id="tallyScreen" class="screen hidden">
+  <div class="tbox">
+    <div class="shipfly">🛸</div>
+    <div class="ttitle">STAGE COMPLETE!</div>
+    <div class="trow"><span class="tlabel">WORLD</span><span class="tval" id="tW">—</span></div>
+    <div class="trow"><span class="tlabel">SCORE</span><span class="tval" id="tS">0</span></div>
+    <div class="trow"><span class="tlabel">ENEMIES DEFEATED</span><span class="tval" id="tE">0</span></div>
+    <div class="trow"><span class="tlabel">COLLECTIBLES</span><span class="tval" id="tC">0</span></div>
+    <div class="trow"><span class="tlabel">LIVES LEFT</span><span class="tval" id="tL">3</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px;">
+      <button class="bb bg" onclick="openSolarMap()">🗺️ SOLAR MAP</button>
+      <button class="bb by" onclick="launchChem()">⚗️ CHEMVENTUR</button>
+      <button class="bb" style="border-color:#a78bfa;color:#a78bfa;font-size:0.82rem;" onclick="goIntro()">🏠 MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud" style="display:none;">
+  <span id="hSc">🎃 0</span><span class="hd">|</span>
+  <span id="hLv">💚×3</span><span class="hd">|</span>
+  <span id="hHp">❤❤❤</span><span class="hd">|</span>
+  <span id="hWr">🌿</span>
+</div>
+<div id="prog" style="display:none;">
+  TO SHIP 🛸<br/><span id="progTxt">0 / 500</span>
+  <div id="progFill"><div id="progBar"></div></div>
+</div>
+<div id="gunHud" style="display:none;">
+  <div class="gs act" id="gs0" onclick="switchGun(0)"><div class="gi" id="gi0">🔫</div><div class="gn" id="gn0">PISTOL</div><div class="ga inf" id="ga0">∞</div></div>
+  <div class="gs emp" id="gs1" onclick="switchGun(1)"><div class="gi" id="gi1">·</div><div class="gn" id="gn1">EMPTY</div><div class="ga" id="ga1">—</div></div>
+  <div class="gs emp" id="gs2" onclick="switchGun(2)"><div class="gi" id="gi2">·</div><div class="gn" id="gn2">EMPTY</div><div class="ga" id="ga2">—</div></div>
+  <div class="gs emp" id="gs3" onclick="switchGun(3)"><div class="gi" id="gi3">·</div><div class="gn" id="gn3">EMPTY</div><div class="ga" id="ga3">—</div></div>
+</div>
+<div id="abilityBar" style="display:none;">✨ READY [X]</div>
+<div id="bossBar" style="display:none;">
+  <div class="bn" id="bossName">👹 BOSS</div>
+  <div class="bt"><div class="bf" id="bossFill" style="width:100%"></div></div>
+</div>
+<div id="headPicker" style="display:none;">
+  <span>HEAD:</span>
+  <div class="hopt sel" data-e="🎃" onclick="ph(this)">🎃</div>
+  <div class="hopt" data-e="🐦" onclick="ph(this)">🐦</div>
+  <div class="hopt" data-e="🐢" onclick="ph(this)">🐢</div>
+  <div class="hopt" data-e="🦊" onclick="ph(this)">🦊</div>
+  <div class="hopt" data-e="💀" onclick="ph(this)">💀</div>
+  <div class="hopt" data-e="👾" onclick="ph(this)">👾</div>
+  <div class="hopt" data-e="🤖" onclick="ph(this)">🤖</div>
+  <div class="hopt" data-e="🤡" onclick="ph(this)">🤡</div>
+  <div class="hopt" data-e=":@]" onclick="ph(this)">:@]</div>
+  <div class="hopt" data-e=":@D" onclick="ph(this)">:@D</div>
+  <div class="hopt" data-e="😈" onclick="ph(this)">😈</div>
+</div>
+<div id="mob" style="display:none;">
+  <div class="dpad">
+    <div class="dr"><button class="mb" ontouchstart="mbs('u')" ontouchend="mbe('u')">⬆</button></div>
+    <div class="dr">
+      <button class="mb" ontouchstart="mbs('l')" ontouchend="mbe('l')">⬅</button>
+      <button class="mb ab" ontouchstart="doAbility()">✨</button>
+      <button class="mb" ontouchstart="mbs('r')" ontouchend="mbe('r')">➡</button>
+    </div>
+    <div class="dr">
+      <button class="mb fire" ontouchstart="mbs('fire')" ontouchend="mbe('fire')">🔫</button>
+      <button class="mb" ontouchstart="mbs('d')" ontouchend="mbe('d')">⬇</button>
+      <button class="mb ab" onclick="cycleGun()">🔄</button>
+    </div>
+  </div>
+</div>
+<div id="pauseOv" class="hidden">
+  <h2>⏸ PAUSED</h2>
+  <button class="bb bg" onclick="togglePause()">▶ RESUME</button>
+  <button class="bb by" onclick="goIntro()" style="margin-top:8px;">🏠 MENU</button>
+</div>
+<div id="pickPop"></div>
+<div id="wTitle"></div>
+<div id="questPanel">
+  <div class="qt">⚡ OHM MISSIONS</div>
+  <div id="questList"></div>
+  <div class="qprog"><span id="qDone">0</span>/<span id="qTotal">0</span> FIXED
+    <div class="qbar"><div class="qfill" id="qFill" style="width:0%"></div></div>
+  </div>
+</div>
+<div id="questFlash"></div>
+<div id="aiHud">⚠️ AI DEFEND<br/>Waves: <span id="aiW">0</span><br/>Core: <span id="aiC">100</span>%</div>
+
+<!-- SCRIPTS — load order matters! -->
+<script src="worlds.js"></script>
+<script src="engine.js"></script>
+<script src="draw.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
