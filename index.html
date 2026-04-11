@@ -322,6 +322,38 @@ body::before{
   letter-spacing:1px;
 }
 
+/* ─── INDEX NAV STRIP (jump links, not a tile) ─── */
+.zone-nav{
+  position:relative;z-index:2;
+  display:flex;flex-wrap:wrap;justify-content:center;
+  gap:1.2rem;
+  max-width:1400px;
+  margin:0 auto 1.2rem;
+  padding:.8rem 1rem;
+  border-top:1px solid #1a1a1a;
+  border-bottom:1px solid #1a1a1a;
+  list-style:none;
+}
+.zone-nav li{margin:0}
+.zone-nav a{
+  color:#777;
+  text-decoration:none;
+  font-size:.72rem;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  transition:color .2s,text-shadow .2s;
+  cursor:pointer;
+}
+.zone-nav a:hover{color:#fff;text-shadow:0 0 8px rgba(255,255,255,.3)}
+.zone-nav a[data-zone="map"]:hover{color:var(--map);text-shadow:0 0 8px rgba(0,255,65,.4)}
+.zone-nav a[data-zone="bank"]:hover{color:var(--bank);text-shadow:0 0 8px rgba(255,200,0,.4)}
+.zone-nav a[data-zone="user"]:hover{color:var(--user);text-shadow:0 0 8px rgba(255,153,51,.4)}
+.zone-nav a[data-zone="social"]:hover{color:var(--social);text-shadow:0 0 8px rgba(255,60,120,.4)}
+.zone-nav a[data-zone="os"]:hover{color:var(--os);text-shadow:0 0 8px rgba(0,229,255,.4)}
+.zone-nav a[data-zone="tools"]:hover{color:var(--tools);text-shadow:0 0 8px rgba(199,143,255,.4)}
+.zone-nav a[data-zone="chem"]:hover{color:var(--chem);text-shadow:0 0 8px rgba(0,255,136,.4)}
+.zone-nav a[data-zone="repos"]:hover{color:var(--repos);text-shadow:0 0 8px rgba(255,221,51,.4)}
+
 /* ─── REPOS GRID ─── */
 .repos-grid{
   display:grid;
@@ -474,6 +506,18 @@ body::before{
   <div class="version">v3.0 — all repos consolidated</div>
 </header>
 
+<!-- INDEX NAV STRIP — jump to any tile (content that used to live in THE INDEX tile) -->
+<ul class="zone-nav">
+  <li><a data-zone="map"    onclick="focusPanel('map');return false">→ The Map</a></li>
+  <li><a data-zone="bank"   onclick="focusPanel('bank');return false">→ The Bank</a></li>
+  <li><a data-zone="user"   onclick="focusPanel('user');return false">→ The User</a></li>
+  <li><a data-zone="social" onclick="focusPanel('social');return false">→ The Social</a></li>
+  <li><a data-zone="os"     onclick="focusPanel('os');return false">→ The OS</a></li>
+  <li><a data-zone="tools"  onclick="focusPanel('tools');return false">→ The Tools</a></li>
+  <li><a data-zone="chem"   onclick="focusPanel('chem');return false">→ ChemVentur</a></li>
+  <li><a data-zone="repos"  onclick="focusPanel('repos');return false">→ The Repos</a></li>
+</ul>
+
 <!-- 6 PANEL GRID -->
 <main class="universe-grid">
 
@@ -500,9 +544,9 @@ body::before{
     <div class="bank-tagline">// RUDVENTUR LEDGER //</div>
     <ul class="tool-list">
       <li><a class="tool-link" href="https://rudventur.github.io/bank/" target="_blank">▸ Bank / Lending Ledger</a></li>
-      <li><a class="tool-link" href="owe2owe1.html" target="_blank">▸ Peoples Bank (owe2owe1)</a></li>
-      <li><a class="tool-link" href="owe2owe2.html" target="_blank">▸ Lenting System (owe2owe2)</a></li>
       <li><a class="tool-link" href="bottom-right-popcorn-complete.html" target="_blank">▸ Popcoin Vault (Popcorn Hub Wallet)</a></li>
+      <li><a class="tool-link" href="map-merger-venti/translator_v7.html" target="_blank">▸ Translator v7</a></li>
+      <li><a class="tool-link" href="map-merger-venti/index.html" target="_blank">▸ Maps (Map Merger Venti)</a></li>
     </ul>
   </section>
 
@@ -514,11 +558,7 @@ body::before{
     </div>
     <ul class="tool-list">
       <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox v2 (upgraded)</a></li>
-      <li><a class="tool-link" href="windows13/userbox-v2-ultimate.html" target="_blank">useRbox v2 (ultimate)</a></li>
-      <!-- useRbox 2.0 — aliased to v2 upgraded until 2.0 lands (Rudy-confirmed URL) -->
-      <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox 2.0</a></li>
       <li><a class="tool-link" href="map-merger-venti/translator_v7.html" target="_blank">Translator v7</a></li>
-      <li><a class="tool-link soon">Maps</a></li>
     </ul>
   </section>
 
@@ -530,9 +570,7 @@ body::before{
     </div>
     <ul class="tool-list">
       <li><a class="tool-link" href="punk-script/index.html" target="_blank">RudVentur Social (punk-script)</a></li>
-      <li><a class="tool-link" href="global-chat-v5/index.html" target="_blank">Global Chat v5</a></li>
-      <!-- Prompter === Global Chat v5 (Rudy) -->
-      <li><a class="tool-link" href="global-chat-v5/index.html" target="_blank">Prompter (= Global Chat v5)</a></li>
+      <li><a class="tool-link" href="global-chat-v5/index.html" target="_blank">Global Chat v5 (= Prompter)</a></li>
       <li><a class="tool-link" href="windows13/keyboard-realistic.html" target="_blank">Keyboards</a></li>
       <!-- Weather App — expected filename: yesterday-today-tomorrow-weather.html -->
       <li><a class="tool-link soon">Weather App</a></li>
@@ -564,8 +602,8 @@ body::before{
       <!-- URL placeholders — Rudy will drop final URLs here -->
       <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Minner Wallet</a></li> -->
       <li><a class="tool-link soon">Minner Wallet</a></li>
-      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Prompter Architect</a></li> -->
-      <li><a class="tool-link soon">Prompter Architect</a></li>
+      <!-- Prompter Architect === Prompter === Global Chat v5 -->
+      <li><a class="tool-link" href="global-chat-v5/index.html" target="_blank">Prompter Architect</a></li>
       <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Cookies Inspector</a></li> -->
       <li><a class="tool-link soon">Cookies Inspector</a></li>
       <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Popcorn File Burner</a></li> -->
