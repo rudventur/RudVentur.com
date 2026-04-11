@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RudVentur — Universe Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=VT323&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 
@@ -17,6 +17,8 @@
   --tools:#c78fff;
   --index:#f5f5f5;
   --repos:#ffdd33;
+  --bank:#ffc800;
+  --chem:#00ff88;
 }
 
 body{
@@ -114,6 +116,79 @@ body::before{
 
 .panel--repos{border-color:#3a3a0a;grid-column:1/-1}
 .panel--repos:hover{border-color:var(--repos);box-shadow:0 0 25px rgba(255,221,51,.08)}
+
+/* bank panel — VT323 dark punk, neon gold */
+.panel--bank{
+  border-color:#3a2e00;
+  background:
+    repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(255,200,0,.015) 3px,rgba(255,200,0,.015) 4px),
+    #0d0b05;
+}
+.panel--bank:hover{border-color:var(--bank);box-shadow:0 0 30px rgba(255,200,0,.18),inset 0 0 20px rgba(255,200,0,.04)}
+.panel--bank .panel__title{
+  font-family:'VT323',monospace;
+  font-weight:400;
+  font-size:clamp(1.1rem,2vw,1.5rem);
+  color:var(--bank);
+  text-shadow:0 0 12px rgba(255,200,0,.4);
+  letter-spacing:3px;
+}
+.panel--bank .tool-link{
+  font-family:'VT323',monospace;
+  font-size:1.05rem;
+  color:#b89500;
+  letter-spacing:1px;
+}
+.panel--bank .tool-link:hover{
+  border-left-color:var(--bank);
+  color:var(--bank);
+  text-shadow:0 0 8px rgba(255,200,0,.5);
+  background:rgba(255,200,0,.04);
+}
+.panel--bank .bank-tagline{
+  font-family:'VT323',monospace;
+  color:#8a7000;
+  font-size:.95rem;
+  text-align:center;
+  letter-spacing:2px;
+  margin-bottom:.8rem;
+  border-bottom:1px dashed #3a2e00;
+  padding-bottom:.4rem;
+}
+
+/* chemventur panel — green neon */
+.panel--chem{border-color:#0a3a2a;grid-column:1/-1}
+.panel--chem:hover{border-color:var(--chem);box-shadow:0 0 25px rgba(0,255,136,.08)}
+.panel--chem .panel__title{color:var(--chem)}
+.panel--chem .tool-link:hover{border-left-color:var(--chem);color:var(--chem)}
+.chem-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:.5rem;
+  flex:1;
+}
+.chem-btn{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  padding:.7rem .9rem;
+  background:#0f1a14;
+  border:1px solid #1a3a2a;
+  border-left:2px solid transparent;
+  border-radius:4px;
+  color:#8aaa98;
+  text-decoration:none;
+  font-size:.78rem;
+  transition:all .2s;
+}
+.chem-btn:hover{
+  border-color:var(--chem);
+  border-left-color:var(--chem);
+  color:var(--chem);
+  background:rgba(0,255,136,.04);
+  padding-left:1.1rem;
+}
+.chem-btn .chem-icon{font-size:1rem}
 
 /* ─── PANEL HEADER (clickable fullscreen toggle) ─── */
 .panel__head{
@@ -410,29 +485,44 @@ body::before{
     </div>
     <ul class="tool-list">
       <li><a class="tool-link" href="map-merger-venti/index.html" target="_blank">Map Merger Venti (ArtSpace City)</a></li>
+      <li><a class="tool-link" href="map-merger-venti/translator_v7.html" target="_blank">↳ Translator v7</a></li>
+      <li><a class="tool-link" href="map-merger-venti/snout-first.html" target="_blank">↳ SnoutFirst</a></li>
       <li><a class="tool-link soon">Browser</a></li>
     </ul>
   </section>
 
-  <!-- PANEL 2 — USER ZONE (top middle) -->
-  <section class="panel panel--user">
+  <!-- PANEL 2 — THE BANK (top middle) -->
+  <section class="panel panel--bank">
     <div class="panel__head" onclick="toggleFullscreen(this)">
-      <span class="panel__icon">👤</span>
-      <span class="panel__title">The User</span>
+      <span class="panel__icon">💰</span>
+      <span class="panel__title">The Bank</span>
     </div>
+    <div class="bank-tagline">// RUDVENTUR LEDGER //</div>
     <ul class="tool-list">
+      <li><a class="tool-link" href="https://rudventur.github.io/bank/" target="_blank">▸ Bank / Lending Ledger</a></li>
+      <li><a class="tool-link" href="owe2owe1.html" target="_blank">▸ Peoples Bank (owe2owe1)</a></li>
+      <li><a class="tool-link" href="owe2owe2.html" target="_blank">▸ Lenting System (owe2owe2)</a></li>
+      <li><a class="tool-link" href="bottom-right-popcorn-complete.html" target="_blank">▸ Popcoin Vault (Popcorn Hub Wallet)</a></li>
       <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox</a></li>
       <li><a class="tool-link soon">Translator Maps</a></li>
       <li><a class="tool-link soon">Maps</a></li>
     </ul>
   </section>
 
-  <!-- PANEL 3 — INDEX (top right) -->
-  <section class="panel panel--index">
+  <!-- PANEL 3 — USER ZONE (top right) -->
+  <section class="panel panel--user">
     <div class="panel__head" onclick="toggleFullscreen(this)">
-      <span class="panel__icon">◉</span>
-      <span class="panel__title">The Index</span>
+      <span class="panel__icon">👤</span>
+      <span class="panel__title">The User</span>
     </div>
+    <ul class="tool-list">
+      <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox v2 (upgraded)</a></li>
+      <li><a class="tool-link" href="windows13/userbox-v2-ultimate.html" target="_blank">useRbox v2 (ultimate)</a></li>
+      <!-- useRbox 2.0 — aliased to v2 upgraded until 2.0 lands (Rudy-confirmed URL) -->
+      <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox 2.0</a></li>
+      <li><a class="tool-link" href="map-merger-venti/translator_v7.html" target="_blank">Translator v7</a></li>
+      <li><a class="tool-link soon">Maps</a></li>
+    </ul>
     <div class="index-logo">RUDVENTUR</div>
     <div class="index-sub">a creative web universe</div>
     <ul class="index-zones">
@@ -458,6 +548,13 @@ body::before{
       <span class="panel__title">The Social</span>
     </div>
     <ul class="tool-list">
+      <li><a class="tool-link" href="punk-script/index.html" target="_blank">RudVentur Social (punk-script)</a></li>
+      <li><a class="tool-link" href="global-chat-v5/index.html" target="_blank">Global Chat v5</a></li>
+      <!-- Prompter === Global Chat v5 (Rudy) -->
+      <li><a class="tool-link" href="global-chat-v5/index.html" target="_blank">Prompter (= Global Chat v5)</a></li>
+      <li><a class="tool-link" href="windows13/keyboard-realistic.html" target="_blank">Keyboards</a></li>
+      <!-- Weather App — expected filename: yesterday-today-tomorrow-weather.html -->
+      <li><a class="tool-link soon">Weather App</a></li>
       <li><a class="tool-link soon">RudVentur Social</a></li>
       <li><a class="tool-link" href="windows13/keyboard-realistic.html" target="_blank">Keyboards</a></li>
       <li><a class="tool-link soon">Global Chat / Prompter Chat</a></li>
@@ -484,15 +581,41 @@ body::before{
       <span class="panel__title">The Tools</span>
     </div>
     <ul class="tool-list">
+      <li><a class="tool-link" href="bottom-right-popcorn-complete.html" target="_blank">Popcorn Hub (full)</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/bank/" target="_blank">💰 Bank / Ledger</a></li>
+      <!-- URL placeholders — Rudy will drop final URLs here -->
+      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Minner Wallet</a></li> -->
       <li><a class="tool-link" href="windows13/bottom-right-popcorn-complete.html" target="_blank">Popcorn</a></li>
       <li><a class="tool-link soon">Minner Wallet</a></li>
+      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Prompter Architect</a></li> -->
       <li><a class="tool-link soon">Prompter Architect</a></li>
+      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Cookies Inspector</a></li> -->
       <li><a class="tool-link soon">Cookies Inspector</a></li>
+      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Popcorn File Burner</a></li> -->
       <li><a class="tool-link soon">Popcorn File Burner</a></li>
+      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">DESCRIBER — 3D Cam Scanner</a></li> -->
       <li><a class="tool-link soon">DESCRIBER — 3D Cam Scanner</a></li>
     </ul>
   </section>
 
+  <!-- PANEL 7 — CHEMVENTUR (full width row) -->
+  <section class="panel panel--chem">
+    <div class="panel__head" onclick="toggleFullscreen(this)">
+      <span class="panel__icon">🧪</span>
+      <span class="panel__title">ChemVentur</span>
+    </div>
+    <div class="chem-grid">
+      <a class="chem-btn" href="ChemVentur-Multi-v118/index.html" target="_blank"><span class="chem-icon">⚗️</span>ChemVentur Multi v118</a>
+      <a class="chem-btn" href="ChemVentur/index.html" target="_blank"><span class="chem-icon">🧬</span>ChemVentur (classic)</a>
+      <!-- Type Game — Rudy used a local copy; expected path punk-script/type-game.html when file lands -->
+      <a class="chem-btn" href="punk-script/type-game.html" target="_blank"><span class="chem-icon">⌨️</span>Type Game (punk-script)</a>
+      <a class="chem-btn" href="https://www.tinkercad.com" target="_blank" rel="noopener"><span class="chem-icon">🔧</span>Tinkercad</a>
+      <a class="chem-btn" href="https://zoo.dev" target="_blank" rel="noopener"><span class="chem-icon">🦓</span>Zoo.dev</a>
+      <a class="chem-btn" href="https://www.soldat.pl" target="_blank" rel="noopener"><span class="chem-icon">🎮</span>Soldat.pl</a>
+    </div>
+  </section>
+
+  <!-- PANEL 8 — REPOS (full width row) -->
   <!-- PANEL 7 — REPOS (full width row) -->
   <section class="panel panel--repos">
     <div class="panel__head" onclick="toggleFullscreen(this)">
