@@ -45,12 +45,51 @@ body::before{
   text-align:center;
   padding:2.5rem 1rem 1.5rem;
 }
+.site-header .title-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:1.5rem;
+  flex-wrap:wrap;
+}
 .site-header h1{
   font-family:'Bebas Neue',sans-serif;
   font-size:clamp(2.2rem,6vw,4rem);
   letter-spacing:4px;
   color:var(--index);
   text-shadow:0 0 30px rgba(255,255,255,.08);
+  cursor:pointer;
+  user-select:none;
+  transition:text-shadow .25s,transform .25s;
+  margin:0;
+}
+.site-header h1:hover{
+  text-shadow:0 0 40px rgba(255,255,255,.3),0 0 80px rgba(255,153,51,.15);
+  transform:scale(1.02);
+}
+.kofi-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  padding:.55rem 1rem;
+  background:#0e0e10;
+  color:#ff9933;
+  border:1px solid #3a2a0a;
+  border-radius:8px;
+  font-family:'DM Mono',monospace;
+  font-size:.75rem;
+  font-weight:500;
+  letter-spacing:1px;
+  text-decoration:none;
+  text-transform:uppercase;
+  transition:all .2s;
+  white-space:nowrap;
+}
+.kofi-btn:hover{
+  border-color:#ff9933;
+  background:#1a0f04;
+  box-shadow:0 0 20px rgba(255,153,51,.25);
+  color:#ffb566;
 }
 .site-header .tagline{
   font-size:.8rem;
@@ -501,7 +540,11 @@ body::before{
 
 <!-- HEADER -->
 <header class="site-header">
-  <h1>RUDVENTUR</h1>
+  <div class="title-row">
+    <a class="kofi-btn" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ Ko-fi</a>
+    <h1 onclick="toggleBrowserFullscreen()" title="click to toggle fullscreen">RUDVENTUR</h1>
+    <a class="kofi-btn" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">🎃 Ko-fi</a>
+  </div>
   <div class="tagline">a creative web universe</div>
   <div class="version">v3.0 — all repos consolidated</div>
 </header>
@@ -650,6 +693,21 @@ body::before{
 </div>
 
 <script>
+// Toggle browser fullscreen on RUDVENTUR sign click
+function toggleBrowserFullscreen() {
+  if (!document.fullscreenElement) {
+    (document.documentElement.requestFullscreen
+      || document.documentElement.webkitRequestFullscreen
+      || document.documentElement.msRequestFullscreen
+      || function(){}).call(document.documentElement);
+  } else {
+    (document.exitFullscreen
+      || document.webkitExitFullscreen
+      || document.msExitFullscreen
+      || function(){}).call(document);
+  }
+}
+
 // Toggle fullscreen on panel head click
 function toggleFullscreen(headEl) {
   const panel = headEl.closest('.panel');
