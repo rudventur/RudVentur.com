@@ -25,6 +25,15 @@ canvas#world{position:fixed;inset:0;z-index:1}
 .hbtn.y{border-color:#ffe600;color:#ffe600}.hbtn.y:hover{background:#ffe600;color:#000}
 .hbtn.r{border-color:#ff2244;color:#ff2244}.hbtn.r:hover{background:#ff2244;color:#fff}
 
+/* ── REDIRECT DROPDOWN ── */
+.redirect-wrap{position:relative;display:inline-block;flex-shrink:0}
+.redirect-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;background:#000;border:1.5px solid #c084fc;border-radius:6px;padding:4px;z-index:1100;min-width:150px;box-shadow:0 4px 16px rgba(0,0,0,0.6)}
+.redirect-menu.show{display:block}
+.redirect-menu a,.redirect-menu .cur{display:block;padding:5px 8px;border-radius:4px;font-family:'VT323',monospace;font-size:.85rem;text-decoration:none;white-space:nowrap}
+.redirect-menu a{color:#c084fc}
+.redirect-menu a:hover{background:#c084fc;color:#000}
+.redirect-menu .cur{color:rgba(192,132,252,0.35);cursor:default}
+
 /* ── VEHICLE BAR ── */
 .vbar{position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(0,0,0,0.94);border-top:2px solid #00ff41;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 6px;z-index:1000}
 .vbtn{width:40px;height:40px;background:#000;border:2px solid rgba(0,255,65,0.25);border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:1.1rem;gap:1px;flex-shrink:0}
@@ -209,9 +218,28 @@ canvas#world{position:fixed;inset:0;z-index:1}
   <button class="hbtn" id="notebookBtn" style="display:none;border-color:#44ff88;color:#44ff88" onclick="toggleUfoNotebook()">&#128221; LOG</button>
   <button class="hbtn y" id="commentBtn" onclick="toggleCommentMode()">&#128172; NOTE</button>
   <button class="hbtn" id="dashboardBtn" style="border-color:#011289;color:#6688ff" onclick="toggleDashboard()">&#128203; BOARD</button>
-  <button class="hbtn" id="snoutBtn" style="border-color:#cc8833;color:#ffcc66" onclick="window.open('snout-first.html','_blank')">&#128062; SNOUT</button>
-  <button class="hbtn" id="translateBtn" style="border-color:#c084fc;color:#c084fc" onclick="window.open('translator_v7.html','_blank')">&#127760; TRANSLATE</button>
+  <div class="redirect-wrap">
+    <button class="hbtn" id="redirectBtn" style="border-color:#c084fc;color:#c084fc" onclick="toggleRedirectMenu(event)">&#128257; REDIRECT</button>
+    <div class="redirect-menu" id="redirectMenu">
+      <span class="cur">&#128506;&#65039; Map Merger (here)</span>
+      <a href="snout-first.html" target="_blank">&#128062; Snout First</a>
+      <a href="translator_v7.html" target="_blank">&#127760; Translator</a>
+    </div>
+  </div>
 </div>
+
+<script>
+function toggleRedirectMenu(e) {
+  e.stopPropagation();
+  document.getElementById('redirectMenu').classList.toggle('show');
+}
+document.addEventListener('click', e => {
+  const menu = document.getElementById('redirectMenu');
+  if (menu && menu.classList.contains('show') && !e.target.closest('.redirect-wrap')) {
+    menu.classList.remove('show');
+  }
+});
+</script>
 
 <!-- STATS -->
 <div class="stats">

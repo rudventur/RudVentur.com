@@ -30,6 +30,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Fira C
 .hdr-btn:hover{color:var(--text);border-color:var(--dim)}
 .hdr-btn.active{color:var(--amber);border-color:var(--amber)}
 
+/* ── REDIRECT DROPDOWN ── */
+.redirect-wrap{position:relative;display:inline-block}
+.redirect-menu{display:none;position:absolute;top:calc(100% + 4px);right:0;background:#0a0a0a;border:1px solid var(--purple);border-radius:6px;padding:4px;z-index:900;min-width:150px;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+.redirect-menu.show{display:block}
+.redirect-menu a,.redirect-menu .cur{display:block;padding:5px 8px;border-radius:4px;font-family:'Fira Code',monospace;font-size:10px;text-decoration:none;white-space:nowrap}
+.redirect-menu a{color:var(--purple)}
+.redirect-menu a:hover{background:var(--purple);color:#000}
+.redirect-menu .cur{color:var(--dim);cursor:default}
+
 .size-control{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
 .size-control label{font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:1px}
 input[type=range]{-webkit-appearance:none;height:4px;background:#333;border-radius:2px;outline:none}
@@ -142,10 +151,29 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <button class="hdr-btn" onclick="saveToTxt()" title="Save state to .txt">💾 SAVE</button>
     <button class="hdr-btn" onclick="loadFromTxt()" title="Load state from .txt">📂 LOAD</button>
     <button class="hdr-btn" onclick="resetAllState()">↺ RESET</button>
-    <a href="index.html" style="font-size:10px;color:var(--green);text-decoration:none;border:1px solid rgba(0,255,65,.3);padding:3px 8px;border-radius:5px">&#128072; ARTSPACE</a>
+    <div class="redirect-wrap">
+      <button class="hdr-btn" style="color:var(--purple);border-color:var(--purple)" onclick="toggleRedirectMenu(event)">&#128257; REDIRECT</button>
+      <div class="redirect-menu" id="redirectMenu">
+        <span class="cur">&#127760; Translator (here)</span>
+        <a href="index.html">&#128506;&#65039; Map Merger</a>
+        <a href="snout-first.html" target="_blank">&#128062; Snout First</a>
+      </div>
+    </div>
     <span style="font-size:10px;color:var(--dim)">RV©26</span>
   </div>
 </div>
+<script>
+function toggleRedirectMenu(e) {
+  e.stopPropagation();
+  document.getElementById('redirectMenu').classList.toggle('show');
+}
+document.addEventListener('click', e => {
+  const menu = document.getElementById('redirectMenu');
+  if (menu && menu.classList.contains('show') && !e.target.closest('.redirect-wrap')) {
+    menu.classList.remove('show');
+  }
+});
+</script>
 
 <div id="translate-bar">
   <select id="base-lang-select"></select>

@@ -93,9 +93,16 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
 .zoom-axis .zbtn:hover{background:#cc8833;color:#1a120a}
 .zoom-axis .zlev{font-family:'Press Start 2P',monospace;font-size:.16rem;color:#ffcc66;margin:3px 0}
 
-/* ── BACK BUTTON ── */
-.back-btn{position:fixed;bottom:12px;left:12px;z-index:1000;background:rgba(26,18,10,0.95);border:2px solid #cc8833;color:#ffcc66;padding:6px 12px;border-radius:12px;cursor:pointer;font-family:'Bubblegum Sans',cursive;font-size:1rem;transition:all .15s;text-decoration:none;display:flex;align-items:center;gap:6px}
-.back-btn:hover{background:#cc8833;color:#1a120a}
+/* ── REDIRECT BUTTON ── */
+.redirect-wrap{position:fixed;bottom:12px;left:12px;z-index:1000}
+.redirect-btn{background:rgba(26,18,10,0.95);border:2px solid #cc8833;color:#ffcc66;padding:6px 12px;border-radius:12px;cursor:pointer;font-family:'Bubblegum Sans',cursive;font-size:1rem;transition:all .15s;display:flex;align-items:center;gap:6px}
+.redirect-btn:hover{background:#cc8833;color:#1a120a}
+.redirect-menu{display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:rgba(26,18,10,0.98);border:2px solid #cc8833;border-radius:12px;padding:5px;min-width:170px;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+.redirect-menu.show{display:block}
+.redirect-menu a,.redirect-menu .cur{display:block;padding:6px 10px;border-radius:8px;font-family:'Bubblegum Sans',cursive;font-size:.9rem;text-decoration:none;white-space:nowrap}
+.redirect-menu a{color:#ffcc66}
+.redirect-menu a:hover{background:#cc8833;color:#1a120a}
+.redirect-menu .cur{color:rgba(255,204,102,0.35);cursor:default}
 
 /* ── BONE DIVIDER ── */
 .bone-divider{text-align:center;color:rgba(204,136,51,0.2);font-size:.7rem;margin:8px 0;letter-spacing:4px}
@@ -213,8 +220,27 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
   </div>
 </div>
 
-<!-- BACK TO ARTSPACE -->
-<a class="back-btn" href="index.html">&#128072; ArtSpace City</a>
+<!-- REDIRECT -->
+<div class="redirect-wrap">
+  <button class="redirect-btn" onclick="toggleRedirectMenu(event)">&#128257; Redirect</button>
+  <div class="redirect-menu" id="redirectMenu">
+    <span class="cur">&#128062; Snout First (here)</span>
+    <a href="index.html">&#128506;&#65039; Map Merger</a>
+    <a href="translator_v7.html" target="_blank">&#127760; Translator</a>
+  </div>
+</div>
+<script>
+function toggleRedirectMenu(e) {
+  e.stopPropagation();
+  document.getElementById('redirectMenu').classList.toggle('show');
+}
+document.addEventListener('click', e => {
+  const menu = document.getElementById('redirectMenu');
+  if (menu && menu.classList.contains('show') && !e.target.closest('.redirect-wrap')) {
+    menu.classList.remove('show');
+  }
+});
+</script>
 
 <canvas id="snoutMap"></canvas>
 
