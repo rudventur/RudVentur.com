@@ -27,7 +27,7 @@ canvas#world{position:fixed;inset:0;z-index:1}
 
 /* ── REDIRECT DROPDOWN ── */
 .redirect-wrap{position:relative;display:inline-block;flex-shrink:0}
-.redirect-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;background:#000;border:1.5px solid #c084fc;border-radius:6px;padding:4px;z-index:1100;min-width:150px;box-shadow:0 4px 16px rgba(0,0,0,0.6)}
+.redirect-menu{display:none;position:fixed;background:#000;border:1.5px solid #c084fc;border-radius:6px;padding:4px;z-index:2000;min-width:150px;box-shadow:0 4px 16px rgba(0,0,0,0.6)}
 .redirect-menu.show{display:block}
 .redirect-menu a,.redirect-menu .cur{display:block;padding:5px 8px;border-radius:4px;font-family:'VT323',monospace;font-size:.85rem;text-decoration:none;white-space:nowrap}
 .redirect-menu a{color:#c084fc}
@@ -220,25 +220,36 @@ canvas#world{position:fixed;inset:0;z-index:1}
   <button class="hbtn" id="dashboardBtn" style="border-color:#011289;color:#6688ff" onclick="toggleDashboard()">&#128203; BOARD</button>
   <div class="redirect-wrap">
     <button class="hbtn" id="redirectBtn" style="border-color:#c084fc;color:#c084fc" onclick="toggleRedirectMenu(event)">&#128257; REDIRECT</button>
-    <div class="redirect-menu" id="redirectMenu">
-      <span class="cur">&#128506;&#65039; Map Merger (here)</span>
-      <a href="snout-first.html" target="_blank">&#128062; Snout First</a>
-      <a href="translator_v7.html" target="_blank">&#127760; Translator</a>
-    </div>
   </div>
+</div>
+
+<!-- Positioned via JS as position:fixed, kept outside .hud so its overflow-x:auto (which forces
+     overflow-y:auto too) can't clip a menu that extends below the 50px header bar. -->
+<div class="redirect-menu" id="redirectMenu">
+  <span class="cur">&#128506;&#65039; Map Merger (here)</span>
+  <a href="snout-first.html" target="_blank">&#128062; Snout First</a>
+  <a href="translator_v7.html" target="_blank">&#127760; Translator</a>
 </div>
 
 <script>
 function toggleRedirectMenu(e) {
   e.stopPropagation();
-  document.getElementById('redirectMenu').classList.toggle('show');
+  const menu = document.getElementById('redirectMenu');
+  const willShow = !menu.classList.contains('show');
+  if (willShow) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    menu.style.top = (rect.bottom + 4) + 'px';
+    menu.style.left = rect.left + 'px';
+  }
+  menu.classList.toggle('show', willShow);
 }
 document.addEventListener('click', e => {
   const menu = document.getElementById('redirectMenu');
-  if (menu && menu.classList.contains('show') && !e.target.closest('.redirect-wrap')) {
+  if (menu && menu.classList.contains('show') && !e.target.closest('.redirect-wrap') && !e.target.closest('#redirectMenu')) {
     menu.classList.remove('show');
   }
 });
+window.addEventListener('resize', () => document.getElementById('redirectMenu').classList.remove('show'));
 </script>
 
 <!-- STATS -->

@@ -93,11 +93,9 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
 .zoom-axis .zbtn:hover{background:#cc8833;color:#1a120a}
 .zoom-axis .zlev{font-family:'Press Start 2P',monospace;font-size:.16rem;color:#ffcc66;margin:3px 0}
 
-/* ── REDIRECT BUTTON ── */
-.redirect-wrap{position:fixed;bottom:12px;left:12px;z-index:1000}
-.redirect-btn{background:rgba(26,18,10,0.95);border:2px solid #cc8833;color:#ffcc66;padding:6px 12px;border-radius:12px;cursor:pointer;font-family:'Bubblegum Sans',cursive;font-size:1rem;transition:all .15s;display:flex;align-items:center;gap:6px}
-.redirect-btn:hover{background:#cc8833;color:#1a120a}
-.redirect-menu{display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:rgba(26,18,10,0.98);border:2px solid #cc8833;border-radius:12px;padding:5px;min-width:170px;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+/* ── REDIRECT DROPDOWN ── */
+.redirect-wrap{position:relative;display:inline-block;flex-shrink:0}
+.redirect-menu{display:none;position:fixed;background:rgba(26,18,10,0.98);border:2px solid #cc8833;border-radius:12px;padding:5px;z-index:2000;min-width:170px;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
 .redirect-menu.show{display:block}
 .redirect-menu a,.redirect-menu .cur{display:block;padding:6px 10px;border-radius:8px;font-family:'Bubblegum Sans',cursive;font-size:.9rem;text-decoration:none;white-space:nowrap}
 .redirect-menu a{color:#ffcc66}
@@ -128,7 +126,37 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
   <button class="hbtn paw" onclick="togglePinPet()">&#128062; PIN PET</button>
   <button class="hbtn" onclick="toggleTrail()">&#128017; TRAIL</button>
   <button class="hbtn" onclick="togglePack()">&#128058; PACK</button>
+  <div class="redirect-wrap">
+    <button class="hbtn" onclick="toggleRedirectMenu(event)">&#128257; Redirect</button>
+  </div>
 </div>
+
+<div class="redirect-menu" id="redirectMenu">
+  <span class="cur">&#128062; Snout First (here)</span>
+  <a href="index.html">&#128506;&#65039; Map Merger</a>
+  <a href="translator_v7.html" target="_blank">&#127760; Translator</a>
+</div>
+
+<script>
+function toggleRedirectMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('redirectMenu');
+  const willShow = !menu.classList.contains('show');
+  if (willShow) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    menu.style.top = (rect.bottom + 4) + 'px';
+    menu.style.left = rect.left + 'px';
+  }
+  menu.classList.toggle('show', willShow);
+}
+document.addEventListener('click', e => {
+  const menu = document.getElementById('redirectMenu');
+  if (menu && menu.classList.contains('show') && !e.target.closest('.redirect-wrap') && !e.target.closest('#redirectMenu')) {
+    menu.classList.remove('show');
+  }
+});
+window.addEventListener('resize', () => document.getElementById('redirectMenu').classList.remove('show'));
+</script>
 
 <!-- STATS -->
 <div class="stats">
@@ -219,28 +247,6 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
     <button class="hbtn red" onclick="deletePetFromUserbox()">&#128465; Remove</button>
   </div>
 </div>
-
-<!-- REDIRECT -->
-<div class="redirect-wrap">
-  <button class="redirect-btn" onclick="toggleRedirectMenu(event)">&#128257; Redirect</button>
-  <div class="redirect-menu" id="redirectMenu">
-    <span class="cur">&#128062; Snout First (here)</span>
-    <a href="index.html">&#128506;&#65039; Map Merger</a>
-    <a href="translator_v7.html" target="_blank">&#127760; Translator</a>
-  </div>
-</div>
-<script>
-function toggleRedirectMenu(e) {
-  e.stopPropagation();
-  document.getElementById('redirectMenu').classList.toggle('show');
-}
-document.addEventListener('click', e => {
-  const menu = document.getElementById('redirectMenu');
-  if (menu && menu.classList.contains('show') && !e.target.closest('.redirect-wrap')) {
-    menu.classList.remove('show');
-  }
-});
-</script>
 
 <canvas id="snoutMap"></canvas>
 
