@@ -456,6 +456,9 @@ function zoomOut() { zoomTarget = Math.max(ZOOM_MIN, zoomTarget - 0.5); }
 
 // Scroll wheel — trackpad-friendly
 document.addEventListener('wheel', e => {
+  // Only zoom the map when the cursor is actually over the map canvas —
+  // otherwise let panels, modals, and scrollable lists scroll normally.
+  if (e.target !== cv) return;
   const px = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY;
   const delta = -px / 340;
   const clamped = Math.max(-0.6, Math.min(0.6, delta));
@@ -1242,6 +1245,15 @@ render();
 // Init Firebase after render starts
 setTimeout(initFirebaseIntegration, 500);
 </script>
-<script src="map-spots.js"></script>
+
+<!-- adiCtive additive panels: LOST mode, Pack/Family/Home/Vets, drag, DogLost embed -->
+<script src="js/lost-zone.js"></script>
+<script src="js/lost-pet.js"></script>
+<script src="js/lost-social.js"></script>
+<script src="js/panel-left.js"></script>
+<script src="js/panel-right.js"></script>
+<script src="js/panel-drag.js"></script>
+<script src="js/doglost-embed.js"></script>
+<script src="js/map-spots.js"></script>
 </body>
 </html>

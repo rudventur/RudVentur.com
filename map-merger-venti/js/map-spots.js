@@ -14,12 +14,12 @@
 
 // ── SECTION 1: SPOT TYPE CONFIG ──
 const SPOT_TYPES = {
-  memorial:    { id: 'memorial',    label: 'Memorial',           emoji: '\u{1F56F}️', color: '#a89bb5', defaultTimer: 'timestamp' },
+  memorial:    { id: 'memorial',    label: 'Memorial',           emoji: '\u{1F56F}\uFE0F', color: '#a89bb5', defaultTimer: 'timestamp' },
   feeding:     { id: 'feeding',     label: 'Feeding Station',    emoji: '\u{1F356}',       color: '#ff9944', defaultTimer: 'time_since' },
-  danger:      { id: 'danger',      label: 'Danger Zone',        emoji: '⚠️',    color: '#ff3344', defaultTimer: 'countdown' },
+  danger:      { id: 'danger',      label: 'Danger Zone',        emoji: '\u26A0\uFE0F',    color: '#ff3344', defaultTimer: 'countdown' },
   event:       { id: 'event',       label: 'Event',              emoji: '\u{1F389}',       color: '#cc66ff', defaultTimer: 'expires_at' },
   found_pet:   { id: 'found_pet',   label: 'Pet Sighting',       emoji: '\u{1F43E}',       color: '#66cc44', defaultTimer: 'time_since' },
-  vet_shelter: { id: 'vet_shelter', label: 'Vet / Shelter',      emoji: '⚕️',    color: '#44aaff', defaultTimer: 'timestamp' },
+  vet_shelter: { id: 'vet_shelter', label: 'Vet / Shelter',      emoji: '\u2695\uFE0F',    color: '#44aaff', defaultTimer: 'timestamp' },
   dog_park:    { id: 'dog_park',    label: 'Dog Park',           emoji: '\u{1F333}',       color: '#55bb55', defaultTimer: 'timestamp' },
   water:       { id: 'water',       label: 'Water Source',       emoji: '\u{1F4A7}',       color: '#33bbdd', defaultTimer: 'timestamp' },
   free_item:   { id: 'free_item',   label: 'Free Item',          emoji: '\u{1F381}',       color: '#ffcc33', defaultTimer: 'countdown' },
@@ -68,6 +68,7 @@ function spotFullTimestamp(ts) {
   });
 }
 
+// Returns the label to show under a spot based on its timer mode
 function spotTimerDisplay(spot) {
   switch (spot.timerMode) {
     case 'time_since': return spotTimeAgo(spot.createdAt);
@@ -86,9 +87,9 @@ function spotIsExpired(spot) {
 
 // ── SECTION 3: STATE (lives on global S, additive) ──
 S.spots = S.spots || [];
-S._spotsMode = false;
+S._spotsMode = false;        // "drop a spot" mode toggle
 S._pendingSpotLatLon = null;
-S._activeSpotDetail = null;
+S._activeSpotDetail = null;  // spot object currently shown in detail panel
 
 function saveSpots() {
   try { localStorage.setItem('snoutfirst_spots', JSON.stringify(S.spots)); } catch (e) {}
@@ -101,12 +102,13 @@ function loadSpots() {
 }
 loadSpots();
 
+// Periodic cleanup of expired countdown/expires_at spots (keep them 1hr after expiry, greyed, then drop)
 function spotsCleanupExpired() {
   const now = Date.now();
   const before = S.spots.length;
   S.spots = S.spots.filter(s => {
     if (!spotIsExpired(s)) return true;
-    return (now - s.expiresAt) < 3600000;
+    return (now - s.expiresAt) < 3600000; // keep 1hr past expiry, greyed out
   });
   if (S.spots.length !== before) saveSpots();
 }
@@ -221,6 +223,7 @@ function toggleSpotDropMode() {
   }
 }
 
+// Called from our own canvas click listener below
 function handleSpotMapClick(lat, lon) {
   S._pendingSpotLatLon = { lat, lon };
   S._spotsMode = false;
@@ -292,7 +295,7 @@ function closeSpotCreateForm() {
 
 function saveNewSpot() {
   const title = (document.getElementById('spotTitle')?.value || '').trim();
-  if (!title) { toast('⚠️ Give it a title'); return; }
+  if (!title) { toast('\u26A0\uFE0F Give it a title'); return; }
   const desc = (document.getElementById('spotDesc')?.value || '').trim();
   const pos = S._pendingSpotLatLon;
   if (!pos) { closeSpotCreateForm(); return; }
@@ -317,9 +320,9 @@ function saveNewSpot() {
     timerMode: _spotFormTimer,
     createdAt: now,
     expiresAt,
-    reactions: {},
-    comments: [],
-    linkedPetIndex: null,
+    reactions: {},   // { emoji: count }
+    comments: [],     // [{text, timestamp}]
+    linkedPetIndex: null, // future: pet linking
   };
   S.spots.push(spot);
   saveSpots();
@@ -334,14 +337,14 @@ function openSpotDetail(spot, screenX, screenY) {
   const el = document.getElementById('spotDetail');
   el.style.borderColor = cfg.color;
 
-  const reactionEmojis = ['❤️', '\u{1F440}', '⚠️', '\u{1F44D}'];
+  const reactionEmojis = ['\u2764\uFE0F', '\u{1F440}', '\u26A0\uFE0F', '\u{1F44D}'];
   const reactionsHtml = reactionEmojis.map(em => {
     const count = spot.reactions[em] || 0;
     return `<div class="sd-react-btn" onclick="reactToSpot('${spot.id}','${em}')">${em} ${count > 0 ? count : ''}</div>`;
   }).join('');
 
   const commentsHtml = spot.comments.length
-    ? spot.comments.map(c => `<div class="sd-comment"><b>•</b> ${escSpot(c.text)} <span style="opacity:.5;font-size:.7rem">(${spotTimeAgo(c.timestamp)})</span></div>`).join('')
+    ? spot.comments.map(c => `<div class="sd-comment"><b>\u2022</b> ${escSpot(c.text)} <span style="opacity:.5;font-size:.7rem">(${spotTimeAgo(c.timestamp)})</span></div>`).join('')
     : '<div style="opacity:.4;font-size:.8rem">No comments yet.</div>';
 
   const expiredTag = spotIsExpired(spot) ? ' <span style="color:#ff5555">(expired)</span>' : '';
@@ -350,7 +353,7 @@ function openSpotDetail(spot, screenX, screenY) {
     <button class="sd-close" onclick="closeSpotDetail()">&times;</button>
     <div class="sd-emoji">${cfg.emoji}</div>
     <div class="sd-title" style="color:${cfg.color}">${escSpot(spot.title)}</div>
-    <div class="sd-timer">${cfg.label} · ${spotTimerDisplay(spot)}${expiredTag}</div>
+    <div class="sd-timer">${cfg.label} \u00B7 ${spotTimerDisplay(spot)}${expiredTag}</div>
     ${spot.desc ? `<div class="sd-desc">${escSpot(spot.desc)}</div>` : ''}
     <div class="sd-reactions">${reactionsHtml}</div>
     <div class="sd-comments" id="spotCommentsList">${commentsHtml}</div>
@@ -402,7 +405,7 @@ function removeSpot(id) {
   S.spots = S.spots.filter(s => s.id !== id);
   saveSpots();
   closeSpotDetail();
-  toast('\u{1F5D1}️ Spot removed');
+  toast('\u{1F5D1}\uFE0F Spot removed');
 }
 
 function escSpot(s) {
@@ -412,6 +415,8 @@ function escSpot(s) {
 }
 
 // ── SECTION 7: MAP RENDERING (hook into existing render loop) ──
+// Same pattern as lost-zone.js — wrap drawPets() so our spots draw
+// every frame without touching the core engine's render() function.
 const _spotsOriginalDrawPets = drawPets;
 drawPets = function() {
   _spotsOriginalDrawPets();
@@ -433,11 +438,13 @@ function drawMapSpots() {
     cx.save();
     cx.globalAlpha = alpha;
 
+    // Shadow
     cx.beginPath();
     cx.arc(p.x, p.y + 2, 13, 0, Math.PI * 2);
     cx.fillStyle = 'rgba(0,0,0,0.3)';
     cx.fill();
 
+    // Pin
     cx.beginPath();
     cx.arc(p.x, p.y, 13, 0, Math.PI * 2);
     cx.fillStyle = 'rgba(20,20,20,0.88)';
@@ -446,6 +453,7 @@ function drawMapSpots() {
     cx.lineWidth = 2;
     cx.stroke();
 
+    // Emoji icon
     cx.font = '14px sans-serif';
     cx.textAlign = 'center';
     cx.textBaseline = 'middle';
@@ -453,6 +461,7 @@ function drawMapSpots() {
 
     cx.restore();
 
+    // Title label at closer zoom
     if (S.zoom >= 14) {
       cx.font = '11px "Bubblegum Sans", cursive, sans-serif';
       cx.fillStyle = cfg.color;
@@ -468,6 +477,8 @@ function drawMapSpots() {
 }
 
 // ── SECTION 8: CLICK HANDLING ──
+// Own listener, doesn't touch the core engine's pointerup handler.
+// Runs alongside it; core engine ignores clicks we've already used.
 (function bindSpotClicks() {
   const cv = document.getElementById('snoutMap');
   let downPos = null;
@@ -478,14 +489,16 @@ function drawMapSpots() {
     if (!downPos) return;
     const dx = Math.abs(e.clientX - downPos.x), dy = Math.abs(e.clientY - downPos.y);
     downPos = null;
-    if (dx > 5 || dy > 5) return;
+    if (dx > 5 || dy > 5) return; // was a drag, not a tap
 
+    // Spot-drop mode takes priority
     if (S._spotsMode) {
       const w = screenToWorld(e.clientX, e.clientY);
       handleSpotMapClick(w.lat, w.lon);
       return;
     }
 
+    // Otherwise check if a spot pin was tapped
     for (let i = S.spots.length - 1; i >= 0; i--) {
       const spot = S.spots[i];
       const p = worldToScreen(spot.lat, spot.lon);
