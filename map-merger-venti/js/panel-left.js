@@ -534,15 +534,11 @@ function lpRenderGPS() {
     const lat = p.lat ? p.lat.toFixed(4) : '—';
     const lon = p.lon ? p.lon.toFixed(4) : '—';
     return `<div class="lp-gps-card">
-      <div class="lp-gps-name">${em} ${p.name}</div>
-      <div class="lp-coords">📍 ${lat}° N · ${lon}° W</div>
+      <div class="lp-gps-name">${em} ${p.name} <span class="lp-coords">&middot; ${lat}&deg;N ${lon}&deg;W</span></div>
       <div class="lp-gps-row">
         <span class="lp-gps-btn" onclick="lpToggleGPS(${i})">${hasGPS ? '📍 GPS on' : '📍 GPS off'}</span>
-        <span class="lp-gps-btn device ${hasDevice ? 'linked' : ''}" onclick="lpLinkDevice(${i})">${hasDevice ? '🔗 tracker linked' : '+ link device'}</span>
+        <span class="lp-gps-btn device ${hasDevice ? 'linked' : ''}" onclick="lpLinkDevice(${i})">${hasDevice ? '⚡ tracking' : '+ link device'}</span>
         <span class="lp-gps-btn" onclick="if(typeof panToPet==='function')panToPet(${i})">🎯 Go</span>
-      </div>
-      <div style="color:rgba(255,204,102,0.25);font-size:.6rem;margin-top:4px;font-family:'VT323',monospace">
-        ${hasDevice ? '⚡ live tracking active — placeholder for device API' : 'No tracker device linked yet'}
       </div>
     </div>`;
   }).join('');

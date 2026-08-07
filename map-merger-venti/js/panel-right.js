@@ -231,7 +231,8 @@ function injectRightPanel() {
     <div class="rp-toggle" id="rpToggleBtn">▶</div>
     <div class="rp-inner">
       <div class="rp-tabs" id="rpTabBar">
-        <div class="rp-tab active" data-rptab="friends">Pack<span class="rp-tab-opts">⚙</span></div>
+        <div class="rp-tab active" data-rptab="mypets">&#128062; My Pets<span class="rp-tab-opts">⚙</span></div>
+        <div class="rp-tab" data-rptab="friends">Pack<span class="rp-tab-opts">⚙</span></div>
         <div class="rp-tab" data-rptab="family">Family<span class="rp-tab-opts">⚙</span></div>
         <div class="rp-tab" data-rptab="home">Home<span class="rp-tab-opts">⚙</span></div>
         <div class="rp-tab" data-rptab="vets">Vets<span class="rp-tab-opts">⚙</span></div>
@@ -261,7 +262,13 @@ const FAMILY_TREE = [
 const VETS_DEFAULT = [
   { n:'City Vet Clinic', a:'12 Park Rd, London', url:'https://maps.google.com/?q=vet+near+me', tags:['24h','emergency'], pinned:true },
   { n:'Paws & Claws', a:'88 High St, London', url:'https://maps.google.com/?q=paws+claws+vet', tags:['cats','dogs','rabbits'], pinned:false },
-  { n:'VetNow Online', a:'vetnow.co.uk', url:'https://www.vetnow.co.uk', tags:['online','24h'], pinned:false },
+];
+
+// Real emergency contacts — shown first, always visible, not dependent on location
+const EMERGENCY_UK = [
+  { label:'🚨 Vets Now (24h Emergency)', url:'https://www.vets-now.com/find-a-clinic/' },
+  { label:'☠️ Animal PoisonLine', url:'https://www.animalpoisonline.co.uk' },
+  { label:'🐾 RSPCA 24h Cruelty Line', url:'https://www.rspca.org.uk/whatwedo/contactus' },
 ];
 
 // FOOD TAB — LOCKED AS HOLY GRAIL
@@ -279,17 +286,31 @@ const CHARITIES_UK = [
   { label:"Cats Protection", url:'https://www.cats.org.uk' },
   { label:'DogLost', url:'https://www.doglost.co.uk' },
   { label:'Freeads Pets', url:'https://www.freeads.co.uk/pets' },
+  { label:'Battersea', url:'https://www.battersea.org.uk' },
+  { label:'Woodgreen', url:'https://www.woodgreen.org.uk' },
+  { label:'International Cat Care', url:'https://icatcare.org' },
+  { label:'Animal Trust (low-cost vets)', url:'https://www.animaltrust.org.uk' },
 ];
 
 const CHARITIES_PL = [
   { label:'Psia Krew 🇵🇱', url:'https://fundacjapsiakrew.pl' },
   { label:'Animal Helper 🇵🇱', url:'https://www.animalhelper.pl' },
   { label:'RatujemyZwierzaki 🇵🇱', url:'https://www.ratujemyzwierzaki.pl' },
+  { label:'Fundacja Viva! 🇵🇱', url:'https://www.viva.org.pl' },
+  { label:'OTOZ Animals 🇵🇱', url:'https://www.otoz.pl' },
 ];
 
 // ── State ──
 let rpOpen = true;
-let rpActiveTab = 'friends';
+let rpActiveTab = 'mypets';
+
+// A pet with no registered_by only exists in this browser, so it's inherently "mine".
+// A pet registered through Firebase is only mine if I'm the one who registered it.
+function isMyPet(pet) {
+  if (!pet) return false;
+  if (pet.registered_by) return typeof getUid === 'function' && pet.registered_by === getUid();
+  return true;
+}
 let rpNearbyVets = [];
 let rpNearbySearchCenter = null;
 let rpNearbyLoading = false;
@@ -388,6 +409,7 @@ function rpRender() {
   const el = document.getElementById('rpContent');
   if (!el) return;
   switch (rpActiveTab) {
+    case 'mypets':  el.innerHTML = rpRenderMyPets();  break;
     case 'friends': el.innerHTML = rpRenderFriends(); break;
     case 'family':  el.innerHTML = rpRenderFamily();  break;
     case 'home':    el.innerHTML = rpRenderHome();    break;
@@ -395,6 +417,27 @@ function rpRender() {
     case 'food':    el.innerHTML = rpRenderFood();    break;
   }
   rpBindDrag();
+}
+
+// ── My Pets (protected — view/wag/go only, no delete or lost-toggle here) ──
+function rpRenderMyPets() {
+  const pets = ((typeof S !== 'undefined' ? S.pets : []) || []).filter(isMyPet);
+  if (!pets.length) {
+    return '<div style="color:rgba(255,204,102,0.35);text-align:center;padding:16px;font-size:.8rem">No pets of yours yet.<br>Pin one on the map to see it here! 🐾</div>';
+  }
+  return '<div class="drag-hint">these are yours — manage them from the left panel</div>' +
+    pets.map(p => {
+      const idx = S.pets.indexOf(p);
+      const em = (typeof SPECIES_EM !== 'undefined' ? SPECIES_EM[p.species] : '') || '🐾';
+      return `<div class="rp-link">
+        <div class="rp-lname">
+          <span>${em} ${p.name}</span>
+          <span class="rp-pin-btn" onclick="if(typeof panToPet==='function')panToPet(${idx})">🎯 Go</span>
+        </div>
+        <div class="rp-laddr">${p.breed || p.species || ''}${p.mood ? ' · ' + (typeof MOOD_EM !== 'undefined' ? MOOD_EM[p.mood] : '') + ' ' + p.mood : ''}</div>
+        ${p.bio ? `<div class="rp-laddr" style="font-style:italic">"${p.bio}"</div>` : ''}
+      </div>`;
+    }).join('');
 }
 
 // ── Friends ──
@@ -466,6 +509,14 @@ window.rpToggleAutoGPS = function() {
 function rpRenderVets() {
   const custom = JSON.parse(localStorage.getItem(VETS_KEY) || '[]');
   const all = [...VETS_DEFAULT, ...custom];
+
+  const emergencySection = `
+    <div class="rp-charity-section" style="margin-top:0;border:1px solid rgba(255,60,60,0.35);border-radius:8px;padding:6px 6px 4px;background:rgba(255,30,30,0.06)">
+      <div class="rp-charity-label" style="color:#ff8888">🚨 EMERGENCY — CALL FIRST</div>
+      <div class="rp-charity-grid">
+        ${EMERGENCY_UK.map(c => `<a class="rp-charity-btn" style="border-color:rgba(255,80,80,0.4);color:#ff9999" href="${c.url}" target="_blank" rel="noopener">${c.label}</a>`).join('')}
+      </div>
+    </div>`;
   const cards = all.map((v, i) =>
     `<div class="rp-link">
       <div class="rp-lname">
@@ -527,7 +578,7 @@ function rpRenderVets() {
       </div>
     </div>`;
 
-  return searchSection +
+  return emergencySection + searchSection +
     `<div class="rp-charity-section" style="margin-top:2px">
       <div class="rp-charity-label">⭐ TRUSTED / SAVED</div>
       ${cards}

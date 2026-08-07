@@ -58,6 +58,11 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
 .pet-userbox .ub-actions{display:flex;gap:6px;margin-top:8px}
 .pet-userbox .ub-actions button{flex:1;font-size:.82rem;padding:4px}
 .pet-userbox .ub-wags{text-align:center;color:#88cc44;font-size:.85rem;margin-top:4px}
+.pet-userbox .ub-hold-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:#88cc44;border-radius:16px 0 0 0;transition:width linear}
+.pet-userbox .ub-more{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(204,136,51,0.3);font-size:.78rem;color:rgba(255,204,102,0.65);line-height:1.5}
+.pet-userbox.expanded .ub-more{display:block}
+.pet-userbox .ub-hold-hint{text-align:center;color:rgba(255,204,102,0.2);font-size:.65rem;margin-top:6px;font-style:italic}
+.pet-userbox.expanded .ub-hold-hint{display:none}
 
 /* ── PET CARD (pack panel) ── */
 .pet-card{background:rgba(0,0,0,0.3);border:2px solid rgba(204,136,51,0.25);border-radius:12px;padding:10px;margin:6px 0;cursor:pointer;transition:all .15s}
@@ -127,7 +132,10 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
   <button class="hbtn" onclick="toggleTrail()">&#128017; TRAIL</button>
   <button class="hbtn" onclick="togglePack()">&#128058; PACK</button>
   <div class="redirect-wrap">
-    <button class="hbtn" onclick="toggleRedirectMenu(event)">&#128257; Redirect</button>
+    <button class="hbtn" onclick="toggleHudMenu(event,'redirectMenu')">&#128257; Redirect</button>
+  </div>
+  <div class="redirect-wrap">
+    <button class="hbtn" onclick="toggleHudMenu(event,'optionsMenu')">&#9881; Options</button>
   </div>
 </div>
 
@@ -137,25 +145,57 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
   <a href="translator_v7.html" target="_blank">&#127760; Translator</a>
 </div>
 
+<div class="redirect-menu" id="optionsMenu">
+  <span class="cur" id="optNameLabel">&#128100; ...</span>
+  <a href="#" onclick="optChangeName();return false;">&#9999;&#65039; Change display name</a>
+  <a href="#" onclick="optClearData();return false;">&#128465;&#65039; Reset local data</a>
+</div>
+
 <script>
-function toggleRedirectMenu(e) {
+function toggleHudMenu(e, menuId) {
   e.stopPropagation();
-  const menu = document.getElementById('redirectMenu');
+  const menu = document.getElementById(menuId);
   const willShow = !menu.classList.contains('show');
+  document.querySelectorAll('.redirect-menu.show').forEach(m => { if (m !== menu) m.classList.remove('show'); });
   if (willShow) {
     const rect = e.currentTarget.getBoundingClientRect();
     menu.style.top = (rect.bottom + 4) + 'px';
     menu.style.left = rect.left + 'px';
+    if (menuId === 'optionsMenu') updateOptNameLabel();
   }
   menu.classList.toggle('show', willShow);
 }
 document.addEventListener('click', e => {
-  const menu = document.getElementById('redirectMenu');
-  if (menu && menu.classList.contains('show') && !e.target.closest('.redirect-wrap') && !e.target.closest('#redirectMenu')) {
-    menu.classList.remove('show');
-  }
+  if (e.target.closest('.redirect-wrap') || e.target.closest('.redirect-menu')) return;
+  document.querySelectorAll('.redirect-menu.show').forEach(m => m.classList.remove('show'));
 });
-window.addEventListener('resize', () => document.getElementById('redirectMenu').classList.remove('show'));
+window.addEventListener('resize', () => document.querySelectorAll('.redirect-menu').forEach(m => m.classList.remove('show')));
+
+function updateOptNameLabel() {
+  const label = document.getElementById('optNameLabel');
+  if (!label) return;
+  const name = (typeof getUserName === 'function') ? getUserName() : 'Anonymous Walker';
+  label.textContent = '\u{1F464} ' + name;
+}
+
+function optChangeName() {
+  const current = (typeof getUserName === 'function') ? getUserName() : '';
+  const name = prompt("What's your name? (shown to other pet owners)", current || 'Anonymous Walker');
+  if (name && name.trim() && typeof setUserName === 'function') {
+    setUserName(name.trim());
+    if (typeof toast === 'function') toast('\u{1F464} Name updated to ' + name.trim() + '!');
+    updateOptNameLabel();
+  }
+  document.getElementById('optionsMenu').classList.remove('show');
+}
+
+function optClearData() {
+  document.getElementById('optionsMenu').classList.remove('show');
+  if (!confirm('Reset all local Snout First data on this device? This clears pets pinned only in this browser, your notes, and settings. Pets already saved to the network are not affected.')) return;
+  ['snoutfirst_pets','snoutfirst_sniffs','snoutfirst_pets_v2','sf_notes','sf_home','sf_lost_pets','sf_vets_custom','sf_food_custom','rv_username','rv_local_uid'].forEach(k => localStorage.removeItem(k));
+  if (typeof toast === 'function') toast('\u{1F5D1}\u{FE0F} Local data cleared! Reloading...');
+  setTimeout(() => location.reload(), 900);
+}
 </script>
 
 <!-- STATS -->
@@ -232,6 +272,7 @@ window.addEventListener('resize', () => document.getElementById('redirectMenu').
 
 <!-- PET USERBOX (floating popup) -->
 <div class="pet-userbox" id="petUserbox">
+  <div class="ub-hold-bar" id="ubHoldBar"></div>
   <button class="ub-close" onclick="closeUserbox()">&times;</button>
   <div class="ub-emoji" id="ubEmoji"></div>
   <div class="ub-name" id="ubName"></div>
@@ -241,6 +282,8 @@ window.addEventListener('resize', () => document.getElementById('redirectMenu').
   <div class="ub-mood" id="ubMood"></div>
   <div class="ub-wags" id="ubWags"></div>
   <div class="ub-time" id="ubTime"></div>
+  <div class="ub-more" id="ubMore"></div>
+  <div class="ub-hold-hint" id="ubHoldHint">hold anywhere here for 3s for more info 🐾</div>
   <div class="ub-actions">
     <button class="hbtn paw" onclick="wagFromUserbox()">&#128062; Wag!</button>
     <button class="hbtn" onclick="panToPetFromUserbox()">&#127760; Go To</button>
@@ -540,6 +583,18 @@ cv.addEventListener('pointerup', e => {
   }
 });
 
+// Right-click a pin -> same actions userbox (Wag/Go/Remove), no need to left-click first.
+// Long-press is left alone on purpose: panel-drag.js already uses a 300ms hold to start
+// dragging a pin onto a side panel, so binding hold to "open menu" too would fight that
+// gesture. On touch, a plain tap already opens the userbox below.
+cv.addEventListener('contextmenu', e => {
+  const petIdx = petAtScreen(e.clientX, e.clientY);
+  if (petIdx >= 0) {
+    e.preventDefault();
+    openUserbox(petIdx, e.clientX, e.clientY);
+  }
+});
+
 // ── Pinch zoom (mobile) ──
 let pinchDist = 0, pinchZoom = 0;
 document.addEventListener('touchstart', e => {
@@ -656,8 +711,58 @@ function updateUserboxPosition() {
 
 function closeUserbox() {
   activeUserboxPetIndex = -1;
-  document.getElementById('petUserbox').classList.remove('show');
+  const ub = document.getElementById('petUserbox');
+  ub.classList.remove('show');
+  ub.classList.remove('expanded');
+  resetHoldBar();
 }
+
+// ── Hold 3s on the userbox to reveal extra detail ──
+let ubHoldTimer = null;
+function resetHoldBar() {
+  const bar = document.getElementById('ubHoldBar');
+  if (!bar) return;
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+}
+function buildUbMoreHtml(pet) {
+  if (!pet) return '';
+  const lines = [];
+  lines.push('📅 Pinned: ' + new Date(pet.timestamp).toLocaleString());
+  if (pet.owner_name) lines.push('🧑 Owner: ' + pet.owner_name);
+  if (pet.status) lines.push('🏠 Status: ' + pet.status);
+  if (pet.stats) {
+    if (pet.stats.lifetime_distance_km) lines.push('🚶 Lifetime walks: ' + pet.stats.lifetime_distance_km.toFixed ? pet.stats.lifetime_distance_km.toFixed(1) + 'km' : pet.stats.lifetime_distance_km + 'km');
+    if (pet.stats.total_walks) lines.push('🎾 Total walks: ' + pet.stats.total_walks);
+    if (pet.stats.total_feedings) lines.push('🍖 Total feedings: ' + pet.stats.total_feedings);
+  }
+  lines.push('📍 ' + pet.lat.toFixed(5) + ', ' + (pet.lon ?? pet.lng).toFixed(5));
+  return lines.map(l => '<div>' + l + '</div>').join('');
+}
+document.getElementById('petUserbox').addEventListener('pointerdown', e => {
+  if (e.target.closest('button')) return; // let close/wag/go/remove work normally
+  const bar = document.getElementById('ubHoldBar');
+  bar.style.transition = 'width 3000ms linear';
+  bar.style.width = '100%';
+  ubHoldTimer = setTimeout(() => {
+    const ub = document.getElementById('petUserbox');
+    const pet = S.pets[activeUserboxPetIndex];
+    const willExpand = !ub.classList.contains('expanded');
+    if (willExpand) document.getElementById('ubMore').innerHTML = buildUbMoreHtml(pet);
+    ub.classList.toggle('expanded', willExpand);
+    resetHoldBar();
+  }, 3000);
+});
+// Only pointerup/pointercancel end the hold — NOT pointerleave. The box tracks its pet's
+// screen position every frame (updateUserboxPosition), so it can shift under a genuinely
+// stationary finger/cursor during zoom-smoothing; treating that as "pointer left" would
+// cancel a real hold that the user never actually released.
+['pointerup', 'pointercancel'].forEach(evt => {
+  document.getElementById('petUserbox').addEventListener(evt, () => {
+    clearTimeout(ubHoldTimer);
+    resetHoldBar();
+  });
+});
 
 function wagFromUserbox() {
   if (activeUserboxPetIndex < 0) return;
