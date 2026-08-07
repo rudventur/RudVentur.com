@@ -106,6 +106,22 @@ function injectLeftPanel() {
     }
     .lp-pt-opts:hover { color: #cc8833; }
 
+    /* GPS tab — tracker ecosystem links */
+    .lp-tracker-section { margin-bottom: 8px; }
+    .lp-tracker-label { color: rgba(136,204,68,0.6); font-size: .68rem; letter-spacing: 1px; margin-bottom: 4px; font-family: 'VT323', monospace; }
+    .lp-tracker-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+    .lp-tracker-badge {
+      font-size: .68rem; padding: 3px 7px; border-radius: 6px;
+      text-decoration: none; font-family: 'VT323', monospace;
+      border: 1px solid rgba(136,204,68,0.3);
+      background: rgba(136,204,68,0.06); color: #88cc44;
+      transition: all .12s;
+    }
+    .lp-tracker-badge:hover { background: rgba(136,204,68,0.18); border-color: #88cc44; }
+    .lp-tracker-badge.cellular { border-color: rgba(255,204,102,0.3); background: rgba(255,204,102,0.06); color: #ffcc66; }
+    .lp-tracker-badge.cellular:hover { background: rgba(255,204,102,0.18); border-color: #ffcc66; }
+    .lp-tracker-hint { color: rgba(255,204,102,0.25); font-size: .62rem; margin-top: 4px; font-style: italic; }
+
     /* GPS tab */
     .lp-gps-card {
       background: rgba(0,0,0,0.3);
@@ -523,11 +539,32 @@ function lpRenderPets() {
 }
 
 // ── GPS tab ──
+// Well-established networks first (huge existing device base, no subscription),
+// then dedicated cellular pet trackers (real-time, but need their own subscription).
+const TRACKER_ECOSYSTEM = [
+  { label: '🍎 Find My / AirTag', url: 'https://www.apple.com/airtag/', cls: '' },
+  { label: '🔷 Galaxy SmartTag', url: 'https://www.samsung.com/global/galaxy/galaxy-smarttag2/', cls: '' },
+  { label: '📡 Tractive', url: 'https://tractive.com', cls: 'cellular' },
+  { label: '🐕 Fi', url: 'https://tryfi.com', cls: 'cellular' },
+  { label: '🛰️ Findster', url: 'https://findsterpet.com', cls: 'cellular' },
+];
+
+function lpRenderTrackerEcosystem() {
+  return `<div class="lp-tracker-section">
+    <div class="lp-tracker-label">🔗 REAL TRACKER OPTIONS</div>
+    <div class="lp-tracker-grid">
+      ${TRACKER_ECOSYSTEM.map(t => `<a class="lp-tracker-badge ${t.cls}" href="${t.url}" target="_blank" rel="noopener">${t.label}</a>`).join('')}
+    </div>
+    <div class="lp-tracker-hint">Got one already? Use "+ link device" below — full live sync is on the roadmap 🐾</div>
+  </div>`;
+}
+
 function lpRenderGPS() {
   const pets = (typeof S !== 'undefined' ? S.pets : []) || [];
   const minimap = '<div class="lp-minimap-wrap"><canvas id="lpMinimap"></canvas><div class="lp-minimap-empty"></div></div>';
-  if (!pets.length) return minimap + '<div style="color:rgba(255,204,102,0.3);text-align:center;padding:16px;font-size:.8rem">No pets registered yet.</div>';
-  return minimap + pets.map((p, i) => {
+  const ecosystem = lpRenderTrackerEcosystem();
+  if (!pets.length) return minimap + ecosystem + '<div style="color:rgba(255,204,102,0.3);text-align:center;padding:16px;font-size:.8rem">No pets registered yet.</div>';
+  return minimap + ecosystem + pets.map((p, i) => {
     const em = (typeof SPECIES_EM !== 'undefined' ? SPECIES_EM[p.species] : '') || '🐾';
     const hasGPS = p.gps || false;
     const hasDevice = p.gpsDevice || false;
