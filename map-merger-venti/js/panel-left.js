@@ -286,7 +286,47 @@ function injectLeftPanel() {
       color: #88cc44;
       background: rgba(136,204,68,0.06);
     }
+
+    /* Tractive connect modal */
+    .lp-tv-overlay {
+      display: none; position: fixed; inset: 0; z-index: 3000;
+      background: rgba(0,0,0,0.7); align-items: center; justify-content: center;
+    }
+    .lp-tv-overlay.show { display: flex; }
+    .lp-tv-modal {
+      background: rgba(26,18,10,0.98); border: 2px solid #88cc44;
+      border-radius: 14px; padding: 16px; width: 90%; max-width: 300px;
+      font-family: 'VT323', monospace;
+    }
+    .lp-tv-modal h4 { font-family: 'Bubblegum Sans', cursive; color: #88cc44; margin-bottom: 8px; font-size: 1.05rem; }
+    .lp-tv-note { color: rgba(255,204,102,0.5); font-size: .72rem; line-height: 1.4; margin-bottom: 10px; }
+    .lp-tv-modal input {
+      width: 100%; background: rgba(0,0,0,0.4); color: #ffcc66;
+      border: 1.5px solid rgba(136,204,68,0.3); padding: 6px 8px;
+      border-radius: 8px; font-family: 'VT323', monospace; font-size: .9rem;
+      outline: none; margin-bottom: 6px;
+    }
+    .lp-tv-modal input:focus { border-color: #88cc44; }
+    .lp-tv-status { font-size: .72rem; min-height: 16px; margin: 4px 0; color: rgba(255,204,102,0.6); }
+    .lp-tv-status.err { color: #ff8888; }
+    .lp-tv-status.ok { color: #88cc44; }
+    .lp-tv-btns { display: flex; gap: 6px; margin-top: 6px; }
+    .lp-tv-btns button { flex: 1; }
   </style>
+
+  <div class="lp-tv-overlay" id="tractiveModalOverlay">
+    <div class="lp-tv-modal">
+      <h4>🔗 Connect Tractive</h4>
+      <p class="lp-tv-note">Goes straight from your browser to our relay to Tractive's own login — only your pets' current locations come back. Your email and password are never stored or logged anywhere.</p>
+      <input type="email" id="tractiveEmail" placeholder="Tractive account email" autocomplete="off">
+      <input type="password" id="tractivePassword" placeholder="Tractive password" autocomplete="off">
+      <div class="lp-tv-status" id="tractiveStatus"></div>
+      <div class="lp-tv-btns">
+        <button class="lp-tile-btn" onclick="closeTractiveModal()">Cancel</button>
+        <button class="lp-tile-btn found" onclick="submitTractiveSync()">Sync now</button>
+      </div>
+    </div>
+  </div>
 
   <div class="lp-root" id="lpRoot">
     <div class="lp-toggle" id="lpToggleBtn">◀</div>
@@ -549,14 +589,83 @@ const TRACKER_ECOSYSTEM = [
   { label: '🛰️ Findster', url: 'https://findsterpet.com', cls: 'cellular' },
 ];
 
+const TRACTIVE_RELAY_URL = 'https://europe-west1-map-merger-venti.cloudfunctions.net/tractiveSync';
+
 function lpRenderTrackerEcosystem() {
   return `<div class="lp-tracker-section">
     <div class="lp-tracker-label">🔗 REAL TRACKER OPTIONS</div>
     <div class="lp-tracker-grid">
       ${TRACKER_ECOSYSTEM.map(t => `<a class="lp-tracker-badge ${t.cls}" href="${t.url}" target="_blank" rel="noopener">${t.label}</a>`).join('')}
     </div>
-    <div class="lp-tracker-hint">Got one already? Use "+ link device" below — full live sync is on the roadmap 🐾</div>
+    <button class="lp-tracker-badge cellular" style="border-style:solid;margin-top:4px;cursor:pointer" onclick="openTractiveModal()">📡 Connect Tractive account →</button>
+    <div class="lp-tracker-hint">Got an AirTag/SmartTag/Fi/Findster already? Use "+ link device" below.</div>
   </div>`;
+}
+
+window.openTractiveModal = function() {
+  document.getElementById('tractiveStatus').textContent = '';
+  document.getElementById('tractiveStatus').className = 'lp-tv-status';
+  document.getElementById('tractiveModalOverlay').classList.add('show');
+};
+window.closeTractiveModal = function() {
+  document.getElementById('tractiveModalOverlay').classList.remove('show');
+  document.getElementById('tractivePassword').value = '';
+};
+window.submitTractiveSync = async function() {
+  const email = document.getElementById('tractiveEmail').value.trim();
+  const password = document.getElementById('tractivePassword').value;
+  const status = document.getElementById('tractiveStatus');
+  if (!email || !password) {
+    status.textContent = 'Enter both email and password.';
+    status.className = 'lp-tv-status err';
+    return;
+  }
+  status.textContent = '🐾 Syncing with Tractive...';
+  status.className = 'lp-tv-status';
+  try {
+    const res = await fetch(TRACTIVE_RELAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Sync failed');
+    document.getElementById('tractivePassword').value = '';
+    if (!data.pets || !data.pets.length) {
+      status.textContent = 'Logged in, but no pet locations came back.';
+      status.className = 'lp-tv-status err';
+      return;
+    }
+    mergeTractivePets(data.pets);
+    status.textContent = `✅ Synced ${data.pets.length} pet(s)!`;
+    status.className = 'lp-tv-status ok';
+    setTimeout(closeTractiveModal, 1200);
+  } catch (e) {
+    status.textContent = e.message || 'Sync failed — try again.';
+    status.className = 'lp-tv-status err';
+  }
+};
+
+function mergeTractivePets(tractivePets) {
+  if (typeof S === 'undefined') return;
+  tractivePets.forEach(tp => {
+    const existing = S.pets.find(p => p.name === tp.name);
+    if (existing) {
+      existing.lat = tp.lat;
+      existing.lon = tp.lon;
+      existing.gpsDevice = true;
+      existing.trackerSource = 'tractive';
+    } else {
+      S.pets.push({
+        name: tp.name, species: 'dog', breed: '', bio: '', tags: [], mood: 'playful',
+        lat: tp.lat, lon: tp.lon, timestamp: Date.now(),
+        gpsDevice: true, gps: true, trackerSource: 'tractive',
+      });
+    }
+  });
+  if (typeof savePets === 'function') savePets();
+  lpRender();
+  if (typeof toast === 'function') toast('📡 Tractive pets synced to the map!');
 }
 
 function lpRenderGPS() {
