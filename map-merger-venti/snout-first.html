@@ -108,6 +108,36 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
 .redirect-menu a:hover{background:#cc8833;color:#1a120a}
 .redirect-menu .cur{color:rgba(255,204,102,0.35);cursor:default}
 
+/* ── ACCOUNT HUB (ported from windows13's useRbox v2) ── */
+#sfuHub{position:fixed;top:60px;right:10px;z-index:1600;font-family:'VT323',monospace}
+#sfuCircle{width:44px;height:44px;border-radius:50%;background:rgba(26,18,10,0.95);border:3px solid #cc8833;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;box-shadow:0 0 16px rgba(204,136,51,0.35);transition:all .2s}
+#sfuCircle:hover{transform:scale(1.08) rotate(-4deg);box-shadow:0 0 26px rgba(204,136,51,0.55)}
+#sfuPanel{position:absolute;top:52px;right:0;width:280px;max-height:80vh;overflow-y:auto;background:rgba(26,18,10,0.98);border:3px solid #cc8833;border-radius:14px;padding:14px;box-shadow:0 4px 28px rgba(0,0,0,0.5)}
+#sfuPanel.sfu-hidden{display:none}
+.sfu-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(204,136,51,0.25)}
+.sfu-header strong{font-family:'Bubblegum Sans',cursive;color:#ffcc66;font-size:1rem}
+.sfu-header button{background:none;border:1px solid #cc8833;color:#cc8833;font-size:.95rem;cursor:pointer;padding:2px 7px;border-radius:6px}
+.sfu-header button:hover{background:#cc8833;color:#1a120a}
+#sfuClock{text-align:center;font-size:1.1rem;color:#ffcc66;font-weight:bold;margin-bottom:10px;padding:6px;background:rgba(255,204,102,0.05);border:1px solid rgba(255,204,102,0.25);border-radius:8px}
+#sfuPanel label{display:block;margin:8px 0 3px;font-size:.75rem;color:rgba(255,204,102,0.6);text-transform:uppercase;letter-spacing:1px}
+#sfuPanel input[type=text],#sfuPanel textarea{width:100%;background:rgba(0,0,0,0.4);color:#ffcc66;border:1.5px solid rgba(204,136,51,0.4);padding:6px 8px;font-family:'VT323',monospace;font-size:.9rem;border-radius:8px;outline:none}
+#sfuPanel input[type=text]:focus,#sfuPanel textarea:focus{border-color:#ffcc66}
+#sfuPanel textarea{resize:vertical;min-height:44px}
+.sfu-row{display:flex;gap:6px;align-items:center}
+.sfu-row input{flex:1}
+.sfu-section{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(204,136,51,0.25)}
+#sfuSpotList{max-height:120px;overflow-y:auto;margin-top:6px}
+.sfu-spot-item{display:flex;justify-content:space-between;align-items:center;padding:5px 7px;margin-bottom:5px;background:rgba(0,0,0,0.3);border:1px solid rgba(204,136,51,0.25);border-radius:8px;font-size:.8rem}
+.sfu-spot-item:hover{border-color:#cc8833}
+.sfu-spot-name{display:block;font-family:'Bubblegum Sans',cursive;color:#ffcc66}
+.sfu-spot-coords{display:block;font-size:.65rem;color:rgba(255,204,102,0.4)}
+.sfu-spot-del{background:none;border:none;color:#ff6666;cursor:pointer;font-size:.85rem;padding:0 4px}
+.sfu-social-section{margin-top:12px;padding-top:10px;border-top:1px dashed rgba(204,136,51,0.25)}
+.sfu-social-title{text-align:center;color:#ffcc66;font-size:.85rem;margin-bottom:8px;font-family:'Bubblegum Sans',cursive}
+.sfu-social-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.sfu-social-icon{width:38px;height:38px;background:rgba(0,0,0,0.3);border:2px solid #cc8833;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;text-decoration:none;color:#ffcc66;transition:all .15s}
+.sfu-social-icon:hover{background:#cc8833;color:#1a120a;transform:scale(1.1)}
+
 /* ── BONE DIVIDER ── */
 .bone-divider{text-align:center;color:rgba(204,136,51,0.2);font-size:.7rem;margin:8px 0;letter-spacing:4px}
 
@@ -135,21 +165,12 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
   <div class="redirect-wrap">
     <button class="hbtn" onclick="toggleHudMenu(event,'redirectMenu')">&#128257; Redirect</button>
   </div>
-  <div class="redirect-wrap">
-    <button class="hbtn" onclick="toggleHudMenu(event,'optionsMenu')">&#9881; Options</button>
-  </div>
 </div>
 
 <div class="redirect-menu" id="redirectMenu">
   <span class="cur">&#128062; Snout First (here)</span>
   <a href="index.html">&#128506;&#65039; Map Merger</a>
   <a href="translator_v7.html" target="_blank">&#127760; Translator</a>
-</div>
-
-<div class="redirect-menu" id="optionsMenu">
-  <span class="cur" id="optNameLabel">&#128100; ...</span>
-  <a href="#" onclick="optChangeName();return false;">&#9999;&#65039; Change display name</a>
-  <a href="#" onclick="optClearData();return false;">&#128465;&#65039; Reset local data</a>
 </div>
 
 <script>
@@ -162,7 +183,6 @@ function toggleHudMenu(e, menuId) {
     const rect = e.currentTarget.getBoundingClientRect();
     menu.style.top = (rect.bottom + 4) + 'px';
     menu.style.left = rect.left + 'px';
-    if (menuId === 'optionsMenu') updateOptNameLabel();
   }
   menu.classList.toggle('show', willShow);
 }
@@ -171,29 +191,133 @@ document.addEventListener('click', e => {
   document.querySelectorAll('.redirect-menu.show').forEach(m => m.classList.remove('show'));
 });
 window.addEventListener('resize', () => document.querySelectorAll('.redirect-menu').forEach(m => m.classList.remove('show')));
+</script>
 
-function updateOptNameLabel() {
-  const label = document.getElementById('optNameLabel');
-  if (!label) return;
-  const name = (typeof getUserName === 'function') ? getUserName() : 'Anonymous Walker';
-  label.textContent = '\u{1F464} ' + name;
+<!-- ═══ ACCOUNT HUB (ported from windows13's useRbox v2, restyled to Snout First) ═══ -->
+<div id="sfuHub">
+  <div id="sfuCircle" onclick="sfuToggle()" title="Your account">&#128062;</div>
+  <div id="sfuPanel" class="sfu-hidden">
+    <div class="sfu-header">
+      <strong>&#128062; Your Snout First Account</strong>
+      <button onclick="sfuToggle()">&times;</button>
+    </div>
+    <div id="sfuClock">--:--:--</div>
+
+    <label>&#128100; Display Name</label>
+    <div class="sfu-row">
+      <input type="text" id="sfuUsername" placeholder="Anonymous Walker">
+      <button class="hbtn paw" onclick="sfuSaveName()">&#128190;</button>
+    </div>
+
+    <label>&#128221; Your Motto</label>
+    <textarea id="sfuSignature" placeholder="e.g. Professional treat negotiator, full-time good boy manager..."></textarea>
+
+    <div class="sfu-section">
+      <label>&#128205; Saved Walk Spots</label>
+      <div class="sfu-row">
+        <input type="text" id="sfuSpotName" placeholder="Spot name...">
+        <button class="hbtn paw" onclick="sfuSaveSpot()">&#128190; Save here</button>
+      </div>
+      <div id="sfuSpotList"></div>
+    </div>
+
+    <div class="sfu-social-section">
+      <div class="sfu-social-title">&#128062; Part of RudVentur</div>
+      <div class="sfu-social-grid">
+        <a href="https://github.com/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="GitHub">&#128187;</a>
+        <a href="https://discord.gg/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Discord">&#128172;</a>
+        <a href="https://twitter.com/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Twitter/X">&#120143;</a>
+        <a href="https://instagram.com/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Instagram">&#128247;</a>
+        <a href="https://youtube.com/@rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="YouTube">&#9654;&#65039;</a>
+        <a href="https://ko-fi.com/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Ko-fi">&#9749;</a>
+        <a href="https://tiktok.com/@rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="TikTok">&#127925;</a>
+        <a href="https://t.me/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Telegram">&#9992;&#65039;</a>
+        <a href="mailto:RudVentur@gmail.com" class="sfu-social-icon" title="Email">&#128231;</a>
+      </div>
+    </div>
+
+    <button class="hbtn red" style="width:100%;margin-top:10px" onclick="sfuClearData()">&#128465;&#65039; Reset local data</button>
+  </div>
+</div>
+
+<script>
+// ═══ Account hub logic ═══
+function sfuToggle() {
+  document.getElementById('sfuPanel').classList.toggle('sfu-hidden');
+  if (!document.getElementById('sfuPanel').classList.contains('sfu-hidden')) sfuLoad();
 }
 
-function optChangeName() {
-  const current = (typeof getUserName === 'function') ? getUserName() : '';
-  const name = prompt("What's your name? (shown to other pet owners)", current || 'Anonymous Walker');
-  if (name && name.trim() && typeof setUserName === 'function') {
-    setUserName(name.trim());
-    if (typeof toast === 'function') toast('\u{1F464} Name updated to ' + name.trim() + '!');
-    updateOptNameLabel();
+function sfuUpdateClock() {
+  const el = document.getElementById('sfuClock');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-GB', { hour12: false });
+}
+setInterval(sfuUpdateClock, 1000);
+sfuUpdateClock();
+
+function sfuLoad() {
+  document.getElementById('sfuUsername').value = (typeof getUserName === 'function') ? getUserName() : 'Anonymous Walker';
+  document.getElementById('sfuSignature').value = localStorage.getItem('sf_owner_signature') || '';
+  sfuRenderSpots();
+}
+
+function sfuSaveName() {
+  const name = document.getElementById('sfuUsername').value.trim();
+  if (!name) { if (typeof toast === 'function') toast('Every walker needs a name! \u{1F43E}'); return; }
+  if (typeof setUserName === 'function') setUserName(name);
+  if (typeof toast === 'function') toast('\u{1F464} Name updated to ' + name + '!');
+}
+
+document.getElementById('sfuSignature') && document.getElementById('sfuSignature').addEventListener('blur', () => {
+  localStorage.setItem('sf_owner_signature', document.getElementById('sfuSignature').value);
+});
+
+function sfuGetSpots() {
+  try { return JSON.parse(localStorage.getItem('sf_walk_spots') || '[]'); } catch(e) { return []; }
+}
+function sfuSaveSpot() {
+  const name = document.getElementById('sfuSpotName').value.trim();
+  if (!name) { if (typeof toast === 'function') toast('Name this spot first! \u{1F43E}'); return; }
+  if (typeof S === 'undefined') return;
+  const spots = sfuGetSpots();
+  spots.push({ id: Date.now(), name, lat: S.lat, lon: S.lon });
+  localStorage.setItem('sf_walk_spots', JSON.stringify(spots));
+  document.getElementById('sfuSpotName').value = '';
+  sfuRenderSpots();
+  if (typeof toast === 'function') toast('\u{1F4CD} ' + name + ' saved!');
+}
+function sfuRenderSpots() {
+  const list = document.getElementById('sfuSpotList');
+  const spots = sfuGetSpots();
+  if (!spots.length) {
+    list.innerHTML = '<div style="text-align:center;opacity:.4;padding:8px;font-size:.75rem">No saved spots yet</div>';
+    return;
   }
-  document.getElementById('optionsMenu').classList.remove('show');
+  list.innerHTML = spots.map(s => `
+    <div class="sfu-spot-item">
+      <span onclick="sfuGoToSpot(${s.id})" style="cursor:pointer;flex:1">
+        <span class="sfu-spot-name">${s.name.replace(/</g,'&lt;')}</span>
+        <span class="sfu-spot-coords">${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}</span>
+      </span>
+      <button class="sfu-spot-del" onclick="sfuDeleteSpot(${s.id})">&#128465;&#65039;</button>
+    </div>
+  `).join('');
+}
+function sfuGoToSpot(id) {
+  const spot = sfuGetSpots().find(s => s.id === id);
+  if (!spot || typeof S === 'undefined') return;
+  S.lat = spot.lat; S.lon = spot.lon;
+  if (typeof zoomTarget !== 'undefined') zoomTarget = 15;
+  sfuToggle();
+}
+function sfuDeleteSpot(id) {
+  const spots = sfuGetSpots().filter(s => s.id !== id);
+  localStorage.setItem('sf_walk_spots', JSON.stringify(spots));
+  sfuRenderSpots();
 }
 
-function optClearData() {
-  document.getElementById('optionsMenu').classList.remove('show');
-  if (!confirm('Reset all local Snout First data on this device? This clears pets pinned only in this browser, your notes, and settings. Pets already saved to the network are not affected.')) return;
-  ['snoutfirst_pets','snoutfirst_sniffs','snoutfirst_pets_v2','sf_notes','sf_home','sf_lost_pets','sf_vets_custom','sf_food_custom','rv_username','rv_local_uid'].forEach(k => localStorage.removeItem(k));
+function sfuClearData() {
+  if (!confirm('Reset all local Snout First data on this device? This clears pets pinned only in this browser, your notes, saved spots, and settings. Pets already saved to the network are not affected.')) return;
+  ['snoutfirst_pets','snoutfirst_sniffs','snoutfirst_pets_v2','sf_notes','sf_home','sf_lost_pets','sf_vets_custom','sf_food_custom','sf_walk_spots','sf_owner_signature','rv_username','rv_local_uid'].forEach(k => localStorage.removeItem(k));
   if (typeof toast === 'function') toast('\u{1F5D1}\u{FE0F} Local data cleared! Reloading...');
   setTimeout(() => location.reload(), 900);
 }
