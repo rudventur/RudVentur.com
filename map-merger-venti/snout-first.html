@@ -54,6 +54,7 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
 .pet-userbox .ub-tags{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
 .pet-userbox .ub-tag{background:rgba(136,204,68,0.12);border:1px solid rgba(136,204,68,0.3);color:#88cc44;padding:2px 7px;border-radius:10px;font-size:.75rem}
 .pet-userbox .ub-mood{text-align:center;font-size:1.1rem;margin:4px 0}
+.pet-userbox .ub-tracker{display:none;text-align:center;font-size:.72rem;color:#88cc44;background:rgba(136,204,68,0.1);border:1px solid rgba(136,204,68,0.3);border-radius:8px;padding:2px 6px;margin:4px auto;width:fit-content}
 .pet-userbox .ub-time{color:rgba(255,204,102,0.3);font-size:.72rem;text-align:center}
 .pet-userbox .ub-actions{display:flex;gap:6px;margin-top:8px}
 .pet-userbox .ub-actions button{flex:1;font-size:.82rem;padding:4px}
@@ -280,6 +281,7 @@ function optClearData() {
   <div class="ub-bio" id="ubBio"></div>
   <div class="ub-tags" id="ubTags"></div>
   <div class="ub-mood" id="ubMood"></div>
+  <div class="ub-tracker" id="ubTracker"></div>
   <div class="ub-wags" id="ubWags"></div>
   <div class="ub-time" id="ubTime"></div>
   <div class="ub-more" id="ubMore"></div>
@@ -673,6 +675,13 @@ function openUserbox(petIdx, screenX, screenY) {
     '<span class="ub-tag">' + t + '</span>'
   ).join('');
   document.getElementById('ubMood').textContent = (MOOD_EM[pet.mood] || '') + ' ' + (pet.mood || '');
+  const trackerEl = document.getElementById('ubTracker');
+  if (pet.trackerSource === 'tractive') {
+    trackerEl.textContent = '📡 Live via Tractive';
+    trackerEl.style.display = 'block';
+  } else {
+    trackerEl.style.display = 'none';
+  }
   document.getElementById('ubTime').textContent = 'Pinned ' + timeAgo(pet.timestamp);
 
   // Find wag count from sniffs
