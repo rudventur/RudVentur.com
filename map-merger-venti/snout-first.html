@@ -195,10 +195,10 @@ window.addEventListener('resize', () => document.querySelectorAll('.redirect-men
 
 <!-- ═══ ACCOUNT HUB (ported from windows13's useRbox v2, restyled to Snout First) ═══ -->
 <div id="sfuHub">
-  <div id="sfuCircle" onclick="sfuToggle()" title="Your account">&#128062;</div>
+  <div id="sfuCircle" onclick="sfuToggle()" title="useRbox">&#128062;</div>
   <div id="sfuPanel" class="sfu-hidden">
     <div class="sfu-header">
-      <strong>&#128062; Your Snout First Account</strong>
+      <strong>&#128062; useRbox</strong>
       <button onclick="sfuToggle()">&times;</button>
     </div>
     <div id="sfuClock">--:--:--</div>
@@ -215,8 +215,13 @@ window.addEventListener('resize', () => document.querySelectorAll('.redirect-men
     <div class="sfu-section">
       <label>&#128205; Saved Walk Spots</label>
       <div class="sfu-row">
+        <input type="text" id="sfuSpotLat" placeholder="lat (or refresh)">
+        <input type="text" id="sfuSpotLon" placeholder="lon">
+        <button class="hbtn" id="sfuGpsBtn" onclick="sfuRefreshGPS()" title="Use my real GPS location">&#128205;</button>
+      </div>
+      <div class="sfu-row" style="margin-top:5px">
         <input type="text" id="sfuSpotName" placeholder="Spot name...">
-        <button class="hbtn paw" onclick="sfuSaveSpot()">&#128190; Save here</button>
+        <button class="hbtn paw" onclick="sfuSaveSpot()">&#128190; Save</button>
       </div>
       <div id="sfuSpotList"></div>
     </div>
@@ -247,6 +252,33 @@ function sfuToggle() {
   if (!document.getElementById('sfuPanel').classList.contains('sfu-hidden')) sfuLoad();
 }
 
+// Anchor to the right panel's outer edge instead of a fixed viewport spot, so it
+// moves with the panel (collapsed vs expanded) instead of sitting on top of it.
+// #rpRoot doesn't exist yet when this script runs (panel-right.js loads later),
+// so the first call falls back to a default until it appears.
+function sfuRepositionHub() {
+  const hub = document.getElementById('sfuHub');
+  const rp = document.getElementById('rpRoot');
+  if (!hub) return;
+  if (rp) {
+    const rect = rp.getBoundingClientRect();
+    hub.style.right = (window.innerWidth - rect.left + 8) + 'px';
+  } else {
+    hub.style.right = '10px';
+  }
+}
+sfuRepositionHub();
+// panel-right.js's own init() is itself deferred to DOMContentLoaded (its script
+// isn't the last thing in the document either), so #rpRoot may not exist yet even
+// here. Re-run one macrotask after DOMContentLoaded — by then every synchronous
+// DOMContentLoaded listener, including panel-right's, has already finished, so this
+// isn't a timing guess the way a fixed setTimeout delay would be.
+document.addEventListener('DOMContentLoaded', () => setTimeout(sfuRepositionHub, 0));
+window.addEventListener('resize', sfuRepositionHub);
+document.addEventListener('transitionend', e => {
+  if (e.target && e.target.id === 'rpRoot') sfuRepositionHub();
+});
+
 function sfuUpdateClock() {
   const el = document.getElementById('sfuClock');
   if (el) el.textContent = new Date().toLocaleTimeString('en-GB', { hour12: false });
@@ -274,14 +306,43 @@ document.getElementById('sfuSignature') && document.getElementById('sfuSignature
 function sfuGetSpots() {
   try { return JSON.parse(localStorage.getItem('sf_walk_spots') || '[]'); } catch(e) { return []; }
 }
+
+// Real device GPS, not just wherever the map happens to be panned to.
+function sfuRefreshGPS() {
+  const btn = document.getElementById('sfuGpsBtn');
+  if (!navigator.geolocation) { if (typeof toast === 'function') toast('GPS not supported by this browser \u{1F43E}'); return; }
+  btn.textContent = '⏳';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      document.getElementById('sfuSpotLat').value = pos.coords.latitude.toFixed(6);
+      document.getElementById('sfuSpotLon').value = pos.coords.longitude.toFixed(6);
+      btn.textContent = '✅';
+      setTimeout(() => { btn.textContent = '\u{1F4CD}'; }, 1500);
+    },
+    err => {
+      if (typeof toast === 'function') toast('GPS error: ' + err.message);
+      btn.textContent = '❌';
+      setTimeout(() => { btn.textContent = '\u{1F4CD}'; }, 1500);
+    },
+    { timeout: 8000 }
+  );
+}
+
 function sfuSaveSpot() {
   const name = document.getElementById('sfuSpotName').value.trim();
   if (!name) { if (typeof toast === 'function') toast('Name this spot first! \u{1F43E}'); return; }
-  if (typeof S === 'undefined') return;
+  const typedLat = parseFloat(document.getElementById('sfuSpotLat').value);
+  const typedLon = parseFloat(document.getElementById('sfuSpotLon').value);
+  // Falls back to the current map centre if GPS was never refreshed for this save.
+  const lat = isNaN(typedLat) ? (typeof S !== 'undefined' ? S.lat : null) : typedLat;
+  const lon = isNaN(typedLon) ? (typeof S !== 'undefined' ? S.lon : null) : typedLon;
+  if (lat == null || lon == null) return;
   const spots = sfuGetSpots();
-  spots.push({ id: Date.now(), name, lat: S.lat, lon: S.lon });
+  spots.push({ id: Date.now(), name, lat, lon });
   localStorage.setItem('sf_walk_spots', JSON.stringify(spots));
   document.getElementById('sfuSpotName').value = '';
+  document.getElementById('sfuSpotLat').value = '';
+  document.getElementById('sfuSpotLon').value = '';
   sfuRenderSpots();
   if (typeof toast === 'function') toast('\u{1F4CD} ' + name + ' saved!');
 }

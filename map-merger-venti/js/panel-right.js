@@ -485,7 +485,7 @@ function rpRenderHome() {
     <div class="rp-home-gps">
       <div class="rp-hg-title">📍 Home GPS anchor</div>
       <div class="rp-hg-coords">${hLat}° N · ${hLon}° W</div>
-      <div class="rp-hg-upd">set ${ago} · <span id="rpAutoGPS" style="cursor:pointer;color:rgba(136,204,68,0.5)" onclick="rpToggleAutoGPS()">auto off</span></div>
+      <div class="rp-hg-upd">set ${ago} · <span id="rpAutoGPS" style="cursor:pointer;color:${rpIsAutoGpsOn() ? '#88cc44' : 'rgba(136,204,68,0.5)'}" onclick="rpToggleAutoGPS()">auto ${rpIsAutoGpsOn() ? 'on' : 'off'}</span></div>
     </div>
     <button class="rp-set-home" onclick="rpSetHome()">📍 Set current location as home</button>
     <div style="color:rgba(255,204,102,0.25);font-size:.62rem;margin-top:6px;font-family:'VT323',monospace;line-height:1.4">
@@ -501,9 +501,46 @@ window.rpSetHome = function() {
   rpRender();
 };
 
+let rpAutoGpsWatchId = null;
+function rpIsAutoGpsOn() {
+  return localStorage.getItem('sf_home_auto') === '1';
+}
+
 window.rpToggleAutoGPS = function() {
-  if (typeof toast === 'function') toast('Auto-GPS: placeholder — will use Geolocation API');
+  if (rpIsAutoGpsOn()) rpStopAutoGPS();
+  else rpStartAutoGPS();
 };
+
+function rpStartAutoGPS() {
+  if (!navigator.geolocation) {
+    if (typeof toast === 'function') toast('GPS not supported by this browser 🐾');
+    return;
+  }
+  rpAutoGpsWatchId = navigator.geolocation.watchPosition(
+    pos => {
+      localStorage.setItem('sf_home', JSON.stringify({
+        lat: pos.coords.latitude, lon: pos.coords.longitude, ts: Date.now()
+      }));
+      if (rpActiveTab === 'home') rpRender();
+    },
+    err => { if (typeof toast === 'function') toast('Auto-GPS error: ' + err.message); },
+    { enableHighAccuracy: false, maximumAge: 30000 }
+  );
+  localStorage.setItem('sf_home_auto', '1');
+  if (typeof toast === 'function') toast('📍 Auto-GPS on — home anchor will follow you');
+  rpRender();
+}
+
+function rpStopAutoGPS() {
+  if (rpAutoGpsWatchId != null && navigator.geolocation) navigator.geolocation.clearWatch(rpAutoGpsWatchId);
+  rpAutoGpsWatchId = null;
+  localStorage.setItem('sf_home_auto', '0');
+  if (typeof toast === 'function') toast('📍 Auto-GPS off');
+  rpRender();
+}
+
+// Resume tracking if it was left on from a previous session
+if (rpIsAutoGpsOn()) rpStartAutoGPS();
 
 // ── Vets ──
 function rpRenderVets() {

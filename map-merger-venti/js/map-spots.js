@@ -118,7 +118,7 @@ setInterval(spotsCleanupExpired, 60000);
 (function injectSpotsDOM() {
   const style = document.createElement('style');
   style.textContent = `
-    .spot-fab{position:fixed;bottom:70px;left:10px;z-index:1400;width:44px;height:44px;
+    .spot-fab{position:fixed;bottom:70px;left:230px;z-index:1400;width:44px;height:44px;
       background:rgba(26,18,10,0.95);border:2px solid #ffaa55;border-radius:50%;
       display:flex;align-items:center;justify-content:center;cursor:pointer;
       font-size:1.3rem;transition:all .15s;box-shadow:0 0 12px rgba(255,170,85,0.25)}
@@ -201,6 +201,24 @@ setInterval(spotsCleanupExpired, 60000);
   fab.innerHTML = '\u{1F4CD}';
   fab.onclick = toggleSpotDropMode;
   document.body.appendChild(fab);
+
+  // Anchor to the left panel's outer edge instead of a fixed viewport spot, so it
+  // moves with the panel (collapsed vs expanded) instead of sitting on top of it.
+  function positionSpotFab() {
+    const lp = document.getElementById('lpRoot');
+    fab.style.left = lp ? (lp.getBoundingClientRect().right + 8) + 'px' : '10px';
+  }
+  positionSpotFab();
+  // panel-left.js's own init() is itself deferred to DOMContentLoaded (its script
+  // isn't the last thing in the document either), so #lpRoot may not exist yet even
+  // here. Re-run one macrotask after DOMContentLoaded — by then every synchronous
+  // DOMContentLoaded listener, including panel-left's, has already finished, so this
+  // isn't a timing guess the way a fixed setTimeout delay would be.
+  document.addEventListener('DOMContentLoaded', () => setTimeout(positionSpotFab, 0));
+  window.addEventListener('resize', positionSpotFab);
+  document.addEventListener('transitionend', e => {
+    if (e.target && e.target.id === 'lpRoot') positionSpotFab();
+  });
 
   const modalOverlay = document.createElement('div');
   modalOverlay.className = 'spot-modal-overlay';
