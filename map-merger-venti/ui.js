@@ -8,25 +8,70 @@ var busStops = [];
 var waterBodies = [];
 var boatNearWater = false;
 
-// ── FULLSCREEN ──
-function toggleFullscreen() {
-  if (document.fullscreenElement) {
-    document.exitFullscreen().catch(() => {});
-  } else {
-    document.documentElement.requestFullscreen().catch(() => {});
+// ── View mode (Full Screen Horizontal / Panoramic / Vertical / Normal) ──
+// Shared with snout-first.html and translator_v7.html via the same
+// localStorage key, so "Redirect" can carry the current mode across tabs.
+var VIEW_MODE_KEY = 'rvViewMode';
+
+function requestFS() {
+  var el = document.documentElement;
+  var fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  return fn ? fn.call(el).catch(function() {}) : Promise.resolve();
+}
+function exitFS() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) return Promise.resolve();
+  var fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  return fn ? fn.call(document).catch(function() {}) : Promise.resolve();
+}
+function lockOrientation(type) {
+  try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock(type).catch(function() {}); } catch (e) {}
+}
+function unlockOrientation() {
+  try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+}
+function applyViewMode(mode) {
+  switch (mode) {
+    case 'horizontal': requestFS().then(function() { lockOrientation('landscape'); }); break;
+    case 'panoramic':  requestFS().then(function() { unlockOrientation(); }); break;
+    case 'vertical':   requestFS().then(function() { lockOrientation('portrait'); }); break;
+    case 'normal':      unlockOrientation(); exitFS(); break;
   }
 }
-// Auto-enter fullscreen on first user interaction (browsers block auto-fullscreen without gesture)
+function currentViewMode() {
+  return localStorage.getItem(VIEW_MODE_KEY) || '';
+}
+function setView(mode) {
+  localStorage.setItem(VIEW_MODE_KEY, mode);
+  closeViewMenu();
+  applyViewMode(mode);
+}
+
+// Adopt ?view= from a Redirect link (highest priority), else fall back to the
+// last mode chosen on this device. Fullscreen needs a real user gesture, so
+// it's applied on the first click/keydown rather than immediately on load
+// (this also replaces the old unconditional "auto fullscreen on first
+// interaction" behavior — it now only fires when a mode is actually pending).
 (function() {
-  function autoFS() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    }
-    document.removeEventListener('click', autoFS);
-    document.removeEventListener('keydown', autoFS);
+  var pendingViewMode = null;
+  var params = new URLSearchParams(location.search);
+  var urlMode = params.get('view');
+  if (urlMode) {
+    localStorage.setItem(VIEW_MODE_KEY, urlMode);
+    params.delete('view');
+    var clean = location.pathname + (params.toString() ? '?' + params.toString() : '') + location.hash;
+    history.replaceState(null, '', clean);
+    pendingViewMode = urlMode;
+  } else {
+    pendingViewMode = localStorage.getItem(VIEW_MODE_KEY);
   }
-  document.addEventListener('click', autoFS, { once: true });
-  document.addEventListener('keydown', autoFS, { once: true });
+  if (!pendingViewMode || pendingViewMode === 'normal') return;
+  function autoApply() {
+    applyViewMode(pendingViewMode);
+    document.removeEventListener('click', autoApply);
+    document.removeEventListener('keydown', autoApply);
+  }
+  document.addEventListener('click', autoApply, { once: true });
+  document.addEventListener('keydown', autoApply, { once: true });
 })();
 
 // ── LAYERS MENU ──

@@ -30,14 +30,32 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Fira C
 .hdr-btn:hover{color:var(--text);border-color:var(--dim)}
 .hdr-btn.active{color:var(--amber);border-color:var(--amber)}
 
-/* ── REDIRECT DROPDOWN ── */
+/* ── REDIRECT (big modal) ── */
 .redirect-wrap{position:relative;display:inline-block}
-.redirect-menu{display:none;position:absolute;top:calc(100% + 4px);right:0;background:#0a0a0a;border:1px solid var(--purple);border-radius:6px;padding:4px;z-index:900;min-width:150px;box-shadow:0 4px 16px rgba(0,0,0,.6)}
-.redirect-menu.show{display:block}
-.redirect-menu a,.redirect-menu .cur{display:block;padding:5px 8px;border-radius:4px;font-family:'Fira Code',monospace;font-size:10px;text-decoration:none;white-space:nowrap}
-.redirect-menu a{color:var(--purple)}
-.redirect-menu a:hover{background:var(--purple);color:#000}
-.redirect-menu .cur{color:var(--dim);cursor:default}
+#redirect-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.8);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:1rem}
+#redirect-overlay.show{display:flex}
+#redirect-modal{background:var(--panel);border:1px solid var(--purple);border-radius:12px;max-width:600px;width:100%;box-shadow:0 0 50px rgba(192,132,252,.2)}
+#redirect-modal .rm-head{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-family:'Orbitron';color:var(--purple)}
+#redirect-modal .rm-head button{background:none;border:none;color:var(--dim);font-size:24px;cursor:pointer}
+.redirect-grid{display:flex;flex-direction:column;gap:12px;padding:1.5rem}
+.redirect-card{display:block;width:100%;text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--purple);border-radius:8px;padding:18px 20px;font-family:'Fira Code',monospace;font-size:15px;cursor:pointer;transition:all .15s}
+.redirect-card:hover{border-color:var(--purple);background:rgba(192,132,252,.08)}
+.redirect-card.cur{color:var(--dim);cursor:default}
+.redirect-card.cur:hover{background:rgba(255,255,255,.03);border-color:var(--border)}
+.redirect-card small{opacity:.7;font-size:.8em}
+
+/* ── VIEW MODE MENU (logo click) ── */
+.view-menu{display:none;position:fixed;background:#0a0a0a;border:1px solid var(--green);border-radius:8px;padding:6px;z-index:1100;min-width:240px;box-shadow:0 12px 40px rgba(0,0,0,.7);font-family:'Fira Code',monospace}
+.view-menu.show{display:block}
+.view-menu button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--text);font-family:inherit;font-size:12px;padding:9px 10px;cursor:pointer;border-radius:5px}
+.view-menu button:hover{background:rgba(0,255,65,.1);color:var(--green)}
+.view-menu .menu-sep{border-top:1px solid var(--border);margin:4px 2px}
+.view-menu .settings-toggle{display:flex;align-items:center;justify-content:space-between}
+.view-menu .settings-toggle::after{content:'▸';font-size:.8rem;transition:transform .2s}
+.view-menu .settings-toggle.open::after{transform:rotate(90deg)}
+.view-submenu{display:none;padding-left:.6rem;margin:0 .2rem;border-left:2px solid var(--border)}
+.view-submenu.open{display:block}
+.view-submenu button{font-size:11px;color:var(--dim)}
 
 .size-control{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
 .size-control label{font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:1px}
@@ -140,7 +158,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <div id="boot-screen"><div id="boot-text"></div></div>
 
 <div id="header">
-  <h1 onclick="toggleFullscreen()" style="cursor:pointer" title="Toggle fullscreen">🗺️ CREATOR MAP v7</h1>
+  <h1 onclick="toggleViewMenu(event)" style="cursor:pointer" title="View options">🗺️ CREATOR MAP v7</h1>
   <div class="size-control">
     <label>ALL SIZE</label>
     <input type="range" id="sizeSlider" min="12" max="48" value="28" style="width:80px" oninput="updateGlobalSize(this.value)">
@@ -152,26 +170,140 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <button class="hdr-btn" onclick="loadFromTxt()" title="Load state from .txt">📂 LOAD</button>
     <button class="hdr-btn" onclick="resetAllState()">↺ RESET</button>
     <div class="redirect-wrap">
-      <button class="hdr-btn" style="color:var(--purple);border-color:var(--purple)" onclick="toggleRedirectMenu(event)">&#128257; REDIRECT</button>
-      <div class="redirect-menu" id="redirectMenu">
-        <span class="cur">&#127760; Translator (here)</span>
-        <a href="index.html">&#128506;&#65039; Map Merger</a>
-        <a href="snout-first.html" target="_blank">&#128062; Snout First</a>
-      </div>
+      <button class="hdr-btn" style="color:var(--purple);border-color:var(--purple)" onclick="openRedirectMenu(event)">&#128257; REDIRECT</button>
     </div>
     <span style="font-size:10px;color:var(--dim)">RV©26</span>
   </div>
 </div>
+
+<!-- VIEW MODE MENU (logo click) -->
+<div class="view-menu" id="viewMenu">
+  <button onclick="setView('horizontal')">Full Screen Horizontal</button>
+  <button onclick="setView('panoramic')">Full Screen Panoramic</button>
+  <button onclick="setView('normal')">Normal / Default Browser</button>
+  <div class="menu-sep"></div>
+  <button class="settings-toggle" onclick="toggleSettingsSubmenu(event)">Settings One</button>
+  <div class="view-submenu" id="viewSubmenu">
+    <button onclick="setView('horizontal')">&#8618; Panoramic — Locked</button>
+    <button onclick="setView('panoramic')">&#8618; Panoramic — Default Rotation</button>
+    <button onclick="setView('vertical')">&#8618; Full Screen Vertical</button>
+  </div>
+</div>
+
+<!-- REDIRECT — big modal; destinations open in a new tab carrying the current view mode -->
+<div id="redirect-overlay" onclick="if(event.target===this) closeRedirectMenu()">
+  <div id="redirect-modal">
+    <div class="rm-head">
+      <span>&#128257; Redirect</span>
+      <button onclick="closeRedirectMenu()">✕</button>
+    </div>
+    <div class="redirect-grid">
+      <span class="redirect-card cur">&#127760; Translator <small>(here)</small></span>
+      <button class="redirect-card" onclick="goTo('index.html')">&#128506;&#65039; Map Merger</button>
+      <button class="redirect-card" onclick="goTo('snout-first.html')">&#128062; Snout First</button>
+    </div>
+  </div>
+</div>
+
 <script>
-function toggleRedirectMenu(e) {
-  e.stopPropagation();
-  document.getElementById('redirectMenu').classList.toggle('show');
+// ── View mode (Full Screen Horizontal / Panoramic / Vertical / Normal) ──
+// Shared with index.html (the RUDVENTUR hub) and snout-first.html via the
+// same localStorage key, so "Redirect" can carry the current mode across tabs.
+const VIEW_MODE_KEY = 'rvViewMode';
+
+function requestFS() {
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  return fn ? fn.call(el).catch(() => {}) : Promise.resolve();
 }
-document.addEventListener('click', e => {
-  const menu = document.getElementById('redirectMenu');
-  if (menu && menu.classList.contains('show') && !e.target.closest('.redirect-wrap')) {
-    menu.classList.remove('show');
+function exitFS() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) return Promise.resolve();
+  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  return fn ? fn.call(document).catch(() => {}) : Promise.resolve();
+}
+function lockOrientation(type) {
+  try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock(type).catch(() => {}); } catch (e) {}
+}
+function unlockOrientation() {
+  try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+}
+function applyViewMode(mode) {
+  switch (mode) {
+    case 'horizontal': requestFS().then(() => lockOrientation('landscape')); break;
+    case 'panoramic':  requestFS().then(() => unlockOrientation()); break;
+    case 'vertical':   requestFS().then(() => lockOrientation('portrait')); break;
+    case 'normal':      unlockOrientation(); exitFS(); break;
   }
+}
+function currentViewMode() {
+  return localStorage.getItem(VIEW_MODE_KEY) || '';
+}
+function setView(mode) {
+  localStorage.setItem(VIEW_MODE_KEY, mode);
+  closeViewMenu();
+  applyViewMode(mode);
+}
+
+// Adopt ?view= from a Redirect link (highest priority), else fall back to the
+// last mode chosen on this device. Fullscreen needs a real user gesture, so
+// it's applied on the first click/touch rather than immediately on load.
+let pendingViewMode = null;
+(function initViewModeFromNavigation() {
+  const params = new URLSearchParams(location.search);
+  const urlMode = params.get('view');
+  if (urlMode) {
+    localStorage.setItem(VIEW_MODE_KEY, urlMode);
+    params.delete('view');
+    const clean = location.pathname + (params.toString() ? '?' + params.toString() : '') + location.hash;
+    history.replaceState(null, '', clean);
+    pendingViewMode = urlMode;
+  } else {
+    pendingViewMode = localStorage.getItem(VIEW_MODE_KEY);
+  }
+})();
+document.addEventListener('pointerdown', function once() {
+  document.removeEventListener('pointerdown', once);
+  if (pendingViewMode && pendingViewMode !== 'normal') applyViewMode(pendingViewMode);
+}, { once: true });
+
+// ── View mode menu (logo click) ──
+function toggleViewMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('viewMenu');
+  if (menu.classList.contains('show')) { closeViewMenu(); return; }
+  const rect = e.currentTarget.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 8) + 'px';
+  menu.style.left = Math.min(Math.max(rect.left, 8), window.innerWidth - 248) + 'px';
+  menu.classList.add('show');
+}
+function closeViewMenu() {
+  document.getElementById('viewMenu').classList.remove('show');
+  document.getElementById('viewSubmenu').classList.remove('open');
+  document.querySelector('.settings-toggle').classList.remove('open');
+}
+function toggleSettingsSubmenu(e) {
+  e.stopPropagation();
+  document.getElementById('viewSubmenu').classList.toggle('open');
+  e.currentTarget.classList.toggle('open');
+}
+
+// ── Redirect (big modal) — opens the destination in a new tab, in the current view mode ──
+function openRedirectMenu(e) {
+  e.stopPropagation();
+  document.getElementById('redirect-overlay').classList.add('show');
+}
+function closeRedirectMenu() {
+  document.getElementById('redirect-overlay').classList.remove('show');
+}
+function goTo(url) {
+  closeRedirectMenu();
+  const mode = currentViewMode();
+  const qs = mode && mode !== 'normal' ? '?view=' + encodeURIComponent(mode) : '';
+  window.open(url + qs, '_blank', 'noopener');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.view-menu') && !e.target.closest('#header h1')) closeViewMenu();
 });
 </script>
 
@@ -884,7 +1016,7 @@ function closeGrammar(){document.getElementById('grammar-overlay').style.display
 
 // ESC key
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeGrammar();document.getElementById('side-panel').classList.remove('open');if(moveMode)deselectMarker()}
+  if(e.key==='Escape'){closeGrammar();closeViewMenu();closeRedirectMenu();document.getElementById('side-panel').classList.remove('open');if(moveMode)deselectMarker()}
 });
 
 // ========================================================================
@@ -1024,11 +1156,6 @@ function loadFromTxt(){
   input.click();
 }
 
-// Fullscreen toggle (logo click)
-function toggleFullscreen(){
-  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
-  else document.exitFullscreen().catch(()=>{});
-}
 </script>
 </body>
 </html>
