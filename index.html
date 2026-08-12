@@ -107,7 +107,10 @@ body::before{
 
 /* ─── GRID ─── */
 .universe-grid{
-  position:relative;z-index:1;
+  /* z-index must beat .site-header/.zone-nav (z-index:2) — otherwise a fullscreened
+     panel (z-index:1000, but trapped inside this stacking context) renders behind
+     the header/nav strip instead of covering it */
+  position:relative;z-index:3;
   display:grid;
   grid-template-columns:repeat(3,1fr);
   grid-template-rows:1fr 1fr auto;
@@ -528,11 +531,28 @@ body::before{
     min-height:auto;
     padding:1.4rem 1.2rem;
   }
+  /* bigger touch targets for the jump-nav strip (was ~14px tall, too small to tap reliably) */
+  .zone-nav{
+    gap:.2rem 1rem;
+    padding:.4rem .6rem;
+  }
+  .zone-nav a{
+    display:inline-block;
+    padding:.55rem .4rem;
+  }
+  /* bigger touch targets for tool links */
+  .tool-link{
+    padding:.65rem .6rem;
+  }
 }
 @media(max-width:480px){
-  .site-header{padding:1.5rem .5rem 1rem}
+  .site-header{padding:1.2rem .5rem .8rem}
   .site-header h1{letter-spacing:2px}
   .panel{padding:1.2rem 1rem}
+  /* two identical Ko-fi buttons wrap onto their own separate rows on narrow
+     phones, burning ~90px of vertical space before any real content — keep one */
+  .title-row .kofi-btn:last-of-type{display:none}
+  .panel.fullscreen{padding:1.5rem 1rem}
 }
 </style>
 </head>
