@@ -519,6 +519,48 @@ body::before{
 .footer-bar a{color:#444;text-decoration:none;transition:color .2s}
 .footer-bar a:hover{color:#888}
 
+/* ─── LOGO VIEW MENU ─── */
+.logo-menu{
+  /* direct child of <body> on purpose — nesting inside .site-header (its own
+     stacking context) would trap this behind .universe-grid regardless of
+     z-index, the same bug that broke fullscreen panels */
+  position:fixed;
+  z-index:2000;
+  min-width:250px;
+  background:#0e0e10;
+  border:1px solid #333;
+  border-radius:8px;
+  padding:.4rem;
+  box-shadow:0 12px 40px rgba(0,0,0,.7);
+  display:none;
+  font-family:'DM Mono',monospace;
+}
+.logo-menu.open{display:block}
+.logo-menu button{
+  display:block;
+  width:100%;
+  text-align:left;
+  background:none;
+  border:none;
+  color:#ccc;
+  font-family:inherit;
+  font-size:.72rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:.65rem .7rem;
+  cursor:pointer;
+  border-radius:4px;
+  transition:background .15s,color .15s;
+}
+.logo-menu button:hover{background:rgba(255,255,255,.06);color:#fff}
+.logo-menu .menu-sep{border-top:1px solid #222;margin:.3rem .2rem}
+.logo-menu .settings-toggle{display:flex;align-items:center;justify-content:space-between}
+.logo-menu .settings-toggle::after{content:'▸';font-size:.65rem;color:#666;transition:transform .2s}
+.logo-menu .settings-toggle.open::after{transform:rotate(90deg)}
+.logo-submenu{display:none;padding-left:.6rem;margin:0 .2rem;border-left:1px solid #222}
+.logo-submenu.open{display:block}
+.logo-submenu button{font-size:.66rem;color:#999}
+
 /* ─── MOBILE ─── */
 @media(max-width:900px){
   .universe-grid{
@@ -562,12 +604,27 @@ body::before{
 <header class="site-header">
   <div class="title-row">
     <a class="kofi-btn" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ Ko-fi</a>
-    <h1 onclick="toggleBrowserFullscreen()" title="click to toggle fullscreen">RUDVENTUR</h1>
+    <h1 onclick="toggleLogoMenu(event)" title="click for view options">RUDVENTUR</h1>
     <a class="kofi-btn" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">🎃 Ko-fi</a>
   </div>
   <div class="tagline">a creative web universe</div>
   <div class="version">v3.0 — all repos consolidated</div>
 </header>
+
+<!-- LOGO VIEW MENU — placed as a direct child of <body>, not inside <header>, so it can't
+     get trapped behind .universe-grid's stacking context (see .logo-menu CSS comment) -->
+<div id="logo-menu" class="logo-menu" role="menu">
+  <button role="menuitem" onclick="setView('horizontal')">Full Screen Horizontal</button>
+  <button role="menuitem" onclick="setView('panoramic')">Full Screen Panoramic</button>
+  <button role="menuitem" onclick="setView('normal')">Normal / Default Browser</button>
+  <div class="menu-sep"></div>
+  <button class="settings-toggle" role="menuitem" onclick="toggleSettingsSubmenu(event)">Settings One</button>
+  <div id="logo-submenu" class="logo-submenu">
+    <button role="menuitem" onclick="setView('panoramic-locked')">↳ Panoramic — Locked</button>
+    <button role="menuitem" onclick="setView('panoramic-default')">↳ Panoramic — Default Rotation</button>
+    <button role="menuitem" onclick="setView('vertical')">↳ Full Screen Vertical</button>
+  </div>
+</div>
 
 <!-- INDEX NAV STRIP — jump to any tile (content that used to live in THE INDEX tile) -->
 <ul class="zone-nav">
@@ -713,18 +770,88 @@ body::before{
 </div>
 
 <script>
-// Toggle browser fullscreen on RUDVENTUR sign click
-function toggleBrowserFullscreen() {
-  if (!document.fullscreenElement) {
-    (document.documentElement.requestFullscreen
-      || document.documentElement.webkitRequestFullscreen
-      || document.documentElement.msRequestFullscreen
-      || function(){}).call(document.documentElement);
-  } else {
-    (document.exitFullscreen
-      || document.webkitExitFullscreen
-      || document.msExitFullscreen
-      || function(){}).call(document);
+// ─── LOGO VIEW MENU ───
+function toggleLogoMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('logo-menu');
+  if (menu.classList.contains('open')) {
+    closeLogoMenu();
+    return;
+  }
+  const rect = e.currentTarget.getBoundingClientRect();
+  const menuWidth = 250;
+  menu.style.top = (rect.bottom + 10) + 'px';
+  menu.style.left = Math.min(
+    Math.max(rect.left + rect.width / 2 - menuWidth / 2, 8),
+    window.innerWidth - menuWidth - 8
+  ) + 'px';
+  menu.classList.add('open');
+}
+
+function closeLogoMenu() {
+  document.getElementById('logo-menu').classList.remove('open');
+  document.getElementById('logo-submenu').classList.remove('open');
+  document.querySelector('.settings-toggle').classList.remove('open');
+}
+
+function toggleSettingsSubmenu(e) {
+  e.stopPropagation();
+  document.getElementById('logo-submenu').classList.toggle('open');
+  e.currentTarget.classList.toggle('open');
+}
+
+// close the menu on any click outside it
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('logo-menu');
+  if (menu.classList.contains('open') && !menu.contains(e.target)) {
+    closeLogoMenu();
+  }
+});
+
+// fullscreen + orientation helpers (best-effort — orientation lock isn't
+// supported on every browser, e.g. iOS Safari, so failures are swallowed)
+function requestFS() {
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  return fn ? fn.call(el).catch(() => {}) : Promise.resolve();
+}
+function exitFS() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) return Promise.resolve();
+  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  return fn ? fn.call(document).catch(() => {}) : Promise.resolve();
+}
+function lockOrientation(type) {
+  try {
+    if (screen.orientation && screen.orientation.lock) screen.orientation.lock(type).catch(() => {});
+  } catch (e) {}
+}
+function unlockOrientation() {
+  try {
+    if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+  } catch (e) {}
+}
+
+// apply a view mode chosen from the logo menu
+function setView(mode) {
+  closeLogoMenu();
+  switch (mode) {
+    case 'horizontal':
+      requestFS().then(() => lockOrientation('landscape'));
+      break;
+    case 'panoramic':
+    case 'panoramic-default':
+      requestFS().then(() => unlockOrientation());
+      break;
+    case 'panoramic-locked':
+      requestFS().then(() => lockOrientation('landscape'));
+      break;
+    case 'vertical':
+      requestFS().then(() => lockOrientation('portrait'));
+      break;
+    case 'normal':
+      unlockOrientation();
+      exitFS();
+      break;
   }
 }
 
@@ -754,11 +881,12 @@ function focusPanel(name) {
   document.body.style.overflow = 'hidden';
 }
 
-// ESC to close fullscreen
+// ESC to close fullscreen panel / logo menu
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
     document.body.style.overflow = '';
+    closeLogoMenu();
   }
 });
 
