@@ -393,7 +393,11 @@ const FLAGS = {
   'my':'🇲🇲','km':'🇰🇭','lo':'🇱🇦',
   'mn':'🇲🇳','bo':'🏳️','yue':'🇭🇰',
   'qu':'🇵🇪','gn':'🇵🇾','nah':'🇲🇽','ht':'🇭🇹',
-  'mi':'🇳🇿','haw':'🇺🇸','sm':'🇼🇸','to':'🇹🇴','fj':'🇫🇯','tpi':'🇵🇬'
+  'mi':'🇳🇿','haw':'🇺🇸','sm':'🇼🇸','to':'🇹🇴','fj':'🇫🇯','tpi':'🇵🇬',
+  'sn':'🇿🇼','ak':'🇬🇭','ff':'🏳️','ln':'🇨🇩','rw':'🇷🇼','ny':'🇲🇼',
+  'st':'🇱🇸','ti':'🇪🇷','om':'🇪🇹','kg':'🇨🇩',
+  'nv':'🇺🇸','chr':'🇺🇸','lkt':'🇺🇸','oj':'🇨🇦','cr':'🇨🇦','iu':'🇨🇦',
+  'ay':'🇧🇴','arn':'🇨🇱','guc':'🇨🇴'
 };
 
 // ========================================================================
@@ -526,6 +530,16 @@ const LANGUAGES = [
   {name:"Malagasy",code:"mg",lat:-18.9,lng:47.5,country:"Madagascar",speakers:"25M+",tier:"regional",minZoom:5,family:"Austronesian > Malayo-Polynesian",hello:{text:"Manao ahoana",pr:"ma-NAO a-HO-na"},alphabet:"A-Z (Latin, no C Q U W X)",grammar:"VOS word order (rare). Austronesian origin despite location."},
   {name:"Wolof",code:"wo",lat:14.7,lng:-17.4,country:"Senegal",speakers:"12M+",tier:"regional",minZoom:5,family:"Niger-Congo > Atlantic",hello:{text:"Nanga def",pr:"NAN-ga def"},alphabet:"A-Z (Latin)",grammar:"SVO. No grammatical gender. Consonant mutation."},
   {name:"Berber (Tamazight)",code:"ber",lat:33.0,lng:-5.0,country:"Morocco",speakers:"25M+",tier:"regional",minZoom:5,family:"Afro-Asiatic > Berber",hello:{text:"ⴰⵣⵓⵍ",pr:"a-ZUL"},alphabet:"Tifinagh: ⴰ ⴱ ⴳ ⴷ ⴹ ⴻ ⴼ ⴽ ⵀ ⵃ ⵄ ⵅ ⵇ ⵉ ⵊ ⵍ ⵎ ⵏ ⵓ ⵔ ⵕ ⵖ ⵙ ⵚ ⵛ ⵜ ⵟ ⵡ ⵢ ⵣ",grammar:"VSO order. Tifinagh script (ancient). Complex verb system."},
+  {name:"Shona",code:"sn",lat:-18.0,lng:30.0,country:"Zimbabwe",speakers:"10M+",tier:"regional",minZoom:5,family:"Niger-Congo > Bantu",hello:{text:"Mhoro",pr:"MHO-ro"},alphabet:"A-Z (Latin)",grammar:"Agglutinative. Tonal. Noun class system."},
+  {name:"Akan (Twi)",code:"ak",lat:7.9,lng:-1.0,country:"Ghana",speakers:"11M+",tier:"regional",minZoom:5,family:"Niger-Congo > Kwa",hello:{text:"Ɛte sɛn",pr:"eh-teh-SEN"},alphabet:"A-Z (Latin) + Ɛ Ɔ",grammar:"Tonal. SVO. Widely used as a trade language across Ghana."},
+  {name:"Fula (Fulfulde)",code:"ff",lat:13.5,lng:2.1,country:"West Africa (Sahel)",speakers:"40M+",tier:"regional",minZoom:5,family:"Niger-Congo > Atlantic",hello:{text:"Jam tan",pr:"jahm-TAN"},alphabet:"A-Z (Latin) + Ɓ Ɗ Ƴ",grammar:"Noun class system similar to Bantu. SVO. Spans 20+ countries."},
+  {name:"Lingala",code:"ln",lat:-4.3,lng:15.3,country:"DR Congo",speakers:"20M+",tier:"regional",minZoom:5,family:"Niger-Congo > Bantu",hello:{text:"Mbote",pr:"m-BO-teh"},alphabet:"A-Z (Latin)",grammar:"Tonal. Noun class prefixes. The language of Congolese rumba."},
+  {name:"Kinyarwanda",code:"rw",lat:-1.9,lng:30.0,country:"Rwanda",speakers:"12M+",tier:"regional",minZoom:5,family:"Niger-Congo > Bantu",hello:{text:"Muraho",pr:"mu-RA-ho"},alphabet:"A-Z (Latin)",grammar:"16 noun classes. Tonal. Also official in Rwanda alongside French/English."},
+  {name:"Chichewa (Nyanja)",code:"ny",lat:-13.9,lng:33.8,country:"Malawi",speakers:"14M+",tier:"regional",minZoom:5,family:"Niger-Congo > Bantu",hello:{text:"Moni",pr:"MO-nee"},alphabet:"A-Z (Latin)",grammar:"Agglutinative. Noun classes. SVO."},
+  {name:"Sesotho",code:"st",lat:-29.6,lng:28.2,country:"Lesotho",speakers:"5.6M+",tier:"regional",minZoom:6,family:"Niger-Congo > Bantu",hello:{text:"Dumela",pr:"du-MEH-la"},alphabet:"A-Z (Latin)",grammar:"Bantu noun classes. Tonal. Official language of Lesotho and South Africa."},
+  {name:"Tigrinya",code:"ti",lat:15.3,lng:38.9,country:"Eritrea",speakers:"9M+",tier:"regional",minZoom:6,family:"Afro-Asiatic > Semitic",hello:{text:"ሰላም",pr:"se-LAM"},alphabet:"Ge'ez script (Fidel)",grammar:"SOV. Closely related to Amharic. Ge'ez abugida script."},
+  {name:"Oromo",code:"om",lat:8.5,lng:39.0,country:"Ethiopia",speakers:"37M+",tier:"regional",minZoom:5,family:"Afro-Asiatic > Cushitic",hello:{text:"Akkam",pr:"ah-KAHM"},alphabet:"A-Z (Latin, Qubee script)",grammar:"SOV. The largest Cushitic language by speakers."},
+  {name:"Kikongo",code:"kg",lat:-5.5,lng:13.5,country:"DR Congo / Angola",speakers:"7M+",tier:"minority",minZoom:6,family:"Niger-Congo > Bantu",hello:{text:"Mbote",pr:"m-BO-teh"},alphabet:"A-Z (Latin)",grammar:"Noun classes. Basis for the Kikongo-derived creoles spoken in the Caribbean."},
   // ========== MIDDLE EAST / CENTRAL ASIA ==========
   {name:"Persian",code:"fa",lat:32.4,lng:53.7,country:"Iran",speakers:"110M+",tier:"major",minZoom:2,family:"Indo-European > Iranian",hello:{text:"سلام",pr:"sa-LAM"},alphabet:"Arabic script + پ چ ژ گ",grammar:"SOV order. No grammatical gender. Extensive use of ezafe."},
   {name:"Kurdish",code:"ku",lat:36.2,lng:43.0,country:"Iraq/Turkey",speakers:"30M+",tier:"regional",minZoom:5,family:"Indo-European > Iranian",hello:{text:"Slav",pr:"SLAV"},alphabet:"Latin (Kurmanji) / Arabic (Sorani)",grammar:"SOV order. 2 genders. Ergative-absolutive."},
@@ -562,6 +576,17 @@ const LANGUAGES = [
   {name:"Guarani",code:"gn",lat:-25.3,lng:-57.6,country:"Paraguay",speakers:"7M+",tier:"regional",minZoom:5,family:"Tupi-Guarani",hello:{text:"Mba'éichapa",pr:"mba-ei-CHA-pa"},alphabet:"A-Z + Ã Ẽ Ĩ Õ Ũ Ỹ Ĝ",grammar:"SOV. Nasal harmony. Official language alongside Spanish."},
   {name:"Nahuatl",code:"nah",lat:19.5,lng:-99.5,country:"Mexico",speakers:"1.7M+",tier:"regional",minZoom:5,family:"Uto-Aztecan",hello:{text:"Niltze",pr:"NIL-tse"},alphabet:"A-Z (Latin)",grammar:"Agglutinative. Polysynthetic. Language of the Aztecs."},
   {name:"Haitian Creole",code:"ht",lat:19.0,lng:-72.3,country:"Haiti",speakers:"12M+",tier:"regional",minZoom:5,family:"French Creole",hello:{text:"Bonjou",pr:"bon-JU"},alphabet:"A-Z (Latin)",grammar:"SVO. French-based creole. No verb conjugation."},
+  // ========== NORTH AMERICA (INDIGENOUS) ==========
+  {name:"Navajo (Diné)",code:"nv",lat:36.0,lng:-109.0,country:"United States (Navajo Nation)",speakers:"170K+",tier:"minority",minZoom:5,family:"Na-Dene > Athabaskan",hello:{text:"Yá'át'ééh",pr:"yah-AH-teh"},alphabet:"A-Z (Latin) + tone marks",grammar:"Verb-final. Highly polysynthetic. Famous for the WWII Code Talkers."},
+  {name:"Cherokee",code:"chr",lat:35.9,lng:-95.0,country:"United States (Cherokee Nation)",speakers:"2K+",tier:"minority",minZoom:6,family:"Iroquoian",hello:{text:"ᎣᏏᏲ (Osiyo)",pr:"oh-see-YOH"},alphabet:"Cherokee syllabary — 85 characters, invented by Sequoyah in 1821",grammar:"Polysynthetic. One of very few languages with an independently invented writing system."},
+  {name:"Lakota",code:"lkt",lat:44.5,lng:-102.5,country:"United States (Dakotas)",speakers:"2K+",tier:"minority",minZoom:6,family:"Siouan",hello:{text:"Háu",pr:"how"},alphabet:"A-Z (Latin) + diacritics",grammar:"SOV. Verb-centered. Widely known from Great Plains oral tradition."},
+  {name:"Ojibwe (Anishinaabemowin)",code:"oj",lat:47.5,lng:-90.0,country:"United States / Canada",speakers:"50K+",tier:"minority",minZoom:6,family:"Algonquian",hello:{text:"Boozhoo",pr:"BOO-zhoo"},alphabet:"A-Z (Latin, double-vowel system)",grammar:"Polysynthetic. Animate/inanimate noun classes rather than gender."},
+  {name:"Cree",code:"cr",lat:53.0,lng:-97.0,country:"Canada",speakers:"96K+",tier:"minority",minZoom:5,family:"Algonquian",hello:{text:"Tân'si",pr:"tahn-see"},alphabet:"Cree syllabics + Latin",grammar:"Polysynthetic. The most widely spoken indigenous language in Canada."},
+  {name:"Inuktitut",code:"iu",lat:68.0,lng:-95.0,country:"Canada (Nunavut)",speakers:"40K+",tier:"minority",minZoom:5,family:"Eskimo-Aleut",hello:{text:"ᐊᐃ (Ai)",pr:"eye"},alphabet:"Inuktitut syllabics",grammar:"Extremely polysynthetic — a single word can encode a whole sentence."},
+  // ========== SOUTH AMERICA (ADDITIONAL) ==========
+  {name:"Aymara",code:"ay",lat:-16.5,lng:-68.1,country:"Bolivia",speakers:"2M+",tier:"regional",minZoom:5,family:"Aymaran",hello:{text:"Kamisaraki",pr:"ka-mee-sa-RA-kee"},alphabet:"A-Z (Latin) + diacritics",grammar:"SOV. Famously treats the past as spatially 'ahead' and the future as 'behind'."},
+  {name:"Mapudungun",code:"arn",lat:-38.7,lng:-72.6,country:"Chile / Argentina",speakers:"250K+",tier:"minority",minZoom:6,family:"Araucanian",hello:{text:"Mari mari",pr:"MA-ree MA-ree"},alphabet:"A-Z (Latin, several competing orthographies)",grammar:"Polysynthetic. Language of the Mapuche people."},
+  {name:"Wayuunaiki",code:"guc",lat:11.7,lng:-72.3,country:"Colombia / Venezuela",speakers:"400K+",tier:"minority",minZoom:6,family:"Arawakan",hello:{text:"Jamaya pia",pr:"ha-MA-ya PEE-a"},alphabet:"A-Z (Latin)",grammar:"Ergative-absolutive. Language of South America's largest indigenous group."},
   // ========== OCEANIA ==========
   {name:"Maori",code:"mi",lat:-38.0,lng:176.0,country:"New Zealand",speakers:"200K+",tier:"regional",minZoom:5,family:"Austronesian > Polynesian",hello:{text:"Kia ora",pr:"KEY-a OR-a"},alphabet:"A E H I K M N Ng O P R T U W Wh",grammar:"VSO. Only 15 letters. Polynesian family."},
   {name:"Hawaiian",code:"haw",lat:20.8,lng:-156.3,country:"Hawaii (US)",speakers:"24K+",tier:"minority",minZoom:6,family:"Austronesian > Polynesian",hello:{text:"Aloha",pr:"a-LO-ha"},alphabet:"A E H I K L M N O P U W ʻ",grammar:"VSO. Only 13 letters (+ ʻokina). Polynesian family."},
@@ -832,12 +857,12 @@ const LANG_TREE={
   },
   'Uralic':{'Finnic':['fi','et','krl','vro','liv'],'Ugric':['hu'],'Sami':['se','smj','sma']},
   'Turkic':{'Common Turkic':['tr','az','uz','kk']},
-  'Afro-Asiatic':{'Semitic':['ar','he','am','mt'],'Chadic':['ha'],'Berber':['ber'],'Cushitic':['so']},
+  'Afro-Asiatic':{'Semitic':['ar','he','am','mt','ti'],'Chadic':['ha'],'Berber':['ber'],'Cushitic':['so','om']},
   'Sino-Tibetan':{'Sinitic':['zh-CN','yue'],'Tibeto-Burman':['my','bo']},
   'Kra-Dai':{'Tai':['th','lo']},
   'Austroasiatic':{'Vietic':['vi'],'Khmer':['km']},
   'Austronesian':{'Malayo-Polynesian':['id','ms','tl','mg'],'Polynesian':['mi','haw','sm','to'],'Oceanic':['fj','tpi']},
-  'Niger-Congo':{'Bantu':['sw','zu','xh'],'Volta-Niger':['yo','ig'],'Atlantic':['wo']},
+  'Niger-Congo':{'Bantu':['sw','zu','xh','sn','ln','rw','ny','st','kg'],'Volta-Niger':['yo','ig'],'Atlantic':['wo','ff'],'Kwa':['ak']},
   'Dravidian':{'South Dravidian':['ta','kn','ml'],'South-Central':['te']},
   'Japonic':{'Japanese':['ja']},
   'Koreanic':{'Korean':['ko']},
@@ -846,7 +871,15 @@ const LANG_TREE={
   'Quechuan':{'Quechua':['qu']},
   'Tupi-Guarani':{'Guarani':['gn']},
   'Uto-Aztecan':{'Nahuatl':['nah']},
-  'Language Isolate':{'Basque':['eu']}
+  'Language Isolate':{'Basque':['eu']},
+  'Na-Dene':{'Athabaskan':['nv']},
+  'Iroquoian':{'Cherokee':['chr']},
+  'Siouan':{'Lakota':['lkt']},
+  'Algonquian':{'Ojibwe-Cree':['oj','cr']},
+  'Eskimo-Aleut':{'Inuit':['iu']},
+  'Aymaran':{'Aymara':['ay']},
+  'Araucanian':{'Mapudungun':['arn']},
+  'Arawakan':{'Wayuu':['guc']}
 };
 
 function initLangCheckboxes(){
