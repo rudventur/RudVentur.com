@@ -31,11 +31,13 @@ const ZOOM_NAMES = {
 };
 
 const TILE_URLS = {
-  dark:       'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-  darkclean:  'https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
+  // CARTO basemaps now stamp "API KEY REQUIRED" on every tile without a paid key;
+  // Esri's canvas / street tiles are free and keyless (z/y/x order)
+  dark:       'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  darkclean:  'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
   osm:        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-  voyager:    'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-  positron:   'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+  voyager:    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+  positron:   'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
   topo:       'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
   watercolor: 'https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg',
   satellite:  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',

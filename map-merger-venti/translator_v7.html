@@ -92,6 +92,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 /* MAP */
 #map{position:fixed;inset:0;top:100px;z-index:1}
 .leaflet-container{background:var(--bg)!important}
+.leaflet-control-attribution{background:rgba(0,0,0,.55)!important;color:#667!important;font-size:9px!important}
 /* Move zoom to right */
 .leaflet-top.leaflet-left .leaflet-control-zoom{display:none}
 .leaflet-control-zoom a{background:var(--panel)!important;color:var(--green)!important;border-color:var(--border)!important}
@@ -691,7 +692,20 @@ function initApp(){
 // ========================================================================
 function initMap(savedPositions){
   map = L.map('map',{center:[50,15],zoom:4,zoomControl:false,attributionControl:false,minZoom:2,maxZoom:10});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+  // CARTO now stamps "API KEY REQUIRED" on its free tiles; Esri's dark canvas is keyless
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:16}).addTo(map);
+  L.control.attribution({prefix:false,position:'bottomright'}).addAttribution('Tiles &copy; Esri').addTo(map);
+  // rudventur.com watermark tiled across the map: it pans and zooms with the map,
+  // sits under the language labels, and never catches clicks
+  const RvMark=L.GridLayer.extend({createTile(coords){
+    const c=document.createElement('canvas');c.width=c.height=256;
+    const g=c.getContext('2d');
+    g.translate(coords.y%2?64:192,128);g.rotate(-Math.PI/9);
+    g.font="700 17px Orbitron, 'Fira Code', monospace";g.textAlign='center';
+    g.fillStyle='rgba(0,255,65,.11)';g.fillText('rudventur.com',0,6);
+    return c;
+  }});
+  new RvMark({zIndex:5,updateWhenZooming:false}).addTo(map);
 
   LANGUAGES.forEach(lang=>{
     const flag = FLAGS[lang.code]||'🏳️';
