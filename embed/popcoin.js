@@ -18,6 +18,9 @@
      PopCOIN.mine()           claim what has been mined since the last claim -> pips
      PopCOIN.minable()        pips claimable right now (estimate)
      PopCOIN.send(name, pips, note)
+     PopCOIN.reward(pips, reason) queue a reward (games, translator); paid out as
+                              fast as the rules allow (3 PopCOIN per 30 s, 50 a day)
+     PopCOIN.pending()        rewards still waiting to be paid out -> pips
      PopCOIN.exportWallet() / PopCOIN.withdrawalSlip(pips, to)   download files
      PopCOIN.fmt(pips)        "12.34"
      PopCOIN.value(pips)      indicative GBP value (not redeemable yet)
@@ -32,8 +35,13 @@
   var REF_GBP = typeof window.POPCOIN_REF_GBP === 'number' ? window.POPCOIN_REF_GBP : 0.01;
   var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
   var LOCAL_KEY = 'popcoin_local_v1';
+  var PENDING_KEY = 'popcoin_pending_v1';  // shared by every RUDVENTUR page
+  var REWARD_MAX = 300;        // at most 3 PopCOIN per reward claim (must match the rules)
+  var REWARD_GAP = 30000;      // at least 30 s between reward claims (must match the rules)
+  var REWARD_DAY = 5000;       // at most 50 PopCOIN of rewards a day (must match the rules)
 
-  var state = { mode: 'loading', uid: null, name: '', balance: 0, minedAt: 0, history: [], error: '' };
+  var state = { mode: 'loading', uid: null, name: '', balance: 0, minedAt: 0, history: [], error: '',
+    rewardAt: 0, rewardDay: 0, rewardToday: 0 };
   var listeners = [];
   var backend = null;
 
@@ -83,6 +91,7 @@
       try { localStorage.setItem(LOCAL_KEY, JSON.stringify(this.d)); } catch (e) {}
       state.name = this.d.name; state.balance = this.d.balance;
       state.minedAt = this.d.minedAt; state.history = this.d.history.slice(0, 100);
+      state.rewardAt = this.d.rewardAt || 0; state.rewardDay = this.d.rewardDay || 0; state.rewardToday = this.d.rewardToday || 0;
       emit();
     },
     now: function () { return Date.now(); },
@@ -97,6 +106,14 @@
     },
     send: function () {
       return Promise.reject(new Error('Sending opens as soon as PopCOIN shared accounts are switched on.'));
+    },
+    reward: function (gain, note, day, today) {
+      this.d.balance += gain;
+      this.d.rewardAt = Date.now(); this.d.rewardDay = day; this.d.rewardToday = today;
+      this.d.history.unshift({ type: 'reward', amount: gain, at: Date.now(), note: note });
+      this.d.history = this.d.history.slice(0, 200);
+      this.save();
+      return Promise.resolve(gain);
     }
   };
 
@@ -118,7 +135,16 @@
           }
           self.offset = 0;
           self.db.ref('.info/serverTimeOffset').on('value', function (s) { self.offset = s.val() || 0; });
-          return self.auth.currentUser ? self.auth.currentUser : self.auth.signInAnonymously().then(function (c) { return c.user; });
+          // wait for Firebase to restore a saved sign-in before deciding to create
+          // one: currentUser is still null for a moment after the page loads, and
+          // signing in then would give this visitor a brand-new wallet every time
+          return new Promise(function (resolve, reject) {
+            var off = self.auth.onAuthStateChanged(function (user) {
+              off();
+              if (user) resolve(user);
+              else self.auth.signInAnonymously().then(function (c) { resolve(c.user); }, reject);
+            }, reject);
+          });
         })
         .then(function (user) {
           self.uid = user.uid; state.uid = user.uid; state.mode = 'shared';
@@ -130,6 +156,7 @@
           self.root.child('users/' + self.uid).on('value', function (s) {
             var u = s.val(); if (!u) return;
             state.name = u.name; state.balance = u.balance; state.minedAt = u.minedAt; self.lastTx = u.lastTx;
+            state.rewardAt = u.rewardAt || 0; state.rewardDay = u.rewardDay || 0; state.rewardToday = u.rewardToday || 0;
             emit();
           });
           self.root.child('history/' + self.uid).orderByChild('at').limitToLast(100).on('value', function (s) {
@@ -198,6 +225,13 @@
         });
       });
     },
+    reward: function (gain, note, day, today) {
+      var self = this;
+      return self.root.child('users/' + self.uid).update({
+        balance: state.balance + gain, rewardAt: firebase.database.ServerValue.TIMESTAMP,
+        rewardDay: day, rewardToday: today
+      }).then(function () { self.log({ type: 'reward', amount: gain, note: note }); return gain; });
+    },
     claimAll: function (todo) {
       var self = this;
       if (self.claiming || !todo.length) return;
@@ -218,6 +252,65 @@
     }
   };
 
+  /* ── rewards: queued on the device, paid out within the rules' limits ── */
+  function pendingGet() {
+    try { var p = JSON.parse(localStorage.getItem(PENDING_KEY) || 'null'); if (p && p.pips >= 0) return p; } catch (e) {}
+    return { pips: 0, notes: [] };
+  }
+  function pendingSet(p) {
+    p.pips = Math.max(0, Math.min(p.pips, 20000));   // don't let an old queue grow forever
+    p.notes = (p.notes || []).slice(-5);
+    try { localStorage.setItem(PENDING_KEY, JSON.stringify(p)); } catch (e) {}
+    emit();
+  }
+  var flushTimer = null, flushing = false;
+  // only one open RUDVENTUR page pays out the shared queue at a time; otherwise two
+  // pages can both "pay" the same reward (the rules credit it once, but the queue
+  // and history would count it twice)
+  var LOCK_KEY = 'popcoin_flush_lock', myLock = 0;
+  function takeLock() {
+    var held = 0;
+    try { held = +localStorage.getItem(LOCK_KEY) || 0; } catch (e) {}
+    if (held && held !== myLock && Date.now() - held < 15000) return false;
+    myLock = Date.now();
+    try { localStorage.setItem(LOCK_KEY, String(myLock)); } catch (e) {}
+    return true;
+  }
+  function dropLock() {
+    try { if (+localStorage.getItem(LOCK_KEY) === myLock) localStorage.removeItem(LOCK_KEY); } catch (e) {}
+  }
+  function scheduleFlush(ms) {
+    clearTimeout(flushTimer);
+    flushTimer = setTimeout(flush, ms);
+  }
+  function flush() {
+    if (flushing || !backend || state.mode === 'loading') return;
+    // offline fallback: keep rewards queued for the shared account instead of
+    // paying them into this device's stand-in wallet
+    if (state.error) return;
+    var p = pendingGet();
+    if (!p.pips) return;
+    if (!takeLock()) { scheduleFlush(16000); return; }
+    var now = backend.now();
+    var wait = (state.rewardAt || 0) + REWARD_GAP + 1500 - now;
+    if (wait > 0) { dropLock(); scheduleFlush(wait); return; }
+    var day = Math.floor(now / 86400000);
+    var usedToday = state.rewardDay === day ? state.rewardToday : 0;
+    var gain = Math.min(p.pips, REWARD_MAX, REWARD_DAY - usedToday);
+    if (gain <= 0) { dropLock(); scheduleFlush(86400000 - now % 86400000 + 5000); return; }   // daily cap: try tomorrow
+    var note = p.notes.length ? p.notes.join(', ').slice(0, 60) : 'reward';
+    flushing = true;
+    backend.reward(gain, note, day, usedToday + gain).then(function () {
+      var q = pendingGet(); q.pips -= gain; if (q.pips <= 0) q.notes = []; pendingSet(q);
+      flushing = false; dropLock();
+      if (q.pips > 0) scheduleFlush(REWARD_GAP + 1500);
+    }, function (e) {
+      flushing = false; dropLock();
+      console.warn('PopCOIN reward will retry', e && e.message);
+      scheduleFlush(REWARD_GAP + 5000);
+    });
+  }
+
   var ready = (function () {
     var cfg = window.POPCOIN_FIREBASE;
     var go = cfg && cfg.apiKey && cfg.databaseURL
@@ -227,7 +320,7 @@
           return (backend = local).init();
         })
       : (backend = local).init();
-    return go.then(function () { emit(); return state; });
+    return go.then(function () { emit(); scheduleFlush(1000); return state; });
   })();
 
   window.PopCOIN = {
@@ -240,6 +333,16 @@
       return Math.max(0, Math.min(Math.floor((backend.now() - state.minedAt) / MS_PER_PIP), MAX_CLAIM));
     },
     send: function (name, pips, note) { return ready.then(function () { return backend.send(name, pips, note); }); },
+    reward: function (pips, reason) {
+      pips = Math.round(pips);
+      if (!(pips > 0)) return;
+      var p = pendingGet();
+      p.pips += pips;
+      if (reason && p.notes.indexOf(reason) < 0) p.notes.push(String(reason).slice(0, 30));
+      pendingSet(p);
+      ready.then(function () { scheduleFlush(200); });
+    },
+    pending: function () { return pendingGet().pips; },
     exportWallet: function () {
       download('popcoin-wallet-' + state.name + '.json', JSON.stringify({
         wallet: 'PopCOIN', name: state.name, account: state.uid, mode: state.mode,

@@ -15,7 +15,27 @@ Files:
 - `embed/popcoin.js` is the engine (balance, mining, sending, receiving, export)
 - `popcoin/config.js` holds the Firebase settings that switch on shared accounts
 - `popcoin/database.rules.json` has the rules that protect every balance
-- `popcoin/tests/rules.test.mjs` contains 35 tests that try to cheat the rules
+- `embed/popcoin-reward.js` lets any page award PopCOIN (see Rewards)
+- `popcoin/tests/rules.test.mjs` contains 47 tests that try to cheat the rules
+
+## 🎮 Rewards
+
+Pages earn PopCOIN with one script tag and one call:
+
+```html
+<script src="https://rudventur.github.io/RudVentur.com/embed/popcoin-reward.js" defer></script>
+<script> PopCOINReward(42, 'type-game'); /* 100 pips = 1 PopCOIN */ </script>
+```
+
+It shows a "+0.42 PopCOIN 🍿" pop-up and queues the reward on the device. The
+engine pays it out as fast as the rules allow: up to 3 PopCOIN per claim, 30
+seconds apart, 50 a day. Only one open page pays out at a time. If the shared
+account can't be reached, rewards stay queued.
+
+| Where | Reward |
+|---|---|
+| ⌨️ type-game | 1 pip per word typed (5 characters) × accuracy × difficulty (Baby ×0.5, Easy ×0.75, Medium ×1, Hard ×1.5, Nightmare ×2) |
+| 🌐 Translator | 0.10 + 1 pip per 4 languages for each new text (the same text again earns nothing), max 0.50 |
 
 ## Two modes
 
@@ -46,6 +66,10 @@ Files:
    (These values are public by design. The rules are what protect balances.)
 7. Commit. Wallets switch to 🌐 **shared account** on their next load.
 
+**Whenever `database.rules.json` changes, publish it again** in the database's
+Rules tab (for example, the rewards update added `rewardAt`, `rewardDay` and
+`rewardToday`). Until you do, rewards stay queued and nothing is lost.
+
 Balances already on a device (local mode) don't carry over into shared
 accounts, because the rules only allow the 10 PopCOIN welcome bonus when an
 account is created.
@@ -55,6 +79,8 @@ account is created.
 - Nobody can write their own balance. New accounts start with exactly 10 PopCOIN.
 - Mining: at most 2 pips per second since your last claim (checked against the
   server clock), at most 6 PopCOIN per claim.
+- Rewards: at most 3 PopCOIN per claim, 30 s apart (server clock), 50 a day;
+  the daily counter can't be reset or faked.
 - Sending: in one atomic write, the sender's balance drops by exactly the
   amount, and an outbox and inbox entry with that same amount are created. The
   receiver claims each payment once and can't inflate it.
