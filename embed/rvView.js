@@ -159,7 +159,7 @@
     ['horizontal', '↳ Panoramic — Locked'], ['panoramic', '↳ Panoramic — Default Rotation'],
     ['vertical', '↳ Full Screen Vertical']
   ];
-  var menu, sub, subBtn;
+  var menu, sub, subBtn, goBtn, goHref = '';
 
   function btn(parent, label, onClick) {
     var b = document.createElement('button');
@@ -182,6 +182,8 @@
     menu = document.createElement('div');
     menu.className = 'rv-menu';
     menu.setAttribute('role', 'menu');
+    // a logo that is also a link keeps its link as the first menu item
+    goBtn = btn(menu, '', function (e) { e.stopPropagation(); closeMenu(); location.href = goHref; });
     ITEMS.forEach(function (it) { btn(menu, it[1], pick(it[0])); });
     menu.appendChild(Object.assign(document.createElement('div'), { className: 'rv-sep' }));
     subBtn = btn(menu, 'Settings One', function (e) {
@@ -199,6 +201,10 @@
   function toggleMenu(e) {
     e.preventDefault(); e.stopPropagation();
     if (menu.classList.contains('open')) { closeMenu(); return; }
+    var link = e.currentTarget.closest('a[href]');
+    goHref = link ? link.href : '';
+    goBtn.style.display = goHref ? '' : 'none';
+    goBtn.textContent = '\u21A9 ' + (link ? (link.textContent || '').trim().slice(0, 30) || 'Open' : '');
     var r = e.currentTarget.getBoundingClientRect();
     menu.classList.add('open');
     var w = menu.offsetWidth, h = menu.offsetHeight;
