@@ -6,17 +6,16 @@
    design; the database rules (popcoin/database.rules.json) are what protect the
    balances. See popcoin/README.md for the 5-minute setup.
 
-   While it's null, every wallet lives on its own device. */
-window.POPCOIN_FIREBASE = null;
-/* e.g.
+   If it's null, every wallet lives on its own device. */
 window.POPCOIN_FIREBASE = {
-  apiKey: "AIza...",
-  authDomain: "popcoin-rudventur.firebaseapp.com",
-  databaseURL: "https://popcoin-rudventur-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "popcoin-rudventur",
-  appId: "1:...:web:..."
+  apiKey: "AIzaSyAAwUo2UUVqrjMfyDkyBTA8riU9otvMTH0",
+  authDomain: "popcoin-c039a.firebaseapp.com",
+  databaseURL: "https://popcoin-c039a-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "popcoin-c039a",
+  storageBucket: "popcoin-c039a.firebasestorage.app",
+  messagingSenderId: "973107499596",
+  appId: "1:973107499596:web:7df495d23ce0349e02dae9"
 };
-*/
 
 /* Indicative value of 1 PopCOIN in GBP, shown in the wallet. PopCOIN is a site
    credit and is not redeemable for money yet. */
