@@ -34,3 +34,23 @@ This directory is currently only consumed by pages inside this
 but not yet built — see `CLAUDE.md` at the repo root for the open
 questions (canonical hosting location, how each site pulls it, full list
 of target sites) that need answers before that expansion happens.
+
+---
+
+# rvView — shared fullscreen / view mode (logo click)
+
+One tag, for any RUDVENTUR repo (rudventur.com or rudventur.github.io/*):
+
+```html
+<script src="https://rudventur.com/embed/rvView.js"></script>
+```
+
+Then make the logo menu buttons call `rvView.set('horizontal' | 'panoramic' | 'vertical' | 'normal')`.
+
+- The chosen mode is saved in `localStorage['rvViewMode']` (same key as
+  translator_v7 / snout-first / map-merger-venti).
+- Every `<a target="_blank">` pointing at a RUDVENTUR site gets `?view=<mode>`
+  when clicked, so the new tab opens in the same mode. Use `rvView.open(url)`
+  for JS-opened tabs. Add `data-rv-noview` to a link to opt out.
+- A page loaded with `?view=` adopts it and goes fullscreen on the first
+  click/tap (browsers never allow fullscreen without a user gesture).

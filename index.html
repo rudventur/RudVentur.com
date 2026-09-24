@@ -597,6 +597,7 @@ body::before{
   .panel.fullscreen{padding:1.5rem 1rem}
 }
 </style>
+<script src="embed/rvView.js"></script>
 </head>
 <body>
 
@@ -830,19 +831,20 @@ function unlockOrientation() {
   } catch (e) {}
 }
 
-// apply a view mode chosen from the logo menu
+// apply a view mode chosen from the logo menu — embed/rvView.js saves it
+// (localStorage 'rvViewMode') and adds ?view= to every new-tab link, so the
+// services open in the same fullscreen/orientation
 function setView(mode) {
   closeLogoMenu();
+  if (window.rvView) { rvView.set(mode); return; }
   switch (mode) {
     case 'horizontal':
+    case 'panoramic-locked':
       requestFS().then(() => lockOrientation('landscape'));
       break;
     case 'panoramic':
     case 'panoramic-default':
       requestFS().then(() => unlockOrientation());
-      break;
-    case 'panoramic-locked':
-      requestFS().then(() => lockOrientation('landscape'));
       break;
     case 'vertical':
       requestFS().then(() => lockOrientation('portrait'));
