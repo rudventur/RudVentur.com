@@ -40,7 +40,7 @@
     zoomearth:  { icon: '🛰️', title: 'Zoom Earth', src: 'https://zoom.earth/', tab: true },
     social:     { icon: '🎸', title: 'RudVentur Social', src: 'punk-script/index.html', w: 760, h: 680 },
     bank:       { icon: '💰', title: 'Bank / Ledger', src: 'https://rudventur.github.io/bank/', w: 900, h: 700 },
-    vault:      { icon: '🍿', title: 'Popcoin Vault', src: 'bottom-right-popcorn-complete.html', w: 560, h: 700 },
+    vault:      { icon: '🍿', title: 'PopCOIN Wallet', src: 'popcoin/', w: 560, h: 760 },
     win13:      { icon: '🪟', title: 'WINDOWS 13', src: 'windows13/WINDOWS13-MASTER.html', w: 1000, h: 700 },
     luxwin:     { icon: '🐧', title: 'LuxWin13', src: 'LuxWin13/notch-menu-final.html', w: 900, h: 640 },
     chemmulti:  { icon: '⚗️', title: 'ChemVentur Multi v118', src: 'https://rudventur.github.io/ChemVentur-Multi-v118/', w: 1100, h: 720 },
