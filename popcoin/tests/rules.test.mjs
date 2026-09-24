@@ -70,5 +70,28 @@ await t('bob un-claims to claim again', false, () => set(ref(db('bob'), 'popcoin
 await t('alice edits the payment after sending', false, () => set(ref(db('alice'), 'popcoin/inbox/bob/tx1/amount'), 1));
 console.log('     alice:', await bal('alice'), ' bob:', await bal('bob'), '(total should be 1520+1200 = 2720)');
 
+console.log('— rewards (games, translator): max 3 PopCOIN per claim, 30 s apart, 50 a day)');
+const today = Math.floor(Date.now() / 86400000);
+const reward = (d, uid, newBal, today_, rewardToday) => update(ref(d, `popcoin/users/${uid}`), { balance: newBal, rewardAt: TS, rewardDay: today_, rewardToday });
+await t('bob earns 1.50 for a type-game round', true, () => reward(db('bob'), 'bob', 1350, today, 150));
+await t('another reward 5 s later (too soon)', false, () => reward(db('bob'), 'bob', 1400, today, 200));
+await seed('popcoin/users/bob/rewardAt', Date.now() - 60000);
+await t('reward over 3 PopCOIN in one claim', false, () => reward(db('bob'), 'bob', 1700, today, 500));
+await t('reward but count less toward the daily cap', false, () => reward(db('bob'), 'bob', 1450, today, 150));
+await t('reward with a fake "tomorrow" to reset the cap', false, () => reward(db('bob'), 'bob', 1450, today + 1, 100));
+await t('reset the daily counter without a reward', false, () => update(ref(db('bob'), 'popcoin/users/bob'), { rewardToday: 0 }));
+await t('reward 2.00 a minute later (allowed)', true, () => reward(db('bob'), 'bob', 1550, today, 350));
+await seed('popcoin/users/bob/rewardAt', Date.now() - 60000);
+await seed('popcoin/users/bob/rewardToday', 4900);
+await t('reward past 50 PopCOIN today', false, () => reward(db('bob'), 'bob', 1750, today, 5100));
+await t('reward up to exactly 50 today', true, () => reward(db('bob'), 'bob', 1650, today, 5000));
+await seed('popcoin/users/bob/rewardAt', Date.now() - 60000);
+await seed('popcoin/users/bob/rewardDay', today - 1);
+await t('new day: counter starts again', true, () => reward(db('bob'), 'bob', 1750, today, 100));
+await seed('popcoin/users/alice/minedAt', Date.now() - 60000);
+await t('mining that also rewrites the reward counter', false, () => update(ref(db('alice'), 'popcoin/users/alice'), { balance: 1640, minedAt: TS, rewardToday: 0, rewardAt: TS, rewardDay: today }));
+await t('plain mining still works for accounts without reward fields', true, () => update(ref(db('alice'), 'popcoin/users/alice'), { balance: 1640, minedAt: TS }));
+console.log('     alice:', await bal('alice'), ' bob:', await bal('bob'));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 await env.cleanup(); process.exit(fail ? 1 : 0);
