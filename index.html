@@ -597,6 +597,12 @@ body::before{
   .panel.fullscreen{padding:1.5rem 1rem}
 }
 </style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/RudVentur.com/embed/apple-touch-icon.png">
 <script src="embed/rvView.js"></script>
 </head>
 <body>
@@ -625,6 +631,8 @@ body::before{
     <button role="menuitem" onclick="setView('panoramic-default')">↳ Panoramic — Default Rotation</button>
     <button role="menuitem" onclick="setView('vertical')">↳ Full Screen Vertical</button>
   </div>
+  <div class="menu-sep" data-rv-install style="display:none"></div>
+  <button role="menuitem" data-rv-install style="display:none" onclick="closeLogoMenu();rvView.install()">📲 Install RUDVENTUR app</button>
 </div>
 
 <!-- INDEX NAV STRIP — jump to any tile (content that used to live in THE INDEX tile) -->

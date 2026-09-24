@@ -57,3 +57,21 @@ One tag, for any page in any RUDVENTUR repo:
   the first tap/click/key (browsers never allow fullscreen without a gesture).
   Use `rvView.open(url)` for tabs opened from JS; `data-rv-noview` opts a link out.
 - JS API: `rvView.set(mode)`, `rvView.open(url)`, `rvView.withView(url)`, `rvView.current()`.
+
+## Fullscreen layer (new tabs that stay fullscreen)
+
+Browsers never let a brand-new tab start fullscreen. So while a fullscreen
+mode is on (or RUDVENTUR runs as an installed app), anything that would open a
+new tab (`<a target="_blank">`, plain `window.open(url)`) opens in a
+full-screen layer over the current page instead. It stays fullscreen with no
+extra tap. The tab on the left edge has ↗ (open in a real tab) and ✕ (close).
+The phone's back button also closes it. Pages inside a layer hand their
+new-tab links and view changes up to the top page. `data-rv-nolayer` on a link
+opts it out. Sized pop-ups (`window.open(url, name, 'width=…')`) are untouched.
+
+## Install as an app (always fullscreen)
+
+Every repo has a `manifest.webmanifest` with `"display": "fullscreen"`, and the
+logo menu shows **📲 Install RUDVENTUR app** when the browser allows it (on
+iPhone it explains Share → Add to Home Screen). The installed app opens
+fullscreen straight away. Icons live in `embed/` (icon-192/512, maskable, apple-touch-icon).
