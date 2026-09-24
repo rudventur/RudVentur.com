@@ -15,7 +15,8 @@
    4. Logo menu: clicking the page's logo opens the same view menu as the hub.
       The logo is the element marked data-rv-logo, else the first <h1>, else .logo. Pages
       that already have their own menu (window.setView) are left alone; add
-      data-rv-nologo to <html> to opt a page out.
+      data-rv-nologo to <html> to opt a page out. A small green R tab on the
+      left edge opens the same menu on every page, even when the logo is hidden.
 
    5. Fullscreen layer: while a fullscreen mode is on (or when RUDVENTUR runs as
       an installed app), links that would open a new tab — <a target="_blank">
@@ -211,7 +212,11 @@
     var x = document.createElement('button');
     x.type = 'button'; x.title = 'Close'; x.textContent = '\u2715';
     x.addEventListener('click', function () { closeLayer(); });
-    bar.appendChild(out); bar.appendChild(x);
+    var rb = document.createElement('button');
+    rb.type = 'button'; rb.title = 'View options'; rb.textContent = 'R';
+    rb.style.fontWeight = '900';
+    rb.addEventListener('click', toggleMenu);
+    bar.appendChild(rb); bar.appendChild(out); bar.appendChild(x);
     wrap.appendChild(fr); wrap.appendChild(bar);
     if (!isOurs(new URL(abs).hostname)) {
       // some outside sites refuse to be shown inside another page
@@ -314,7 +319,11 @@
     '.rv-menu .rv-set.open::after{transform:rotate(90deg)}' +
     '.rv-sub{display:none;padding-left:10px;margin:0 3px;border-left:1px solid #222}' +
     '.rv-sub.open{display:block}.rv-sub button{font-size:11px;color:#999}' +
-    '[data-rv-logo-on]{cursor:pointer}';
+    '[data-rv-logo-on]{cursor:pointer}' +
+    '.rv-fab{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:2147483644;width:30px;height:38px;' +
+    'padding:0;border:1px solid #00ff41;border-left:0;border-radius:0 10px 10px 0;background:#000;color:#00ff41;' +
+    "font:900 16px/1 ui-monospace,monospace;cursor:pointer;box-shadow:0 0 10px rgba(0,255,65,.35);opacity:.8}" +
+    '.rv-fab:hover{opacity:1}';
   var ITEMS = [
     ['horizontal', 'Full Screen Horizontal'], ['panoramic', 'Full Screen Panoramic'],
     ['normal', 'Normal / Default Browser']
@@ -340,6 +349,7 @@
   }
   function pick(mode) { return function (e) { e.stopPropagation(); closeMenu(); set(mode); }; }
   function buildMenu() {
+    if (menu) return;
     var st = document.createElement('style');
     st.textContent = CSS;
     document.head.appendChild(st);
@@ -370,6 +380,7 @@
   }
   function toggleMenu(e) {
     e.preventDefault(); e.stopPropagation();
+    buildMenu();
     if (menu.classList.contains('open')) { closeMenu(); return; }
     var link = e.currentTarget.closest('a[href]');
     goHref = link ? link.href : '';
@@ -386,20 +397,30 @@
   }
   function initLogo() {
     if (document.documentElement.hasAttribute('data-rv-nologo')) return;
+    var ownMenu = typeof window.setView === 'function';
     var logos = Array.prototype.filter.call(document.querySelectorAll('[data-rv-logo]'),
       function (el) { return !el.hasAttribute('onclick'); });
-    if (!logos.length) {
-      if (typeof window.setView === 'function') return; // page has its own view menu
+    if (!logos.length && !ownMenu) {
       var el = document.querySelector('h1') || document.querySelector('.logo');
-      if (!el || el.hasAttribute('onclick') || el.closest('a')) return;
-      logos = [el];
+      if (el && !el.hasAttribute('onclick') && !el.closest('a')) logos = [el];
     }
-    buildMenu();
     logos.forEach(function (el) {
       el.setAttribute('data-rv-logo-on', '');
       if (!el.title) el.title = 'click for view options';
       el.addEventListener('click', toggleMenu);
     });
+    // the R button is always there, even when the page's logo is hidden or
+    // scrolled away (inside a layer, the layer's own tab carries it instead)
+    if (!ownMenu && !IN_FRAME) {
+      buildMenu();
+      var fab = document.createElement('button');
+      fab.type = 'button';
+      fab.className = 'rv-fab';
+      fab.title = 'RUDVENTUR view options';
+      fab.textContent = 'R';
+      fab.addEventListener('click', toggleMenu);
+      document.body.appendChild(fab);
+    }
   }
   function init() { initLogo(); syncInstall(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
