@@ -67,30 +67,6 @@ body::before{
   text-shadow:0 0 40px rgba(255,255,255,.3),0 0 80px rgba(255,153,51,.15);
   transform:scale(1.02);
 }
-.kofi-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:.4rem;
-  padding:.55rem 1rem;
-  background:#0e0e10;
-  color:#ff9933;
-  border:1px solid #3a2a0a;
-  border-radius:8px;
-  font-family:'DM Mono',monospace;
-  font-size:.75rem;
-  font-weight:500;
-  letter-spacing:1px;
-  text-decoration:none;
-  text-transform:uppercase;
-  transition:all .2s;
-  white-space:nowrap;
-}
-.kofi-btn:hover{
-  border-color:#ff9933;
-  background:#1a0f04;
-  box-shadow:0 0 20px rgba(255,153,51,.25);
-  color:#ffb566;
-}
 .site-header .tagline{
   font-size:.8rem;
   color:#555;
@@ -587,13 +563,14 @@ body::before{
     padding:.65rem .6rem;
   }
 }
+@media(max-width:700px){
+  /* leave room for the desktop's top corners (notch menu, useRbox R) */
+  .site-header{padding-top:4.6rem}
+}
 @media(max-width:480px){
-  .site-header{padding:1.2rem .5rem .8rem}
+  .site-header{padding:4.6rem .5rem .8rem}
   .site-header h1{letter-spacing:2px}
   .panel{padding:1.2rem 1rem}
-  /* two identical Ko-fi buttons wrap onto their own separate rows on narrow
-     phones, burning ~90px of vertical space before any real content — keep one */
-  .title-row .kofi-btn:last-of-type{display:none}
   .panel.fullscreen{padding:1.5rem 1rem}
 }
 </style>
@@ -610,9 +587,7 @@ body::before{
 <!-- HEADER -->
 <header class="site-header">
   <div class="title-row">
-    <a class="kofi-btn" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ Ko-fi</a>
     <h1 onclick="toggleLogoMenu(event)" title="click for view options">RUDVENTUR</h1>
-    <a class="kofi-btn" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">🎃 Ko-fi</a>
   </div>
   <div class="tagline">a creative web universe</div>
   <div class="version">v3.0 — all repos consolidated</div>
@@ -939,6 +914,9 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
 })();
 </script>
 
-<script src="/embed/useRbox.js" defer></script>
+<!-- Windows 13 desktop: notch menu top-left, useRbox R top-right, keyboard + chat
+     bottom-left, Popcorn bottom-right, taskbar bottom-middle. Ko-fi lives in the notch menu. -->
+<script src="embed/useRbox.js" defer></script>
+<script src="embed/rvDesk.js" defer></script>
 </body>
 </html>

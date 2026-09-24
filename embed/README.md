@@ -10,7 +10,7 @@ Drop this one tag into a page (works from `<head>` with `defer`, or right
 before `</body>`):
 
 ```html
-<script src="/embed/useRbox.js" defer></script>
+<script src="https://rudventur.github.io/RudVentur.com/embed/useRbox.js" defer></script>
 ```
 
 It injects `useRbox.css` itself (resolved relative to its own `<script>`
@@ -19,7 +19,7 @@ markup needed on the host page.
 
 ### Per-site translator path override
 
-The widget defaults to `/map-merger-venti/translator_v7.html` for the 🌐
+The widget defaults to `../map-merger-venti/translator_v7.html` next to the script (the hub's copy) for the 🌐
 translator link. If a site serves the translator from somewhere else, set
 this **before** the `<script src="/embed/useRbox.js">` tag:
 
@@ -75,3 +75,21 @@ Every repo has a `manifest.webmanifest` with `"display": "fullscreen"`, and the
 logo menu shows **📲 Install RUDVENTUR app** when the browser allows it (on
 iPhone it explains Share → Add to Home Screen). The installed app opens
 fullscreen straight away. Icons live in `embed/` (icon-192/512, maskable, apple-touch-icon).
+
+# rvDesk — the Windows 13 desktop on the hub
+
+`<script src="embed/rvDesk.js" defer></script>` (after rvView.js) puts the
+Windows 13 layout straight onto the page:
+
+- top-left: RUDVENTUR notch menu (Maps, Tools, Social, Bank, OS, ChemVentur,
+  View modes, Buy Pumpkin Electricity / Ko-fi)
+- top-right: the R circle and useRbox (`useRbox.js`)
+- bottom-left: ⌨️ Keyboards, 💬 Global Chat
+- bottom-right: 🍿 Popcorn Hub
+- bottom-middle: taskbar with 🎃 start button, one button per open window, clock
+
+Services open in floating windows: drag the title bar, resize from the
+corner, ⛶ full screen, _ minimise to the taskbar, ↗ open as a real tab, ✕
+close. On phones, windows open full size and ⛶ switches the device to
+fullscreen. Sites that won't load inside another page (Ko-fi, Zoom Earth) open
+as real tabs. Apps are listed in `APPS` / `MENU` at the top of the file.

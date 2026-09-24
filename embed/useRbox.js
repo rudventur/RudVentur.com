@@ -111,6 +111,10 @@
   }
 
   function init() {
+    // inside a window/layer on a page that already shows the R circle, one is enough
+    try {
+      if (window.top !== window && window.top.document.getElementById('topRightUser')) return;
+    } catch (e) {}
     injectStylesheet();
     var scope = buildMarkup();
     var q = function (sel) { return scope.querySelector(sel); };
@@ -278,7 +282,9 @@
     function currentViewMode() {
       return localStorage.getItem(VIEW_MODE_KEY) || '';
     }
-    var TRANSLATOR_URL = window.RUDVENTUR_TRANSLATOR_URL || '/map-merger-venti/translator_v7.html';
+    // relative to this script, so it works wherever the hub is served from
+    // (rudventur.github.io/RudVentur.com/, not the domain root)
+    var TRANSLATOR_URL = window.RUDVENTUR_TRANSLATOR_URL || (baseUrl + '../map-merger-venti/translator_v7.html');
     function goTo(url) {
       var mode = currentViewMode();
       var qs = mode && mode !== 'normal' ? '?view=' + encodeURIComponent(mode) : '';
