@@ -139,13 +139,14 @@ canvas#world{position:fixed;inset:0;z-index:1}
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#000}::-webkit-scrollbar-thumb{background:#00ff41}
 </style>
+<script src="../embed/rvView.js"></script>
 </head>
 <body>
 <canvas id="world"></canvas>
 
 <!-- HUD -->
 <div class="hud">
-  <div class="htitle">&#127912; ArtSpace<br>City</div>
+  <div data-rv-logo class="htitle">&#127912; ArtSpace<br>City</div>
   <div class="hsep"></div>
   <div class="csearch">
     <input class="cinput" id="CI" type="text" placeholder="City, country...">
