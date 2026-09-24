@@ -282,9 +282,8 @@
     function currentViewMode() {
       return localStorage.getItem(VIEW_MODE_KEY) || '';
     }
-    // relative to this script, so it works wherever the hub is served from
-    // (rudventur.github.io/RudVentur.com/, not the domain root)
-    var TRANSLATOR_URL = window.RUDVENTUR_TRANSLATOR_URL || (baseUrl + '../map-merger-venti/translator_v7.html');
+    // the one translator: the map-merger-venti repo's copy (the hub's old copy redirects there)
+    var TRANSLATOR_URL = window.RUDVENTUR_TRANSLATOR_URL || 'https://rudventur.github.io/map-merger-venti/translator_v7.html';
     function goTo(url) {
       var mode = currentViewMode();
       var qs = mode && mode !== 'normal' ? '?view=' + encodeURIComponent(mode) : '';
