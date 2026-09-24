@@ -30,7 +30,7 @@
     chat:       { icon: '💬', title: 'Global Chat', src: 'global-chat-v5/index.html', w: 480, h: 620 },
     popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html', w: 560, h: 700 },
     mapmerger:  { icon: '🗺️', title: 'Map Merger Venti', src: 'map-merger-venti/index.html', w: 1000, h: 680 },
-    translator: { icon: '🌐', title: 'Translator v7', src: 'map-merger-venti/translator_v7.html', w: 1000, h: 680 },
+    translator: { icon: '🌐', title: 'Translator v7', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
     snout:      { icon: '🐾', title: 'Snout First', src: 'map-merger-venti/snout-first.html', w: 900, h: 680 },
     weather:    { icon: '🌦️', title: 'Weather News', src: 'yesterday-today-tomorrow-weather.html', w: 720, h: 640 },
     ventusky:   { icon: '🌬️', title: 'Ventusky', src: 'https://www.ventusky.com/', w: 1000, h: 680 },
