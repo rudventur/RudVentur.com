@@ -17,9 +17,22 @@
       that already have their own menu (window.setView) are left alone; add
       data-rv-nologo to <html> to opt a page out.
 
+   5. Fullscreen layer: while a fullscreen mode is on (or when RUDVENTUR runs as
+      an installed app), links that would open a new tab — <a target="_blank">
+      and plain window.open(url) — open in a full-screen layer on top of the
+      current page instead, so they stay fullscreen with no extra tap
+      (browsers never let a brand-new tab start fullscreen). ✕ or the phone's
+      back button closes it, ↗ opens it in a real tab. data-rv-nolayer on a
+      link opts it out. Pages loaded inside the layer hand their own new-tab
+      links and view changes up to the top page.
+   6. Install: "📲 Install RUDVENTUR app" in the logo menu (each repo ships a
+      manifest.webmanifest with display: fullscreen), so the installed app
+      opens fullscreen straight away.
+
    API (window.rvView):
      rvView.set(mode)   — save + apply ('horizontal'|'panoramic'|'vertical'|'normal')
      rvView.open(url)   — open url in a new tab carrying the current mode
+     rvView.openLayer(url), rvView.closeLayer(), rvView.install()
      rvView.withView(url), rvView.current(), rvView.apply(mode)
 */
 (function () {
@@ -27,6 +40,11 @@
   var KEY = 'rvViewMode';
   var ALIASES = { 'panoramic-locked': 'horizontal', 'panoramic-default': 'panoramic' };
   var MODES = { horizontal: 1, panoramic: 1, vertical: 1, normal: 1 };
+
+  // inside a RUDVENTUR fullscreen layer, the top page owns fullscreen + layers
+  var IN_FRAME = window.top !== window;
+  var topRv = null;
+  if (IN_FRAME) { try { topRv = window.top.rvView || null; } catch (e) {} }
 
   function norm(mode) {
     mode = ALIASES[mode] || mode;
@@ -59,6 +77,7 @@
   }
 
   function apply(mode) {
+    if (topRv) return topRv.apply(mode);
     switch (norm(mode)) {
       case 'horizontal': return requestFS().then(function () { lock('landscape'); });
       case 'panoramic':  return requestFS().then(unlock);
@@ -71,6 +90,7 @@
     mode = norm(mode);
     if (!mode) return Promise.resolve();
     store(mode);
+    if (topRv) return topRv.set(mode);
     return apply(mode);
   }
 
@@ -108,7 +128,7 @@
   // 2. go fullscreen on the first gesture. On phones a touch only counts as a
   //    gesture on release, so listen to click/pointerup/keydown (not pointerdown),
   //    and keep trying until fullscreen actually sticks once.
-  if (pending && pending !== 'normal') {
+  if (pending && pending !== 'normal' && !IN_FRAME) {
     var EVENTS = ['click', 'pointerup', 'keydown'];
     var done = false;
     var fire = function (e) {
@@ -133,6 +153,150 @@
   }
   document.addEventListener('click', decorate, true);
   document.addEventListener('auxclick', decorate, true);
+
+  // 5. fullscreen layer — new-tab links open on top of this (already fullscreen)
+  //    page, because a new tab can never start fullscreen by itself
+  function installed() {
+    try {
+      return matchMedia('(display-mode: fullscreen)').matches ||
+        matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    } catch (e) { return false; }
+  }
+  function useLayer() {
+    if (topRv) return true;
+    var m = current();
+    return installed() || (!!m && m !== 'normal');
+  }
+  var nativeOpen = window.open;
+  var layers = [], ignorePop = 0, layerCss = false;
+  var LAYER_CSS =
+    '.rv-layer{position:fixed;inset:0;z-index:2147483645;background:#000}' +
+    '.rv-layer iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}' +
+    '.rv-layer-bar{position:absolute;left:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;' +
+    'gap:2px;z-index:1;padding:4px 2px;background:#000;border:1px solid #00ff41;border-left:0;' +
+    'border-radius:0 10px 10px 0;box-shadow:0 0 10px rgba(0,255,65,.35);opacity:.85;transition:opacity .2s}' +
+    '.rv-layer-bar:hover,.rv-layer-bar:focus-within{opacity:1}' +
+    '.rv-layer-bar button{width:28px;height:30px;border:0;background:none;color:#00ff41;' +
+    'font:15px/1 ui-monospace,monospace;cursor:pointer;padding:0}' +
+    '.rv-layer-hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);max-width:90%;' +
+    'background:rgba(0,0,0,.85);border:1px solid #333;color:#ccc;font:12px ui-monospace,monospace;' +
+    'padding:8px 12px;border-radius:6px;pointer-events:none;transition:opacity .6s}';
+  function openLayer(url) {
+    if (topRv) return topRv.openLayer(url);
+    var abs;
+    try { abs = new URL(url, location.href).href; } catch (e) { return; }
+    if (!layerCss) {
+      var st = document.createElement('style');
+      st.textContent = LAYER_CSS;
+      document.head.appendChild(st);
+      layerCss = true;
+    }
+    var wrap = document.createElement('div');
+    wrap.className = 'rv-layer';
+    var fr = document.createElement('iframe');
+    fr.allow = 'fullscreen; autoplay; clipboard-read; clipboard-write; geolocation; camera; ' +
+      'microphone; accelerometer; gyroscope; screen-wake-lock; web-share';
+    fr.setAttribute('allowfullscreen', '');
+    fr.src = abs;
+    var bar = document.createElement('div');
+    bar.className = 'rv-layer-bar';
+    var out = document.createElement('button');
+    out.type = 'button'; out.title = 'Open in a new tab'; out.textContent = '\u2197';
+    out.addEventListener('click', function () {
+      var href = abs;
+      try { href = fr.contentWindow.location.href; } catch (e) {}
+      nativeOpen.call(window, href, '_blank', 'noopener');
+      closeLayer();
+    });
+    var x = document.createElement('button');
+    x.type = 'button'; x.title = 'Close'; x.textContent = '\u2715';
+    x.addEventListener('click', function () { closeLayer(); });
+    bar.appendChild(out); bar.appendChild(x);
+    wrap.appendChild(fr); wrap.appendChild(bar);
+    if (!isOurs(new URL(abs).hostname)) {
+      // some outside sites refuse to be shown inside another page
+      var hint = document.createElement('div');
+      hint.className = 'rv-layer-hint';
+      hint.textContent = 'Blank? This site blocks being opened inside RUDVENTUR \u2014 tap \u2197';
+      wrap.appendChild(hint);
+      setTimeout(function () { hint.style.opacity = '0'; }, 6000);
+    }
+    document.body.appendChild(wrap);
+    layers.push(wrap);
+    document.documentElement.style.overflow = 'hidden';
+    try { history.pushState({ rvLayer: layers.length }, ''); } catch (e) {}
+    return fr;
+  }
+  function closeLayer(fromPop) {
+    if (topRv) return topRv.closeLayer();
+    var w = layers.pop();
+    if (!w) return;
+    w.parentNode.removeChild(w);
+    if (!layers.length) document.documentElement.style.overflow = '';
+    if (!fromPop) { ignorePop++; try { history.back(); } catch (e) { ignorePop--; } }
+  }
+  window.addEventListener('popstate', function () {
+    if (ignorePop) { ignorePop--; return; }
+    if (layers.length) closeLayer(true);
+  });
+  // pages with their own view menu (translator, snout-first, the map) only save
+  // the mode themselves; inside a layer, pass it to the top page in the same tap
+  if (topRv) {
+    try {
+      var ls = window.localStorage, lsSet = ls.setItem;
+      ls.setItem = function (k, v) {
+        lsSet.call(ls, k, v);
+        if (k === KEY) topRv.apply(v);
+      };
+    } catch (e) {}
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && layers.length && !isFS()) closeLayer();
+  });
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    var a = e.target && e.target.closest && e.target.closest('a[target="_blank"][href]');
+    if (!a || a.hasAttribute('data-rv-nolayer') || a.hasAttribute('download')) return;
+    if (!/^https?:$/.test(a.protocol) || !useLayer()) return;
+    e.preventDefault();
+    openLayer(a.href);
+  });
+  // plain window.open(url) / window.open(url, '_blank', 'noopener') -> layer;
+  // sized popups (width=… etc.) and named targets keep the browser behaviour
+  window.open = function (url, target, features) {
+    var f = String(features || '').toLowerCase().replace(/noopener|noreferrer|[\s,]/g, '');
+    var t = target == null ? '_blank' : String(target);
+    if (url && !f && (t === '_blank' || t === '') && useLayer()) {
+      try {
+        var u = new URL(String(url), location.href);
+        if (/^https?:$/.test(u.protocol)) { openLayer(withView(u.href)); return null; }
+      } catch (e) {}
+    }
+    return nativeOpen.apply(window, arguments);
+  };
+
+  // 6. install as an app (manifest.webmanifest with display: fullscreen)
+  var installEvt = null;
+  var IOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '');
+  function canInstall() { return !installed() && !IN_FRAME && (!!installEvt || IOS); }
+  function syncInstall() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-rv-install]'), function (el) {
+      el.style.display = canInstall() ? '' : 'none';
+    });
+  }
+  window.addEventListener('beforeinstallprompt', function (e) { installEvt = e; syncInstall(); });
+  window.addEventListener('appinstalled', function () { installEvt = null; syncInstall(); });
+  function install() {
+    if (installEvt) {
+      var ev = installEvt;
+      installEvt = null;
+      ev.prompt();
+      syncInstall();
+      return;
+    }
+    if (IOS) alert('To install RUDVENTUR: tap the Share button, then "Add to Home Screen". ' +
+      'It then opens without the browser bars.');
+  }
 
   // 4. logo menu — same options as the hub's RUDVENTUR logo
   var CSS =
@@ -194,7 +358,13 @@
     sub.className = 'rv-sub';
     SUB.forEach(function (it) { btn(sub, it[1], pick(it[0])); });
     menu.appendChild(sub);
+    var isep = Object.assign(document.createElement('div'), { className: 'rv-sep' });
+    isep.setAttribute('data-rv-install', '');
+    menu.appendChild(isep);
+    var ib = btn(menu, '\uD83D\uDCF2 Install RUDVENTUR app', function (e) { e.stopPropagation(); closeMenu(); install(); });
+    ib.setAttribute('data-rv-install', '');
     document.body.appendChild(menu);
+    syncInstall();
     document.addEventListener('click', function (e) { if (!menu.contains(e.target)) closeMenu(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
   }
@@ -206,6 +376,7 @@
     goBtn.style.display = goHref ? '' : 'none';
     goBtn.textContent = '\u21A9 ' + (link ? (link.textContent || '').trim().slice(0, 30) || 'Open' : '');
     var r = e.currentTarget.getBoundingClientRect();
+    syncInstall();
     menu.classList.add('open');
     var w = menu.offsetWidth, h = menu.offsetHeight;
     var top = r.bottom + 8;
@@ -230,8 +401,13 @@
       el.addEventListener('click', toggleMenu);
     });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLogo);
-  else initLogo();
+  function init() { initLogo(); syncInstall(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 
-  window.rvView = { set: set, apply: apply, open: open, withView: withView, current: current, KEY: KEY };
+  window.rvView = {
+    set: set, apply: apply, open: open, withView: withView, current: current,
+    openLayer: openLayer, closeLayer: closeLayer, install: install, canInstall: canInstall,
+    installed: installed, KEY: KEY
+  };
 })();
