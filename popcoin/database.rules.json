@@ -1,0 +1,79 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "popcoin": {
+      "names": {
+        ".read": "auth != null",
+        "$name": {
+          ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid) || (data.exists() && data.val() === auth.uid && !newData.exists()))",
+          ".validate": "$name.matches(/^[a-z0-9_-]{3,20}$/) && newData.isString()"
+        }
+      },
+      "users": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['name', 'balance', 'minedAt', 'lastTx'])",
+          "name": {
+            ".validate": "newData.isString() && newData.parent().parent().parent().child('names').child(newData.val()).val() === $uid"
+          },
+          "minedAt": {
+            ".validate": "newData.isNumber() && (newData.val() === data.val() || newData.val() === now)"
+          },
+          "lastTx": {
+            ".validate": "newData.isString() && newData.val().length <= 40 && (data.exists() ? (newData.val() === data.val() || newData.parent().child('balance').val() !== data.parent().child('balance').val()) : newData.val() === '')"
+          },
+          "balance": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 === 0 && ((!data.exists() && newData.val() === 1000 && newData.parent().child('minedAt').val() === now) || (data.exists() && ((newData.val() === data.val() && newData.parent().child('lastTx').val() === data.parent().child('lastTx').val()) || (newData.parent().child('lastTx').val() === data.parent().child('lastTx').val() && newData.parent().child('minedAt').val() === now && newData.val() > data.val() && (newData.val() - data.val()) * 500 <= now - data.parent().child('minedAt').val() && newData.val() - data.val() <= 600) || (newData.parent().child('lastTx').val() !== data.parent().child('lastTx').val() && !newData.parent().child('lastTx').val().beginsWith('~') && newData.parent().child('minedAt').val() === data.parent().child('minedAt').val() && newData.parent().parent().parent().child('outbox').child($uid).child(newData.parent().child('lastTx').val()).exists() && !root.child('popcoin').child('outbox').child($uid).child(newData.parent().child('lastTx').val()).exists() && newData.val() === data.val() - newData.parent().parent().parent().child('outbox').child($uid).child(newData.parent().child('lastTx').val()).child('amount').val()) || (newData.parent().child('lastTx').val() !== data.parent().child('lastTx').val() && newData.parent().child('lastTx').val().beginsWith('~') && newData.parent().child('minedAt').val() === data.parent().child('minedAt').val() && newData.parent().parent().parent().child('inbox').child($uid).child(newData.parent().child('lastTx').val().replace('~', '')).child('claimed').val() === true && root.child('popcoin').child('inbox').child($uid).child(newData.parent().child('lastTx').val().replace('~', '')).child('claimed').val() === false && newData.val() === data.val() + newData.parent().parent().parent().child('inbox').child($uid).child(newData.parent().child('lastTx').val().replace('~', '')).child('amount').val()))))"
+          },
+          "$other": { ".validate": false }
+        }
+      },
+      "outbox": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$tx": {
+            ".write": "auth != null && auth.uid === $uid && !data.exists()",
+            ".validate": "newData.hasChildren(['to', 'amount', 'at']) && $tx === newData.parent().parent().parent().child('users').child($uid).child('lastTx').val()",
+            "to": {
+              ".validate": "newData.isString() && newData.val() !== $uid && newData.parent().parent().parent().parent().child('inbox').child(newData.val()).child($tx).exists()"
+            },
+            "amount": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() % 1 === 0" },
+            "at": { ".validate": "newData.val() === now" },
+            "note": { ".validate": "newData.isString() && newData.val().length <= 80" },
+            "$other": { ".validate": false }
+          }
+        }
+      },
+      "inbox": {
+        "$to": {
+          ".read": "auth != null && auth.uid === $to",
+          "$tx": {
+            ".write": "auth != null && ((!data.exists() && newData.child('from').val() === auth.uid) || (data.exists() && newData.exists() && auth.uid === $to))",
+            ".validate": "newData.hasChildren(['from', 'amount', 'at', 'claimed'])",
+            "from": {
+              ".validate": "newData.isString() && (data.exists() ? newData.val() === data.val() : newData.parent().parent().parent().parent().child('outbox').child(newData.val()).child($tx).child('to').val() === $to)"
+            },
+            "amount": {
+              ".validate": "newData.isNumber() && (data.exists() ? newData.val() === data.val() : newData.val() === newData.parent().parent().parent().parent().child('outbox').child(newData.parent().child('from').val()).child($tx).child('amount').val())"
+            },
+            "at": { ".validate": "data.exists() ? newData.val() === data.val() : newData.val() === now" },
+            "claimed": {
+              ".validate": "newData.isBoolean() && (data.exists() ? (newData.val() === data.val() || (data.val() === false && newData.val() === true)) : newData.val() === false)"
+            },
+            "fromName": { ".validate": "newData.isString() && newData.val().length <= 20 && (!data.exists() || newData.val() === data.val())" },
+            "note": { ".validate": "newData.isString() && newData.val().length <= 80 && (!data.exists() || newData.val() === data.val())" },
+            "$other": { ".validate": false }
+          }
+        }
+      },
+      "history": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      }
+    }
+  }
+}

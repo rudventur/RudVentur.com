@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PopCOIN Wallet</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/RudVentur.com/embed/apple-touch-icon.png">
+<script src="../embed/rvView.js"></script>
+<style>
+:root{--bg:#050607;--panel:#0d0f12;--line:#23262d;--gold:#ffc83d;--green:#00ff41;--pink:#ff3d7f;--cyan:#00e5ff;--text:#e8e8e8;--dim:#8a8f98}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 ui-monospace,'Fira Code',monospace}
+a{color:var(--cyan)}
+.wrap{max-width:760px;margin:0 auto;padding:14px 14px 40px}
+h1{margin:4px 0 10px;font-size:20px;letter-spacing:2px;color:var(--gold);text-shadow:0 0 12px rgba(255,200,61,.4)}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:2}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--dim);padding:8px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:12px;letter-spacing:1px}
+.tab.on{border-color:var(--gold);color:var(--gold);background:#1a1405}
+.view{display:none}.view.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:13px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+.hero{text-align:center;padding:22px 14px;background:radial-gradient(circle at 50% 0,#2a1f05,var(--panel) 70%);border-color:#4a3a10}
+.bal{font-size:44px;font-weight:900;color:var(--gold);text-shadow:0 0 22px rgba(255,200,61,.45);line-height:1.1}
+.unit{font-size:15px;letter-spacing:3px;color:var(--gold);margin-top:2px}
+.sub{color:var(--dim);font-size:12px;margin-top:6px}
+.badge{display:inline-block;margin-top:10px;padding:4px 10px;border-radius:20px;font-size:11px;border:1px solid var(--line);color:var(--dim)}
+.badge.shared{border-color:var(--green);color:var(--green)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1 1 140px}
+input,select{width:100%;background:#000;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px;font:inherit}
+input:focus,select:focus{outline:none;border-color:var(--gold)}
+label{display:block;font-size:11px;color:var(--dim);margin:8px 0 4px;letter-spacing:1px;text-transform:uppercase}
+.btn{display:inline-block;border:1px solid var(--gold);background:#1a1405;color:var(--gold);border-radius:8px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer;text-align:center;text-decoration:none}
+.btn:hover{background:#2a1f05}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.green{border-color:var(--green);color:var(--green);background:#031a0a}
+.btn.big{width:100%;padding:14px;font-size:15px;letter-spacing:1px}
+.msg{min-height:18px;font-size:12px;margin-top:8px;color:var(--dim)}
+.msg.ok{color:var(--green)}.msg.err{color:var(--pink)}
+.hist{list-style:none;margin:0;padding:0;max-height:320px;overflow-y:auto}
+.hist li{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;border-bottom:1px solid #16181d;font-size:12px}
+.hist .amt{font-weight:700;white-space:nowrap}
+.hist .amt.plus{color:var(--green)}.hist .amt.minus{color:var(--pink)}
+.hist .when{color:var(--dim);font-size:11px}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.link{display:block;border:1px solid var(--line);border-radius:10px;padding:10px;text-decoration:none;color:var(--text);background:#08090b}
+.link:hover{border-color:var(--cyan)}
+.link b{display:block;color:var(--cyan);margin-bottom:2px}
+.link span{color:var(--dim);font-size:12px}
+details{border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#08090b}
+summary{cursor:pointer;padding:11px 12px;font-weight:700;color:var(--gold);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:'▸ ';color:var(--dim)}
+details[open] summary::before{content:'▾ '}
+details p,details ul{margin:0 12px 12px;color:#c9ccd2;font-size:13px}
+.note{font-size:12px;color:var(--dim);border-left:2px solid var(--gold);padding:6px 10px;margin:8px 0}
+.warn{border-left-color:var(--pink)}
+.miner{text-align:center}
+.hashes{height:120px;overflow:hidden;background:#000;border:1px solid #16181d;border-radius:8px;padding:8px;font-size:11px;color:#2d6;text-align:left;margin:10px 0;white-space:nowrap}
+.hashes .hit{color:var(--gold)}
+.meter{height:8px;background:#16181d;border-radius:8px;overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .5s}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tick{display:flex;justify-content:space-between;padding:8px 10px;border:1px solid #16181d;border-radius:8px;font-size:13px}
+.tick b{color:var(--cyan)}
+#qr{display:inline-block;background:#fff;padding:8px;border-radius:8px;margin-top:8px}
+.center{text-align:center}
+@media(max-width:420px){.bal{font-size:36px}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🍿 PopCOIN WALLET</h1>
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-v="wallet">💰 WALLET</button>
+    <button class="tab" data-v="fun">⛏️ FUN MINING</button>
+    <button class="tab" data-v="real">🔗 REAL MINING</button>
+    <button class="tab" data-v="swap">🔄 SWAP &amp; BUY</button>
+    <button class="tab" data-v="banks">🏦 BANKS</button>
+  </div>
+
+  <!-- ═══ WALLET ═══ -->
+  <section class="view on" id="v-wallet">
+    <div class="card hero">
+      <div class="bal" id="bal">…</div>
+      <div class="unit">PopCOIN</div>
+      <div class="sub" id="who">loading your wallet…</div>
+      <div class="sub" id="val"></div>
+      <div class="badge" id="mode">…</div>
+    </div>
+
+    <div class="card">
+      <h2>📤 Send</h2>
+      <div class="row">
+        <div><label for="to">To</label><input id="to" placeholder="@name" autocomplete="off" autocapitalize="off"></div>
+        <div><label for="amt">Amount</label><input id="amt" type="number" min="0.01" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+      </div>
+      <label for="note">Note (optional)</label><input id="note" maxlength="80" placeholder="for the popcorn 🍿">
+      <div style="margin-top:10px"><button class="btn big" id="send">SEND PopCOIN</button></div>
+      <div class="msg" id="send-msg"></div>
+    </div>
+
+    <div class="card center">
+      <h2>📥 Receive</h2>
+      <div>Your PopCOIN name: <b id="myname" style="color:var(--gold)">…</b>
+        <button class="btn" id="copy" style="padding:4px 10px;margin-left:6px">copy link</button></div>
+      <div id="qr"></div>
+      <div class="sub">Others can scan this or open your link to send you PopCOIN. Payments arrive automatically.</div>
+    </div>
+
+    <div class="card">
+      <h2>⏏️ Extract</h2>
+      <div class="row">
+        <button class="btn" id="export">⬇️ Export wallet file</button>
+        <button class="btn" id="slip">🧾 Withdrawal slip</button>
+        <button class="btn" data-go="swap">🔄 Swap to real crypto</button>
+      </div>
+      <div class="note">PopCOIN is a RUDVENTUR site credit. It has an indicative value and will get a real value in future; until then it isn't redeemable for money.</div>
+    </div>
+
+    <div class="card">
+      <h2>📜 History</h2>
+      <ul class="hist" id="hist"><li class="when">nothing yet</li></ul>
+    </div>
+  </section>
+
+  <!-- ═══ FUN MINING ═══ -->
+  <section class="view" id="v-fun">
+    <div class="card miner">
+      <h2>⛏️ Mine PopCOIN</h2>
+      <div class="sub">PopCOIN builds up at about <b id="rate">1.2</b> a minute (up to 6 at a time). While mining is on, your wallet claims it every 15 seconds. The timing is checked by the server, so it's fair for everyone and it won't heat up your phone.</div>
+      <div class="hashes" id="hashes"></div>
+      <div class="meter"><i id="meter"></i></div>
+      <div class="sub" id="pending">ready</div>
+      <div style="margin-top:10px"><button class="btn big green" id="mine">⛏️ START MINING</button></div>
+      <div class="msg" id="mine-msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>📚 How mining works</h2>
+      <details open><summary>What "mining" actually is</summary>
+        <p>A cryptocurrency is a shared ledger that thousands of computers keep in sync. "Mining" is how new entries (blocks) get added and how the network agrees on one history. Whoever adds a block is paid in new coins and fees. That reward is what people mean by mining income.</p></details>
+      <details><summary>⚙️ Proof of Work (Bitcoin, Litecoin, Monero)</summary>
+        <p>Miners race to find a number (a nonce) that makes the block's hash start with enough zeros. The only way is to guess billions of times a second. The winner adds the block and gets the reward. The animation above shows the idea: random hashes, and a gold one when it happens to start with zeros.</p>
+        <ul><li><b>Bitcoin</b> uses SHA-256 and needs specialised ASIC machines.</li><li><b>Monero</b> uses RandomX, designed for ordinary CPUs.</li><li><b>Litecoin / Dogecoin</b> use Scrypt and are mined together.</li></ul></details>
+      <details><summary>🥩 Proof of Stake (Ethereum, Solana, Cardano)</summary>
+        <p>No guessing race. You lock up ("stake") coins as a deposit, and the network picks validators, weighted by stake, to add blocks. Cheating loses your deposit. It uses a tiny fraction of the energy of Proof of Work. Ethereum switched to it in 2022, so there's no more Ethereum mining.</p></details>
+      <details><summary>🏊 Pool mining</summary>
+        <p>A single miner might wait years to win a block. Pools combine thousands of miners' power and share each reward in proportion to the work done, so income is small but steady. Most mining today goes through pools (F2Pool, ViaBTC, Braiins).</p></details>
+      <details><summary>🧍 Solo mining</summary>
+        <p>Mining alone and keeping the whole reward if you win. It's like a lottery ticket: huge payout, tiny chance. It only makes sense with a lot of hashing power.</p></details>
+      <details><summary>☁️ Cloud mining</summary>
+        <p>You rent mining power from a company instead of owning hardware. Some are legitimate (e.g. renting hashpower on NiceHash), but this is where most crypto scams live: "guaranteed returns" and Ponzi-style payouts. If it promises fixed daily profit, walk away.</p></details>
+      <details><summary>🔗 Merged mining</summary>
+        <p>Mining two coins that share the same algorithm with the same work, for example Litecoin and Dogecoin. You get both rewards for one effort.</p></details>
+      <details><summary>🖥️ CPU vs GPU vs ASIC</summary>
+        <p><b>CPU</b>: any computer; only competitive on CPU-friendly coins like Monero. <b>GPU</b>: graphics cards; good for many smaller coins. <b>ASIC</b>: machines built for one algorithm; the only way to mine Bitcoin profitably.</p></details>
+      <details><summary>📉 Difficulty &amp; halving</summary>
+        <p>The network adjusts difficulty so blocks keep a steady pace however many miners join. Bitcoin also halves its block reward about every four years, so the same work earns less and less new coin.</p></details>
+      <details><summary>⚡ Energy, heat &amp; cost</summary>
+        <p>Mining turns electricity into heat and hashes. Profit = rewards − electricity − hardware wear. At UK/EU home electricity prices, most home mining loses money. Always check a calculator like WhatToMine first.</p></details>
+      <details><summary>🍿 How PopCOIN mining works</summary>
+        <p>PopCOIN doesn't burn your electricity. While the miner is on, PopCOIN builds up at a fixed rate and your wallet claims it. The server checks the time between claims, so nobody can mine faster by cheating. Future: bonuses for playing, translating and creating on RUDVENTUR.</p></details>
+    </div>
+  </section>
+
+  <!-- ═══ REAL MINING ═══ -->
+  <section class="view" id="v-real">
+    <div class="card">
+      <h2>🔗 Real crypto mining services</h2>
+      <div class="note warn">These are outside services, not RUDVENTUR. Only mine on hardware you own, never install miners from unknown sources, check your electricity cost first, and treat any "guaranteed daily profit" offer as a scam.</div>
+      <div class="links">
+        <a class="link" href="https://whattomine.com" target="_blank" rel="noopener" data-rv-nolayer><b>📊 WhatToMine</b><span>Profit calculator: what your GPU/ASIC would earn after electricity</span></a>
+        <a class="link" href="https://www.nicehash.com" target="_blank" rel="noopener" data-rv-nolayer><b>⚡ NiceHash</b><span>Sell your hashing power, or rent other people's</span></a>
+        <a class="link" href="https://unmineable.com" target="_blank" rel="noopener" data-rv-nolayer><b>🪙 unMineable</b><span>Mine with a CPU/GPU and get paid in the coin you choose</span></a>
+        <a class="link" href="https://braiins.com/pool" target="_blank" rel="noopener" data-rv-nolayer><b>🏊 Braiins Pool</b><span>The oldest Bitcoin mining pool (ASIC)</span></a>
+        <a class="link" href="https://www.f2pool.com" target="_blank" rel="noopener" data-rv-nolayer><b>🏊 F2Pool</b><span>Large multi-coin mining pool</span></a>
+        <a class="link" href="https://www.viabtc.com" target="_blank" rel="noopener" data-rv-nolayer><b>🏊 ViaBTC</b><span>Pool for BTC, LTC/DOGE merged mining and more</span></a>
+        <a class="link" href="https://2miners.com" target="_blank" rel="noopener" data-rv-nolayer><b>🏊 2Miners</b><span>GPU-friendly pool with clear stats</span></a>
+        <a class="link" href="https://minerstat.com" target="_blank" rel="noopener" data-rv-nolayer><b>📡 minerstat</b><span>Monitor and manage your rigs</span></a>
+        <a class="link" href="https://www.getmonero.org/resources/user-guides/mine-to-pool.html" target="_blank" rel="noopener" data-rv-nolayer><b>🟠 Monero mining guide</b><span>Official guide: CPU mining to a pool</span></a>
+        <a class="link" href="https://ethereum.org/en/staking/" target="_blank" rel="noopener" data-rv-nolayer><b>🥩 Ethereum staking</b><span>Official guide: earning by staking instead of mining</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SWAP & BUY ═══ -->
+  <section class="view" id="v-swap">
+    <div class="card">
+      <h2>🔄 What your PopCOIN is worth</h2>
+      <label for="swap-amt">PopCOIN</label>
+      <input id="swap-amt" type="number" min="0" step="0.01" inputmode="decimal">
+      <div class="sub" id="swap-gbp" style="margin-top:8px"></div>
+      <div class="grid2" id="swap-out" style="margin-top:10px"></div>
+      <div class="sub" id="swap-status" style="margin-top:6px">loading live prices…</div>
+      <div class="note">This is an indicative value using live prices. Swapping PopCOIN itself for real crypto opens when PopCOIN gets its real value. Until then, buy real crypto directly below.</div>
+    </div>
+    <div class="card">
+      <h2>🛒 Buy &amp; sell real crypto</h2>
+      <div class="links">
+        <a class="link" href="https://www.coinbase.com" target="_blank" rel="noopener" data-rv-nolayer><b>💰 Coinbase</b><span>Buy/sell with a UK or EU bank card</span></a>
+        <a class="link" href="https://www.kraken.com" target="_blank" rel="noopener" data-rv-nolayer><b>🐙 Kraken</b><span>Exchange with low fees, GBP/EUR/PLN</span></a>
+        <a class="link" href="https://www.binance.com" target="_blank" rel="noopener" data-rv-nolayer><b>📈 Binance</b><span>Largest exchange</span></a>
+        <a class="link" href="https://www.bitstamp.net" target="_blank" rel="noopener" data-rv-nolayer><b>🏛️ Bitstamp</b><span>Long-running, regulated in the EU and UK</span></a>
+        <a class="link" href="https://www.revolut.com/crypto/" target="_blank" rel="noopener" data-rv-nolayer><b>💳 Revolut Crypto</b><span>Buy crypto inside your banking app</span></a>
+        <a class="link" href="https://metamask.io" target="_blank" rel="noopener" data-rv-nolayer><b>🦊 MetaMask</b><span>Your own wallet: you hold the keys</span></a>
+      </div>
+      <div class="note warn">Crypto prices swing hard and you can lose money. Only buy what you can afford to lose.</div>
+    </div>
+  </section>
+
+  <!-- ═══ BANKS ═══ -->
+  <section class="view" id="v-banks">
+    <div class="card">
+      <h2>🏦 RUDVENTUR banks</h2>
+      <div class="links">
+        <a class="link" href="https://rudventur.github.io/bank/" target="_blank" rel="noopener"><b>💚 Peoples Bank / Lending Ledger</b><span>Record loans, investments and instalments</span></a>
+        <a class="link" href="../owe2owe1.html" target="_blank" rel="noopener"><b>💚 Peoples Bank (owe2owe)</b><span>Who owes whom</span></a>
+        <a class="link" href="../owe2owe2.html" target="_blank" rel="noopener"><b>💛 Lenting System</b><span>Lend and borrow between friends</span></a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🇬🇧 UK banks</h2>
+      <div class="links">
+        <a class="link" href="https://www.revolut.com" target="_blank" rel="noopener" data-rv-nolayer><b>Revolut</b><span>App bank, crypto built in</span></a>
+        <a class="link" href="https://monzo.com" target="_blank" rel="noopener" data-rv-nolayer><b>Monzo</b><span>App bank</span></a>
+        <a class="link" href="https://www.starlingbank.com" target="_blank" rel="noopener" data-rv-nolayer><b>Starling</b><span>App bank</span></a>
+        <a class="link" href="https://wise.com" target="_blank" rel="noopener" data-rv-nolayer><b>Wise</b><span>Multi-currency, cheap transfers abroad</span></a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🇵🇱 Polish banks</h2>
+      <div class="links">
+        <a class="link" href="https://www.pkobp.pl" target="_blank" rel="noopener" data-rv-nolayer><b>PKO Bank Polski</b><span>Largest Polish bank</span></a>
+        <a class="link" href="https://www.mbank.pl" target="_blank" rel="noopener" data-rv-nolayer><b>mBank</b><span>Online bank</span></a>
+        <a class="link" href="https://www.ing.pl" target="_blank" rel="noopener" data-rv-nolayer><b>ING Bank Śląski</b><span>Bank</span></a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script src="../embed/popcoin.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const P = window.PopCOIN;
+  const WALLET_URL = 'https://rudventur.github.io/RudVentur.com/popcoin/';
+  // swap state first: P.on() below calls back straight away and uses it
+  let prices = null, swapTouched = false;
+  const COINS = [['bitcoin', 'BTC'], ['ethereum', 'ETH'], ['solana', 'SOL'], ['dogecoin', 'DOGE']];
+
+  /* tabs */
+  function show(v) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.v === v));
+    document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
+  }
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => show(t.dataset.v)));
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => show(b.dataset.go)));
+
+  /* wallet */
+  const TYPES = { welcome: '🎁 Welcome bonus', mined: '⛏️ Mined', sent: '📤 Sent', received: '📥 Received' };
+  let qrFor = '';
+  P.on(s => {
+    if (s.mode === 'loading') return;
+    $('bal').textContent = P.fmt(s.balance);
+    $('who').textContent = '@' + s.name;
+    $('myname').textContent = '@' + s.name;
+    $('val').textContent = '≈ £' + P.value(s.balance).toFixed(2) + ' indicative';
+    const m = $('mode');
+    m.className = 'badge' + (s.mode === 'shared' ? ' shared' : '');
+    m.textContent = s.mode === 'shared' ? '🌐 shared account' : '📱 this device only' + (s.error ? ' (offline)' : '');
+    $('send').disabled = s.mode !== 'shared';
+    if (s.mode !== 'shared' && !$('send-msg').textContent)
+      $('send-msg').textContent = 'Sending opens as soon as PopCOIN shared accounts are switched on.';
+    const h = $('hist');
+    h.innerHTML = '';
+    if (!s.history.length) h.innerHTML = '<li class="when">nothing yet</li>';
+    s.history.slice(0, 60).forEach(x => {
+      const li = document.createElement('li');
+      const left = document.createElement('div');
+      left.textContent = (TYPES[x.type] || x.type) + (x.with ? ' · @' + x.with : '') + (x.note ? ' · ' + x.note : '');
+      const when = document.createElement('div');
+      when.className = 'when';
+      when.textContent = x.at ? new Date(x.at).toLocaleString() : '';
+      left.appendChild(when);
+      const amt = document.createElement('div');
+      amt.className = 'amt ' + (x.amount >= 0 ? 'plus' : 'minus');
+      amt.textContent = (x.amount >= 0 ? '+' : '') + P.fmt(x.amount);
+      li.appendChild(left); li.appendChild(amt); h.appendChild(li);
+    });
+    if (s.name && qrFor !== s.name && window.QRCode) {
+      qrFor = s.name; $('qr').innerHTML = '';
+      new QRCode($('qr'), { text: WALLET_URL + '?to=' + encodeURIComponent(s.name), width: 128, height: 128 });
+    }
+    updateSwap();
+  });
+
+  const params = new URLSearchParams(location.search);
+  if (params.get('to')) $('to').value = '@' + params.get('to');
+
+  $('send').addEventListener('click', async () => {
+    const msg = $('send-msg');
+    msg.className = 'msg'; msg.textContent = 'sending…';
+    $('send').disabled = true;
+    try {
+      const pips = Math.round(parseFloat($('amt').value) * 100);
+      await P.send($('to').value.trim(), pips, $('note').value.trim());
+      msg.className = 'msg ok';
+      msg.textContent = '✓ Sent ' + P.fmt(pips) + ' PopCOIN to ' + $('to').value.trim();
+      $('amt').value = ''; $('note').value = '';
+    } catch (e) {
+      msg.className = 'msg err';
+      msg.textContent = /permission/i.test(e.message) ? 'The server refused that, your balance may have just changed. Try again.' : e.message;
+    }
+    $('send').disabled = P.state.mode !== 'shared';
+  });
+  $('copy').addEventListener('click', () => {
+    const link = WALLET_URL + '?to=' + encodeURIComponent(P.state.name);
+    (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(
+      () => { $('copy').textContent = 'copied ✓'; setTimeout(() => $('copy').textContent = 'copy link', 1500); },
+      () => prompt('Your PopCOIN link:', link));
+  });
+  $('export').addEventListener('click', () => P.exportWallet());
+  $('slip').addEventListener('click', () => {
+    const amt = prompt('Amount of PopCOIN for the withdrawal slip:', P.fmt(P.state.balance));
+    if (amt === null) return;
+    const to = prompt('Withdraw to (bank, wallet address or person):', '') || '';
+    P.withdrawalSlip(Math.round(parseFloat(amt) * 100), to);
+  });
+
+  /* fun mining */
+  $('rate').textContent = P.RATE_PER_MIN.toFixed(1);
+  let mining = false, hashTimer = null, claimTimer = null;
+  const hashes = $('hashes');
+  async function hashLine() {
+    const nonce = Math.floor(Math.random() * 1e9);
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('popcoin:' + nonce + ':' + Date.now()));
+    const hex = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+    const d = document.createElement('div');
+    d.textContent = 'nonce ' + String(nonce).padStart(9, '0') + '  ' + hex.slice(0, 40) + '…';
+    if (hex.startsWith('00')) d.className = 'hit';
+    hashes.prepend(d);
+    while (hashes.children.length > 9) hashes.lastChild.remove();
+  }
+  function meter() {
+    const n = P.minable();
+    $('meter').style.width = Math.min(100, n / P.MAX_CLAIM * 100) + '%';
+    $('pending').textContent = mining ? 'building up: +' + P.fmt(n) + ' PopCOIN' : 'ready';
+  }
+  async function claim() {
+    try {
+      const got = await P.mine();
+      if (got > 0) { $('mine-msg').className = 'msg ok'; $('mine-msg').textContent = '+' + P.fmt(got) + ' PopCOIN claimed'; }
+    } catch (e) {
+      $('mine-msg').className = 'msg err'; $('mine-msg').textContent = 'claim failed, will retry';
+    }
+    meter();
+  }
+  $('mine').addEventListener('click', () => {
+    mining = !mining;
+    $('mine').textContent = mining ? '⏸️ STOP MINING' : '⛏️ START MINING';
+    clearInterval(hashTimer); clearInterval(claimTimer);
+    if (mining) {
+      hashTimer = setInterval(() => { hashLine(); meter(); }, 350);
+      claimTimer = setInterval(claim, 15000);
+      claim();
+    } else { claim(); meter(); }
+  });
+  setInterval(meter, 2000);
+
+  /* swap: indicative value at live prices */
+  async function loadPrices() {
+    try {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + COINS.map(c => c[0]).join(',') + '&vs_currencies=gbp');
+      prices = await r.json();
+      $('swap-status').textContent = 'live prices from CoinGecko · ' + new Date().toLocaleTimeString();
+    } catch (e) { $('swap-status').textContent = 'live prices unavailable right now'; }
+    updateSwap();
+  }
+  $('swap-amt').addEventListener('input', () => { swapTouched = true; updateSwap(); });
+  function updateSwap() {
+    if (!swapTouched && P.state.mode !== 'loading') $('swap-amt').value = P.fmt(P.state.balance);
+    const pips = Math.round((parseFloat($('swap-amt').value) || 0) * 100);
+    const gbp = P.value(pips);
+    $('swap-gbp').textContent = P.fmt(pips) + ' PopCOIN ≈ £' + gbp.toFixed(2) + ' (indicative)';
+    const out = $('swap-out'); out.innerHTML = '';
+    COINS.forEach(([id, sym]) => {
+      const p = prices && prices[id] && prices[id].gbp;
+      const d = document.createElement('div'); d.className = 'tick';
+      d.innerHTML = '<span></span><b></b>';
+      d.firstChild.textContent = sym;
+      d.lastChild.textContent = p ? (gbp / p).toPrecision(3) + ' ' + sym : '—';
+      out.appendChild(d);
+    });
+  }
+  loadPrices(); setInterval(loadPrices, 120000);
+})();
+</script>
+</body>
+</html>
