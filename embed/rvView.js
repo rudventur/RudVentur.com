@@ -1,46 +1,92 @@
-/* rvView.js — shared RUDVENTUR view mode (Full Screen Horizontal / Panoramic /
-   Vertical / Normal) for every page in every repo of the universe.
+/* rvView.js — the ONE shared RUDVENTUR view mode script (Full Screen Horizontal /
+   Panoramic / Vertical / Normal) for every page in every RUDVENTUR repository.
+   Map Merger, Snout First and the Translator used to carry their own copies of
+   this code; this file does everything those copies did, so they can drop them.
 
-   Drop-in (one line, any repo):
+   Drop-in (one line, any repository):
      <script src="https://rudventur.github.io/RudVentur.com/embed/rvView.js"></script>
 
    What it does:
-   1. Remembers the chosen mode in localStorage['rvViewMode'] (same key the
-      translator, snout-first and map-merger-venti already use). All repos are
-      served from rudventur.github.io, so they share that storage.
-   2. Adopts ?view=<mode> from the URL (the only thing that crosses from other
-      origins, e.g. rudventur.com), and goes fullscreen on the first tap / click /
-      key — browsers never allow fullscreen without a real user gesture.
-   3. Adds ?view=<mode> to every new-tab link to a RUDVENTUR site as it's clicked.
+   1. Remembers the chosen mode in localStorage['rvViewMode'] (the key the
+      translator, Snout First and Map Merger already use). Every repository is
+      served from rudventur.github.io, so they all share it.
+      Modes: horizontal | panoramic | vertical | normal. Old names still work:
+      panoramic-locked = horizontal, panoramic-default = panoramic.
+   2. Adopts ?view=<mode> from the address (the only thing that crosses from
+      other sites, for example rudventur.com), removes it from the address bar,
+      and goes full screen on the first tap / click / key — browsers never allow
+      full screen without a real tap.
+      <html data-rv-phone-fullscreen> also goes full screen on the first tap on
+      a phone when no mode was chosen yet (what Snout First's copy did).
+   3. Redirect: rvView.redirect(url) opens a sibling app in a new tab carrying
+      the current mode (?view=<mode>), keeping any ?query and #hash the address
+      already has. New-tab links to a RUDVENTUR site get ?view= as they're clicked.
    4. Logo menu: clicking the page's logo opens the same view menu as the hub.
-      The logo is the element marked data-rv-logo, else the first <h1>, else .logo. Pages
-      that already have their own menu (window.setView) are left alone; add
+      The logo is the element marked data-rv-logo, else the first <h1>, else .logo.
+      Pages that still have their own menu (window.setView) are left alone; add
       data-rv-nologo to <html> to opt a page out. A small green R tab on the
       left edge opens the same menu on every page, even when the logo is hidden.
-
-   5. Fullscreen layer: while a fullscreen mode is on (or when RUDVENTUR runs as
-      an installed app), links that would open a new tab — <a target="_blank">
-      and plain window.open(url) — open in a full-screen layer on top of the
-      current page instead, so they stay fullscreen with no extra tap
-      (browsers never let a brand-new tab start fullscreen). ✕ or the phone's
-      back button closes it, ↗ opens it in a real tab. data-rv-nolayer on a
-      link opts it out. Pages loaded inside the layer hand their own new-tab
+   5. Full-screen layer: while a full-screen mode is on (or when RUDVENTUR runs as
+      an installed app), links to RUDVENTUR pages that would open a new tab —
+      <a target="_blank"> and plain window.open(url) — open in a full-screen layer
+      on top of the current page instead, so they stay full screen with no extra
+      tap (browsers never let a brand-new tab start full screen). ✕ or the
+      phone's back button closes it, ↗ opens it in a real tab. data-rv-nolayer on
+      a link opts it out. Pages loaded inside the layer hand their own new-tab
       links and view changes up to the top page.
-   6. Install: "📲 Install RUDVENTUR app" in the logo menu (each repo ships a
+      SAFETY: only RUDVENTUR addresses are ever opened in the layer
+      (rudventur.github.io/…, rudventur.com, www.rudventur.com, and this page's
+      own site). Anything else opens as a normal new tab, exactly as the browser
+      would do without this script. The layer only lets a page use what
+      RUDVENTUR apps actually need (see PERMISSIONS below); camera, microphone
+      and motion sensors are only given to the few pages that use them.
+   6. Install: "📲 Install RUDVENTUR app" in the logo menu (each repository ships a
       manifest.webmanifest with display: fullscreen), so the installed app
-      opens fullscreen straight away.
+      opens full screen straight away.
 
-   API (window.rvView):
-     rvView.set(mode)   — save + apply ('horizontal'|'panoramic'|'vertical'|'normal')
-     rvView.open(url)   — open url in a new tab carrying the current mode
-     rvView.openLayer(url), rvView.closeLayer(), rvView.install()
-     rvView.withView(url), rvView.current(), rvView.apply(mode)
+   API (window.rvView) — everything older pages call still works the same:
+     rvView.set(mode)        save + apply ('horizontal'|'panoramic'|'vertical'|'normal')
+     rvView.apply(mode)      apply without saving
+     rvView.current()        the saved mode ('' when none)
+     rvView.withView(url)    url with ?view=<current mode> (RUDVENTUR sites only)
+     rvView.open(url)        open url in a new tab (or the layer) carrying the mode
+     rvView.redirect(url)    the Redirect helper: same as open(); { sameTab: true }
+                             goes there in this tab instead
+     rvView.openLayer(url), rvView.closeLayer(), rvView.install(),
+     rvView.canInstall(), rvView.installed()
+     rvView.layerAllowed(url)   true when url may open in the layer
+     rvView.permissionsFor(url) what a page opened in the layer may use
+     rvView.KEY ('rvViewMode'), rvView.MODES, rvView.version
 */
 (function () {
   if (window.rvView) return;
   var KEY = 'rvViewMode';
   var ALIASES = { 'panoramic-locked': 'horizontal', 'panoramic-default': 'panoramic' };
   var MODES = { horizontal: 1, panoramic: 1, vertical: 1, normal: 1 };
+  var VERSION = '2026-09-27';
+
+  // Only these addresses may open inside the full-screen layer. Everything else
+  // opens as a normal new tab, so outside sites never run inside RUDVENTUR.
+  var LAYER_HOSTS = { 'rudventur.github.io': 1, 'rudventur.com': 1, 'www.rudventur.com': 1 };
+
+  // What a RUDVENTUR page inside the layer may use. The layer never grants
+  // more than this, and only to the addresses above.
+  // Every page: full screen, sound, copy to clipboard, the share sheet, and
+  // location (the useRbox profile box on every page has a GPS button, and the
+  // maps, Snout First and rudTrip20 use it).
+  var BASE_PERMISSIONS = ['fullscreen', 'autoplay', 'clipboard-write', 'web-share', 'geolocation'];
+  // Extra, only for the pages that really use them (matched on the address path):
+  var EXTRA_PERMISSIONS = [
+    // Voice of God speech input, ChemVentur sound gun + microphone mode
+    { path: /\/voice-of-god\.html$|\/(ChemVentur[^\/]*|chem\.ventur\.112|another-ChemVentur-77)\//i, allow: ['microphone'] },
+    // punk-script Wi-Fi mapper with camera
+    { path: /\/wifi-mapper-v2-cam\.html$/i, allow: ['camera'] },
+    // punk-script room mapper reads the phone's tilt
+    { path: /\/wifi-room-mapper\.html$/i, allow: ['accelerometer', 'gyroscope'] }
+  ];
+  // A link may ask for one of these with data-rv-allow="camera microphone";
+  // it is still only granted to RUDVENTUR addresses.
+  var OPTIONAL_PERMISSIONS = { camera: 1, microphone: 1, accelerometer: 1, gyroscope: 1 };
 
   // inside a RUDVENTUR fullscreen layer, the top page owns fullscreen + layers
   var IN_FRAME = window.top !== window;
@@ -48,6 +94,7 @@
   if (IN_FRAME) { try { topRv = window.top.rvView || null; } catch (e) {} }
 
   function norm(mode) {
+    mode = String(mode == null ? '' : mode).trim().toLowerCase();
     mode = ALIASES[mode] || mode;
     return MODES[mode] ? mode : '';
   }
@@ -112,6 +159,43 @@
   }
   function open(url) { window.open(withView(url), '_blank', 'noopener'); }
 
+  // Redirect helper — what the big Redirect menus in Map Merger, Snout First and
+  // the Translator do: go to a sibling app in the current view mode. Unlike the
+  // old copies (url + '?view=…'), this keeps any ?query or #hash the address has.
+  function redirect(url, opts) {
+    if (!url) return null;
+    var target = withView(String(url));
+    if (!current() || current() === 'normal') {
+      // don't pass on a stale ?view= when the mode is now normal
+      try {
+        var u = new URL(target, location.href);
+        if (isOurs(u.hostname) && u.searchParams.has('view')) { u.searchParams.delete('view'); target = u.href; }
+      } catch (e) {}
+    }
+    if (opts && opts.sameTab) { location.assign(target); return null; }
+    return window.open(target, '_blank', 'noopener');
+  }
+
+  // --- the full-screen layer allow-list ---
+  function toURL(url) { try { return new URL(String(url), location.href); } catch (e) { return null; } }
+  function layerAllowed(url) {
+    var u = toURL(url);
+    if (!u || !/^https?:$/.test(u.protocol)) return false;
+    if (u.origin === location.origin) return true;            // this page's own site
+    return u.protocol === 'https:' && !!LAYER_HOSTS[u.hostname.toLowerCase()];
+  }
+  function permissionsFor(url, extra) {
+    if (!layerAllowed(url)) return [];
+    var u = toURL(url), list = BASE_PERMISSIONS.slice();
+    function add(p) { if (list.indexOf(p) < 0) list.push(p); }
+    EXTRA_PERMISSIONS.forEach(function (r) { if (r.path.test(u.pathname)) r.allow.forEach(add); });
+    String(extra || '').split(/[\s,;]+/).forEach(function (p) {
+      p = p.toLowerCase();
+      if (OPTIONAL_PERMISSIONS[p]) add(p);
+    });
+    return list;
+  }
+
   // 1. adopt ?view= (highest priority), else the last mode used
   var pending = '';
   try {
@@ -129,6 +213,12 @@
   // 2. go fullscreen on the first gesture. On phones a touch only counts as a
   //    gesture on release, so listen to click/pointerup/keydown (not pointerdown),
   //    and keep trying until fullscreen actually sticks once.
+  var phoneFS = false;
+  try {
+    phoneFS = !pending && document.documentElement.hasAttribute('data-rv-phone-fullscreen') &&
+      window.innerWidth < 800;
+  } catch (e) {}
+  if (phoneFS) pending = 'panoramic';   // full screen, any rotation — not saved
   if (pending && pending !== 'normal' && !IN_FRAME) {
     var EVENTS = ['click', 'pointerup', 'keydown'];
     var done = false;
@@ -182,10 +272,15 @@
     '.rv-layer-hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);max-width:90%;' +
     'background:rgba(0,0,0,.85);border:1px solid #333;color:#ccc;font:12px ui-monospace,monospace;' +
     'padding:8px 12px;border-radius:6px;pointer-events:none;transition:opacity .6s}';
-  function openLayer(url) {
-    if (topRv) return topRv.openLayer(url);
+  function openLayer(url, extraAllow) {
+    if (topRv) return topRv.openLayer(url, extraAllow);
     var abs;
-    try { abs = new URL(url, location.href).href; } catch (e) { return; }
+    try { abs = new URL(url, location.href).href; } catch (e) { return null; }
+    if (!layerAllowed(abs)) {
+      // not a RUDVENTUR address: never frame it, open a normal tab instead
+      if (/^https?:/i.test(abs)) nativeOpen.call(window, abs, '_blank', 'noopener');
+      return null;
+    }
     if (!layerCss) {
       var st = document.createElement('style');
       st.textContent = LAYER_CSS;
@@ -195,9 +290,9 @@
     var wrap = document.createElement('div');
     wrap.className = 'rv-layer';
     var fr = document.createElement('iframe');
-    fr.allow = 'fullscreen; autoplay; clipboard-read; clipboard-write; geolocation; camera; ' +
-      'microphone; accelerometer; gyroscope; screen-wake-lock; web-share';
+    fr.allow = permissionsFor(abs, extraAllow).join('; ');
     fr.setAttribute('allowfullscreen', '');
+    fr.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     fr.src = abs;
     var bar = document.createElement('div');
     bar.className = 'rv-layer-bar';
@@ -218,11 +313,12 @@
     rb.addEventListener('click', toggleMenu);
     bar.appendChild(rb); bar.appendChild(out); bar.appendChild(x);
     wrap.appendChild(fr); wrap.appendChild(bar);
-    if (!isOurs(new URL(abs).hostname)) {
-      // some outside sites refuse to be shown inside another page
+    var host = new URL(abs).hostname;
+    if (host !== location.hostname && host !== 'rudventur.github.io') {
+      // rudventur.com is a Wix site and may refuse to be shown inside another page
       var hint = document.createElement('div');
       hint.className = 'rv-layer-hint';
-      hint.textContent = 'Blank? This site blocks being opened inside RUDVENTUR \u2014 tap \u2197';
+      hint.textContent = 'Blank? This page blocks being opened inside RUDVENTUR \u2014 tap \u2197';
       wrap.appendChild(hint);
       setTimeout(function () { hint.style.opacity = '0'; }, 6000);
     }
@@ -262,9 +358,9 @@
     if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     var a = e.target && e.target.closest && e.target.closest('a[target="_blank"][href]');
     if (!a || a.hasAttribute('data-rv-nolayer') || a.hasAttribute('download')) return;
-    if (!/^https?:$/.test(a.protocol) || !useLayer()) return;
+    if (!/^https?:$/.test(a.protocol) || !useLayer() || !layerAllowed(a.href)) return;
     e.preventDefault();
-    openLayer(a.href);
+    openLayer(a.href, a.getAttribute('data-rv-allow'));
   });
   // plain window.open(url) / window.open(url, '_blank', 'noopener') -> layer;
   // sized popups (width=… etc.) and named targets keep the browser behaviour
@@ -274,7 +370,7 @@
     if (url && !f && (t === '_blank' || t === '') && useLayer()) {
       try {
         var u = new URL(String(url), location.href);
-        if (/^https?:$/.test(u.protocol)) { openLayer(withView(u.href)); return null; }
+        if (/^https?:$/.test(u.protocol) && layerAllowed(u.href)) { openLayer(withView(u.href)); return null; }
       } catch (e) {}
     }
     return nativeOpen.apply(window, arguments);
@@ -429,6 +525,9 @@
   window.rvView = {
     set: set, apply: apply, open: open, withView: withView, current: current,
     openLayer: openLayer, closeLayer: closeLayer, install: install, canInstall: canInstall,
-    installed: installed, KEY: KEY
+    installed: installed, KEY: KEY,
+    // added 2026-09-27
+    redirect: redirect, layerAllowed: layerAllowed, permissionsFor: permissionsFor,
+    MODES: ['horizontal', 'panoramic', 'vertical', 'normal'], version: VERSION
   };
 })();
