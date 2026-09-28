@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rudVentur</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: #000;
+    }
+
+    #cameraBackground {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    #cameraFallback {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+      z-index: -1;
+      display: none;
+    }
+
+    /* cameraCheck modal */
+    #cameraCheckModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: rgba(20, 20, 20, 0.9);
+      border: 2px solid rgba(100, 200, 255, 0.6);
+      border-radius: 12px;
+      padding: 50px;
+      text-align: center;
+      color: white;
+      max-width: 500px;
+    }
+
+    .modal-content h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .modal-content p {
+      font-size: 16px;
+      margin-bottom: 30px;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .modal-buttons button {
+      padding: 12px 30px;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+    }
+
+    .allow-btn {
+      background: rgba(100, 200, 100, 0.7);
+      color: white;
+    }
+
+    .allow-btn:hover {
+      background: rgba(100, 200, 100, 0.9);
+    }
+
+    .deny-btn {
+      background: rgba(200, 100, 100, 0.7);
+      color: white;
+    }
+
+    .deny-btn:hover {
+      background: rgba(200, 100, 100, 0.9);
+    }
+
+    /* Control panel */
+    #controlPanel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 20px;
+      color: white;
+      font-size: 14px;
+      z-index: 100;
+      min-width: 260px;
+      backdrop-filter: blur(10px);
+    }
+
+    .control-group {
+      margin-bottom: 15px;
+    }
+
+    .control-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .control-group select,
+    .control-group input[type="range"],
+    .control-group button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .control-group button:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .record-btn {
+      background: rgba(255, 50, 50, 0.3);
+      border-color: rgba(255, 50, 50, 0.6);
+    }
+
+    .record-btn:hover {
+      background: rgba(255, 50, 50, 0.5);
+    }
+
+    .record-btn.recording {
+      background: rgba(255, 50, 50, 0.7);
+      box-shadow: 0 0 10px rgba(255, 50, 50, 0.8);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .videos-btn {
+      background: rgba(100, 200, 255, 0.3);
+      border-color: rgba(100, 200, 255, 0.6);
+    }
+
+    .videos-btn:hover {
+      background: rgba(100, 200, 255, 0.5);
+    }
+
+    /* Video playback modal */
+    #videoModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 250;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .video-modal-content {
+      background: rgba(20, 20, 20, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 700px;
+      color: white;
+      margin: 20px;
+    }
+
+    .video-modal-content h2 {
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      font-size: 24px;
+    }
+
+    .video-list {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .video-item {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .video-item-info {
+      flex: 1;
+    }
+
+    .video-item-time {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+
+    .video-item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .video-item-actions button {
+      padding: 6px 12px;
+      font-size: 11px;
+      background: rgba(100, 200, 255, 0.3);
+      border: 1px solid rgba(100, 200, 255, 0.5);
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .video-item-actions button:hover {
+      background: rgba(100, 200, 255, 0.5);
+    }
+
+    .delete-btn {
+      background: rgba(255, 100, 100, 0.3);
+      border-color: rgba(255, 100, 100, 0.5);
+    }
+
+    .delete-btn:hover {
+      background: rgba(255, 100, 100, 0.5);
+    }
+
+    .close-modal-btn {
+      background: rgba(200, 100, 100, 0.3);
+      border: 1px solid rgba(200, 100, 100, 0.5);
+      padding: 10px 20px;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    #mainContent {
+      position: relative;
+      z-index: 10;
+      padding: 40px;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+    }
+
+    #mainContent h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    #mainContent p {
+      font-size: 16px;
+      opacity: 0.9;
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- cameraCheck Modal -->
+  <div id="cameraCheckModal">
+    <div class="modal-content">
+      <h1>cameraCheck</h1>
+      <p>This will access your device camera to stream as the rudVentur background.</p>
+      <p style="font-size: 12px; opacity: 0.6;">Recording stays local on your device.</p>
+      <div class="modal-buttons">
+        <button class="allow-btn" id="allowBtn">Allow</button>
+        <button class="deny-btn" id="denyBtn">Deny</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Playback Modal -->
+  <div id="videoModal">
+    <div class="video-modal-content">
+      <h2>Recorded Videos</h2>
+      <div class="video-list" id="videoList"></div>
+      <button class="close-modal-btn" id="closeVideoModalBtn">Close</button>
+    </div>
+  </div>
+
+  <!-- Camera background -->
+  <video id="cameraBackground" autoplay playsinline muted></video>
+  <div id="cameraFallback"></div>
+
+  <!-- Control panel -->
+  <div id="controlPanel" style="display: none;">
+    <div class="control-group">
+      <label>Camera</label>
+      <select id="cameraSelect">
+        <option value="">Select Camera</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Brightness</label>
+      <input type="range" id="brightnessSlider" min="-100" max="100" value="0">
+    </div>
+
+    <div class="control-group">
+      <label>Contrast</label>
+      <input type="range" id="contrastSlider" min="-100" max="100" value="0">
+    </div>
+
+    <div class="control-group">
+      <button id="flipButton">Mirror</button>
+    </div>
+
+    <div class="control-group">
+      <button id="recordBtn" class="record-btn">Start Recording</button>
+    </div>
+
+    <div class="control-group">
+      <button id="videosBtn" class="videos-btn">View Videos</button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div id="mainContent" style="display: none;">
+    <h1>rudVentur</h1>
+    <p>Camera active. Adjust settings or start recording.</p>
+  </div>
+
+  <script>
+    const video = document.getElementById('cameraBackground');
+    const cameraFallback = document.getElementById('cameraFallback');
+    const cameraCheckModal = document.getElementById('cameraCheckModal');
+    const controlPanel = document.getElementById('controlPanel');
+    const mainContent = document.getElementById('mainContent');
+    const allowBtn = document.getElementById('allowBtn');
+    const denyBtn = document.getElementById('denyBtn');
+    const recordBtn = document.getElementById('recordBtn');
+    const videosBtn = document.getElementById('videosBtn');
+    const videoModal = document.getElementById('videoModal');
+    const closeVideoModalBtn = document.getElementById('closeVideoModalBtn');
+    const videoList = document.getElementById('videoList');
+    const cameraSelect = document.getElementById('cameraSelect');
+    const brightnessSlider = document.getElementById('brightnessSlider');
+    const contrastSlider = document.getElementById('contrastSlider');
+    const flipButton = document.getElementById('flipButton');
+
+    let currentStream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+    let isMirrored = false;
+
+    // Allow button
+    allowBtn.addEventListener('click', async () => {
+      await requestCamera();
+      cameraCheckModal.style.display = 'none';
+      controlPanel.style.display = 'block';
+      mainContent.style.display = 'block';
+    });
+
+    // Deny button
+    denyBtn.addEventListener('click', () => {
+      cameraCheckModal.style.display = 'none';
+      cameraFallback.style.display = 'block';
+      controlPanel.style.display = 'block';
+      mainContent.style.display = 'block';
+      alert('Camera access denied. Using fallback background.');
+    });
+
+    // Request camera
+    async function requestCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' }
+        });
+        video.srcObject = stream;
+        currentStream = stream;
+        cameraFallback.style.display = 'none';
+        video.style.display = 'block';
+        setupMediaRecorder(stream);
+        loadCameraList();
+      } catch (err) {
+        console.error('Camera error:', err);
+        cameraFallback.style.display = 'block';
+        video.style.display = 'none';
+      }
+    }
+
+    // Setup MediaRecorder
+    function setupMediaRecorder(stream) {
+      mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        recordedChunks = [];
+        await saveVideo(blob);
+      };
+    }
+
+    // Save video to IndexedDB
+    async function saveVideo(blob) {
+      const db = await openIndexedDB();
+      const timestamp = new Date().toLocaleString();
+      const duration = Math.floor(blob.size / (1024 * 500)); // Rough estimate
+
+      const video = {
+        timestamp,
+        blob,
+        duration,
+        id: Date.now()
+      };
+
+      const transaction = db.transaction(['videos'], 'readwrite');
+      const store = transaction.objectStore('videos');
+      store.add(video);
+
+      console.log('Video saved:', timestamp);
+    }
+
+    // Open IndexedDB
+    function openIndexedDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('rudVentureVideos', 1);
+
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('videos')) {
+            db.createObjectStore('videos', { keyPath: 'id' });
+          }
+        };
+      });
+    }
+
+    // Record button
+    recordBtn.addEventListener('click', () => {
+      if (!isRecording) {
+        mediaRecorder.start();
+        isRecording = true;
+        recordBtn.textContent = '⏹ Stop Recording';
+        recordBtn.classList.add('recording');
+      } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        recordBtn.textContent = 'Start Recording';
+        recordBtn.classList.remove('recording');
+      }
+    });
+
+    // Videos button
+    videosBtn.addEventListener('click', async () => {
+      await displayVideos();
+      videoModal.style.display = 'flex';
+    });
+
+    // Close video modal
+    closeVideoModalBtn.addEventListener('click', () => {
+      videoModal.style.display = 'none';
+    });
+
+    // Display videos from IndexedDB
+    async function displayVideos() {
+      const db = await openIndexedDB();
+      const transaction = db.transaction(['videos'], 'readonly');
+      const store = transaction.objectStore('videos');
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const videos = request.result;
+        videoList.innerHTML = '';
+
+        if (videos.length === 0) {
+          videoList.innerHTML = '<p style="opacity: 0.6;">No videos recorded yet.</p>';
+          return;
+        }
+
+        videos.forEach((video) => {
+          const item = document.createElement('div');
+          item.className = 'video-item';
+          item.innerHTML = `
+            <div class="video-item-info">
+              <div>${video.timestamp}</div>
+              <div class="video-item-time">~${video.duration}s</div>
+            </div>
+            <div class="video-item-actions">
+              <button onclick="playVideo(${video.id})">Play</button>
+              <button class="delete-btn" onclick="deleteVideo(${video.id})">Delete</button>
+            </div>
+          `;
+          videoList.appendChild(item);
+        });
+      };
+    }
+
+    // Play video
+    window.playVideo = async (id) => {
+      const db = await openIndexedDB();
+      const transaction = db.transaction(['videos'], 'readonly');
+      const store = transaction.objectStore('videos');
+      const request = store.get(id);
+
+      request.onsuccess = () => {
+        const video = request.result;
+        if (video) {
+          const url = URL.createObjectURL(video.blob);
+          window.open(url, '_blank');
+        }
+      };
+    };
+
+    // Delete video
+    window.deleteVideo = async (id) => {
+      const db = await openIndexedDB();
+      const transaction = db.transaction(['videos'], 'readwrite');
+      const store = transaction.objectStore('videos');
+      store.delete(id);
+
+      await displayVideos();
+      console.log('Video deleted');
+    };
+
+    // Camera select
+    cameraSelect.addEventListener('change', async (e) => {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: e.target.value }
+        });
+        video.srcObject = stream;
+        currentStream = stream;
+        setupMediaRecorder(stream);
+      } catch (err) {
+        console.error('Error switching camera:', err);
+      }
+    });
+
+    // Load cameras
+    async function loadCameraList() {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+      videoDevices.forEach((device, index) => {
+        const option = document.createElement('option');
+        option.value = device.deviceId;
+        option.textContent = device.label || `Camera ${index + 1}`;
+        cameraSelect.appendChild(option);
+      });
+    }
+
+    // Brightness/Contrast
+    brightnessSlider.addEventListener('input', updateFilter);
+    contrastSlider.addEventListener('input', updateFilter);
+
+    function updateFilter() {
+      const brightness = 100 + parseInt(brightnessSlider.value);
+      const contrast = 100 + parseInt(contrastSlider.value);
+      video.style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+    }
+
+    // Mirror toggle
+    flipButton.addEventListener('click', () => {
+      isMirrored = !isMirrored;
+      video.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+      flipButton.textContent = isMirrored ? 'Mirror (ON)' : 'Mirror';
+    });
+  </script>
+
+</body>
+</html>
