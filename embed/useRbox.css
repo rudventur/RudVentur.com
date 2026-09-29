@@ -94,6 +94,8 @@
   border-left: 3px solid var(--neon);
   border-radius: 0;
   padding: 24px max(20px, calc(50% - 230px));
+  /* room to scroll the last field (SAVE PROFILE) above the hub's 46px taskbar */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
   box-shadow: 0 0 60px rgba(0,255,65,0.25);
   backdrop-filter: blur(12px);
   z-index: 1;
@@ -222,6 +224,7 @@
 }
 
 #useRbox input[type="text"],
+#useRbox select,
 #useRbox textarea {
   width: 100%;
   background: #000;
@@ -237,6 +240,7 @@
 }
 
 #useRbox input[type="text"]:focus,
+#useRbox select:focus,
 #useRbox textarea:focus {
   box-shadow: 0 0 12px rgba(0,255,65,0.3);
   border-color: var(--yellow);

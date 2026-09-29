@@ -57,6 +57,19 @@
       '  </div>' +
       '  <label>📝 P.S. (Personal Signature)</label>' +
       '  <textarea id="psignature" placeholder="Your personal motto, signature, or note..."></textarea>' +
+      '  <label>⚰️ What kind of funeral do you want?</label>' +
+      '  <select id="funeralKind">' +
+      '    <option value="">— not decided yet —</option>' +
+      '    <option value="burial">🪦 Burial</option>' +
+      '    <option value="cremation">🔥 Cremation</option>' +
+      '    <option value="green">🌳 Green / woodland (natural burial)</option>' +
+      '    <option value="sea">🌊 Sea burial / ashes at sea</option>' +
+      '    <option value="science">🔬 Body donated to science</option>' +
+      '    <option value="party">🎉 Party — celebration of life</option>' +
+      '    <option value="none">🤫 No funeral, no fuss</option>' +
+      '    <option value="other">✍️ Something else (write it below)</option>' +
+      '  </select>' +
+      '  <textarea id="funeralNote" placeholder="Music, place, who to invite, what to do with the ashes..."></textarea>' +
       '  <label>📍 Current Location</label>' +
       '  <div class="field-row">' +
       '    <input type="text" id="currentLoc" placeholder="???" style="flex:1;">' +
@@ -232,6 +245,8 @@
         username: q('#username').value,
         channel: q('#channel').value,
         psignature: q('#psignature').value,
+        funeralKind: q('#funeralKind').value,
+        funeralNote: q('#funeralNote').value,
         currentLoc: q('#currentLoc').value,
         lat: q('#lat').value,
         lon: q('#lon').value,
@@ -260,6 +275,8 @@
       q('#username').value = u.username || 'Rudy';
       q('#channel').value = u.channel || 'main';
       q('#psignature').value = u.psignature || '';
+      q('#funeralKind').value = u.funeralKind || '';
+      q('#funeralNote').value = u.funeralNote || '';
       q('#currentLoc').value = u.currentLoc || '';
       q('#lat').value = u.lat || '';
       q('#lon').value = u.lon || '';

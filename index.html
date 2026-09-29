@@ -1135,21 +1135,34 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
     controlPanel.style.display = 'block';
   });
 
+  // the camera itself is run by embed/popcornWindow.js (one camera for the
+  // background, the popcorn window and its back-recording); this page follows it
   async function requestCamera() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-      video.srcObject = stream;
-      currentStream = stream;
-      cameraFallback.style.display = 'none';
-      video.style.display = 'block';
-      setupMediaRecorder(stream);
-      loadCameraList();
+      await window.rvPopcorn.startCamera();
     } catch (err) {
       console.error('Camera error:', err);
       cameraFallback.style.display = 'block';
       video.style.display = 'none';
     }
   }
+
+  let listed = false;
+  document.addEventListener('rvpopcorn:camera', (e) => {
+    if (e.detail.on) {
+      currentStream = e.detail.stream;
+      cameraFallback.style.display = 'none';
+      video.style.display = 'block';
+      // agreed before (or just now in the popcorn window) — no need to ask again
+      cameraCheckModal.style.display = 'none';
+      controlPanel.style.display = 'block';
+      if (!isRecording) setupMediaRecorder(currentStream);
+      if (!listed) { listed = true; loadCameraList(); }
+    } else {
+      currentStream = null;
+      cameraFallback.style.display = 'block';
+    }
+  });
 
   function setupMediaRecorder(stream) {
     mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
@@ -1256,12 +1269,9 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
   }
 
   cameraSelect.addEventListener('change', async (e) => {
-    if (currentStream) currentStream.getTracks().forEach(track => track.stop());
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: e.target.value } });
-      video.srcObject = stream;
-      currentStream = stream;
-      setupMediaRecorder(stream);
+      window.rvPopcorn.useStream(stream);
     } catch (err) {
       console.error('Error switching camera:', err);
     }
@@ -1297,5 +1307,26 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
      bottom-left, Popcorn bottom-right, taskbar bottom-middle. Ko-fi lives in the notch menu. -->
 <script src="embed/useRbox.js" defer></script>
 <script src="embed/rvDesk.js" defer></script>
+<!-- 🍿 popcorn window: the bottom-right popcorn opens it (camera, drawing, back-recording);
+     its own 🍿 opens the Popcorn Hub, ⌨️/💬 open the desktop's keyboard + chat windows -->
+<script>
+  window.rvPopcornConfig = {
+    bgVideo: '#cameraBackground',
+    bgOpacity: null,
+    mirrorBg: false,
+    zIndex: 1050,       // under desktop windows (1100+), so ⌨️ 💬 🍿 open on top of it
+    bottomOffset: 50,   // above the taskbar
+    userOffset: 72,     // left of the useRbox R
+    button: false,      // rvDesk's own bottom-right 🍿 opens it
+    onPopcorn: function () { window.rvDesk && rvDesk.open('popcorn'); },
+    onKeyboard: function () { window.rvDesk && rvDesk.open('keyboard'); },
+    onChat: function () { window.rvDesk && rvDesk.open('chat'); },
+    onUser: function () {
+      var box = document.getElementById('useRbox');
+      if (box) box.classList.remove('hidden');
+    }
+  };
+</script>
+<script src="embed/popcornWindow.js" defer></script>
 </body>
 </html>
