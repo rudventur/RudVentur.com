@@ -428,3 +428,11 @@
   background: var(--neon);
   border-radius: 4px;
 }
+
+/* ===== 🕶 PRIVATE MODE (incognito) ===== */
+.rb-incognito { display: none; text-align: center; padding: 24px 8px; }
+#useRbox.incognito .rb-incognito { display: block; }
+#useRbox.incognito > :not(.useRbox-header):not(.useRbox-notch):not(#liveClock):not(.rb-incognito) { display: none !important; }
+.rb-incognito-mask { font-size: 64px; margin-bottom: 10px; filter: grayscale(1); }
+.rb-incognito p { opacity: 0.8; line-height: 1.5; margin: 12px 0 18px; }
+#Rcircle.incognito { filter: grayscale(1); opacity: 0.7; }

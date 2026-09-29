@@ -93,3 +93,33 @@ corner, ⛶ full screen, _ minimise to the taskbar, ↗ open as a real tab, ✕
 close. On phones, windows open full size and ⛶ switches the device to
 fullscreen. Sites that won't load inside another page (Ko-fi, Zoom Earth) open
 as real tabs. Apps are listed in `APPS` / `MENU` at the top of the file.
+
+# 🍿 popcornWindow + popcornMovie — the sealed bunker and movie maker
+
+```html
+<script src="https://rudventur.github.io/RudVentur.com/embed/popcornWindow.js" defer></script>
+<script src="https://rudventur.github.io/RudVentur.com/embed/popcornMovie.js" defer></script>
+```
+
+- **Camera and microphone are only used inside the popcorn window.** Nothing runs
+  behind the website.
+- **Entering seals the page:** a Content-Security-Policy makes the browser refuse
+  every connection (fetch, WebSocket, beacons, images, frames, forms). WebRTC is
+  switched off and open windows/iframes close. A probe request must be refused
+  before 📷 / 🎤 can turn on (the palette shows 🔒 SEALED). The seal can't be
+  lifted from inside the page, so leaving reloads it. It can't protect against
+  a hacked phone or browser, extensions, or the operating system.
+- **🌐 online / 🕶 private**, per device (`localStorage.rvPrivacy`). Private
+  greys out 📷 and 🎤 and puts useRbox into incognito (no profile, nothing saved).
+- **📷 and 🎤** each have their own allowance, remembered per device.
+- **Back-recording** keeps the last 60–120 s (picture + drawings + mic sound).
+- **Session saver:** IndexedDB `rvPopcornSession`, on the device only. The
+  🗑 bin has ↩ restore and 🔥 hard remove.
+- **🎬 Movie maker** (`popcornMovie.js`):
+  - clips: order, trim, ✂ split, ⏸📸 freeze frame
+  - audio: remix, 🎙 voice-over
+  - items at any moment: text, horizon line, air, ground (striped)
+  - a description
+  - **MAKE MOVIE** records the plan into one file in the session.
+- Config: `window.rvPopcornConfig = { onPopcorn, onChat, onUser, zIndex, userOffset,
+  bottomOffset, button, legacyDB }`. 🍿 and 💬 leave the bunker first, then run.
