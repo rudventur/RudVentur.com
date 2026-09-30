@@ -53,10 +53,14 @@
     return n.length >= 3 ? n : 'popper';
   }
   function suggestedName() {
-    try {
-      var u = JSON.parse(localStorage.getItem('rud_useRbox_v2') || 'null');
-      if (u && u.username) return cleanName(u.username);
-    } catch (e) {}
+    // the shared profile box (embed/useRbox.js) first, then the older keys
+    var keys = ['rud_useRbox_v3', 'rud_useRbox_v2'];
+    for (var i = 0; i < keys.length; i++) {
+      try {
+        var u = JSON.parse(localStorage.getItem(keys[i]) || 'null');
+        if (u && u.username) return cleanName(u.username);
+      } catch (e) {}
+    }
     return cleanName(localStorage.getItem('rv_username') || 'popper');
   }
   function download(filename, text) {

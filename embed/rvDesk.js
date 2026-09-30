@@ -30,9 +30,9 @@
     keyboard:   { icon: '⌨️', title: 'World Keyboards', src: 'windows13/keyboard-realistic.html', w: 860, h: 560 },
     chat:       { icon: '💬', title: 'Global Chat', src: 'global-chat-v5/index.html', w: 480, h: 620 },
     popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html', w: 560, h: 700 },
-    mapmerger:  { icon: '🗺️', title: 'Map Merger Venti', src: 'map-merger-venti/index.html', w: 1000, h: 680 },
+    mapmerger:  { icon: '🗺️', title: 'Map Merger Venti', src: 'https://rudventur.github.io/map-merger-venti/', w: 1000, h: 680 },
     translator: { icon: '🌐', title: 'Translator v7', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
-    snout:      { icon: '🐾', title: 'Snout First', src: 'map-merger-venti/snout-first.html', w: 900, h: 680 },
+    snout:      { icon: '🐾', title: 'Snout First', src: 'https://rudventur.github.io/map-merger-venti/snout-first.html', w: 900, h: 680 },
     weather:    { icon: '🌦️', title: 'Weather News', src: 'yesterday-today-tomorrow-weather.html', w: 720, h: 640 },
     ventusky:   { icon: '🌬️', title: 'Ventusky', src: 'https://www.ventusky.com/', w: 1000, h: 680 },
     windy:      { icon: '💨', title: 'Windy', src: 'https://embed.windy.com/embed.html?type=map&zoom=4&overlay=wind', w: 1000, h: 680 },
@@ -206,8 +206,10 @@
     [bOut, bMin, bMax, bX].forEach(function (b) { b.type = 'button'; });
     bar.appendChild(title); bar.appendChild(bOut); bar.appendChild(bMin); bar.appendChild(bMax); bar.appendChild(bX);
     var fr = document.createElement('iframe');
-    fr.allow = 'fullscreen; autoplay; clipboard-read; clipboard-write; geolocation; camera; microphone; ' +
-      'accelerometer; gyroscope; screen-wake-lock; web-share';
+    // RUDVENTUR pages get only what they need (same list as the full-screen
+    // layer in rvView.js); outside sites (Ventusky, Windy, …) get full screen only
+    var perms = window.rvView && rvView.permissionsFor ? rvView.permissionsFor(url(app.src)) : [];
+    fr.allow = (perms.length ? perms : ['fullscreen']).join('; ');
     fr.setAttribute('allowfullscreen', '');
     fr.src = url(app.src);
     var grip = el('div', 'rvd-grip');
