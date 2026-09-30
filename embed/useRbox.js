@@ -64,20 +64,7 @@
       '    <button class="btn btn-small" id="channelInfo">ℹ️</button>' +
       '  </div>' +
       '  <label>📝 P.S. (Personal Signature)</label>' +
-      '  <textarea id="psignature" placeholder="Your personal motto, signature, or note..."></textarea>' +
-      '  <label>⚰️ What kind of funeral do you want?</label>' +
-      '  <select id="funeralKind">' +
-      '    <option value="">— not decided yet —</option>' +
-      '    <option value="burial">🪦 Burial</option>' +
-      '    <option value="cremation">🔥 Cremation</option>' +
-      '    <option value="green">🌳 Green / woodland (natural burial)</option>' +
-      '    <option value="sea">🌊 Sea burial / ashes at sea</option>' +
-      '    <option value="science">🔬 Body donated to science</option>' +
-      '    <option value="party">🎉 Party — celebration of life</option>' +
-      '    <option value="none">🤫 No funeral, no fuss</option>' +
-      '    <option value="other">✍️ Something else (write it below)</option>' +
-      '  </select>' +
-      '  <textarea id="funeralNote" placeholder="Music, place, who to invite, what to do with the ashes..."></textarea>' +
+      '  <textarea id="psignature" placeholder="You don\'t have to have legs to Trip"></textarea>' +
       '  <label>📍 Current Location</label>' +
       '  <div class="field-row">' +
       '    <input type="text" id="currentLoc" placeholder="???" style="flex:1;">' +
@@ -94,29 +81,6 @@
       '      <button class="btn btn-small" id="saveGpsBtn">💾 Save</button>' +
       '    </div>' +
       '    <div id="gpsList"></div>' +
-      '  </div>' +
-      '  <div class="social-section">' +
-      '    <div class="social-title">🌐 SOCIAL MEDIA</div>' +
-      '    <div class="social-grid">' +
-      '      <a href="https://github.com/rudventur" target="_blank" rel="noopener" class="social-icon" title="GitHub">' +
-      '        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>' +
-      '      </a>' +
-      '      <a href="https://discord.gg/rudventur" target="_blank" rel="noopener" class="social-icon" title="Discord">💬</a>' +
-      '      <a href="https://twitter.com/rudventur" target="_blank" rel="noopener" class="social-icon" title="Twitter/X">𝕏</a>' +
-      '      <a href="https://instagram.com/rudventur" target="_blank" rel="noopener" class="social-icon" title="Instagram">📷</a>' +
-      '      <a href="https://youtube.com/@rudventur" target="_blank" rel="noopener" class="social-icon" title="YouTube">▶️</a>' +
-      '      <a href="https://ko-fi.com/rudventur" target="_blank" rel="noopener" class="social-icon" title="Ko-fi">☕</a>' +
-      '      <a href="https://tiktok.com/@rudventur" target="_blank" rel="noopener" class="social-icon" title="TikTok">🎵</a>' +
-      '      <a href="https://linkedin.com/in/rudventur" target="_blank" rel="noopener" class="social-icon" title="LinkedIn">💼</a>' +
-      '      <a href="https://reddit.com/u/rudventur" target="_blank" rel="noopener" class="social-icon" title="Reddit">🤖</a>' +
-      '      <a href="https://facebook.com/rudventur" target="_blank" rel="noopener" class="social-icon" title="Facebook">📘</a>' +
-      '      <a href="https://twitch.tv/rudventur" target="_blank" rel="noopener" class="social-icon" title="Twitch">🎮</a>' +
-      '      <a href="https://snapchat.com/add/rudventur" target="_blank" rel="noopener" class="social-icon" title="Snapchat">👻</a>' +
-      '      <a href="https://pinterest.com/rudventur" target="_blank" rel="noopener" class="social-icon" title="Pinterest">📌</a>' +
-      '      <a href="https://t.me/rudventur" target="_blank" rel="noopener" class="social-icon" title="Telegram">✈️</a>' +
-      '      <a href="https://wa.me/447594923008" target="_blank" rel="noopener" class="social-icon" title="WhatsApp">📱</a>' +
-      '      <a href="mailto:RudVentur@gmail.com" class="social-icon" title="Email">📧</a>' +
-      '    </div>' +
       '  </div>' +
       '  <label class="toggle"><input type="checkbox" id="saveMessages" checked><span>Save my messages</span></label>' +
       '  <button id="saveUser">💾 SAVE PROFILE</button>' +
