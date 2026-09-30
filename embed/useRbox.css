@@ -436,3 +436,37 @@
 .rb-incognito-mask { font-size: 64px; margin-bottom: 10px; filter: grayscale(1); }
 .rb-incognito p { opacity: 0.8; line-height: 1.5; margin: 12px 0 18px; }
 #Rcircle.incognito { filter: grayscale(1); opacity: 0.7; }
+
+/* ===== 📷 🎤 CAMERA & MIC ===== */
+.rb-devices {
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid rgba(0,255,65,0.3);
+  border-radius: 6px;
+  background: rgba(0,0,0,0.35);
+}
+.rb-dev-row { display: flex; gap: 8px; }
+#useRbox .rb-dev {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 6px;
+  background: #000;
+  color: rgba(0,255,65,0.6);
+  border: 1px solid rgba(0,255,65,0.4);
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#useRbox .rb-dev small { font-size: 0.68rem; font-weight: normal; opacity: 0.8; }
+#useRbox .rb-dev.on {
+  background: var(--neon);
+  color: #000;
+  border-color: var(--neon);
+  box-shadow: 0 0 14px rgba(0,255,65,0.5);
+}
+#useRbox .rb-devices input[type="range"] { width: 100%; accent-color: var(--neon); }
+#useRbox .rb-devices label span { color: var(--yellow); text-transform: none; }
+.rb-dev-note { display: block; margin-top: 10px; font-size: 0.7rem; line-height: 1.4; opacity: 0.6; }

@@ -53,6 +53,29 @@
       '    <div id="avatarHalftone"></div>' +
       '    <small>pure CSS halftone signature</small>' +
       '  </div>' +
+      '  <div class="rb-devices">' +
+      '    <div class="social-title">📷 🎤 CAMERA &amp; MIC</div>' +
+      '    <div class="rb-dev-row">' +
+      '      <button type="button" class="rb-dev" id="rbCam"><span>📷 CAMERA</span><small>OFF</small></button>' +
+      '      <button type="button" class="rb-dev" id="rbMic"><span>🎤 MICROPHONE</span><small>OFF</small></button>' +
+      '    </div>' +
+      '    <label>Camera</label>' +
+      '    <select id="rbFacing">' +
+      '      <option value="user">🤳 Front (selfie)</option>' +
+      '      <option value="environment">📷 Back</option>' +
+      '    </select>' +
+      '    <label>Brightness <span id="rbBrightVal"></span></label>' +
+      '    <input type="range" id="rbBright" min="-100" max="100" value="0">' +
+      '    <label>Contrast <span id="rbContrastVal"></span></label>' +
+      '    <input type="range" id="rbContrast" min="-100" max="100" value="0">' +
+      '    <label class="toggle"><input type="checkbox" id="rbMirror"><span>Mirror the picture</span></label>' +
+      '    <div class="field-row" style="margin-top:8px;">' +
+      '      <button type="button" class="btn" id="rbOpenPopcorn" style="flex:1;">🍿 OPEN POPCORN WINDOW</button>' +
+      '      <button type="button" class="btn btn-small" id="rbCamReset" title="Brightness, contrast and mirror back to normal">↺</button>' +
+      '    </div>' +
+      '    <small class="rb-dev-note">Camera and mic only ever run inside the 🍿 popcorn window, which is sealed off from the internet. ' +
+      'Recordings and 🎬 movie maker are in there.</small>' +
+      '  </div>' +
       '  <label>👤 Username</label>' +
       '  <div class="field-row">' +
       '    <input type="text" id="username" value="Rudy" style="flex:1;">' +
@@ -118,6 +141,7 @@
       '      <a href="mailto:RudVentur@gmail.com" class="social-icon" title="Email">📧</a>' +
       '    </div>' +
       '  </div>' +
+      '  <button type="button" class="btn" id="rbGetApp" style="width:100%;margin-top:14px;padding:10px;">📲 DOWNLOAD THE RUDVENTUR APP</button>' +
       '  <label class="toggle"><input type="checkbox" id="saveMessages" checked><span>Save my messages</span></label>' +
       '  <button id="saveUser">💾 SAVE PROFILE</button>' +
       '</div>';
@@ -314,6 +338,63 @@
     document.addEventListener('rvprivacy', applyPrivacy);
     window.addEventListener('storage', function (e) { if (e.key === 'rvPrivacy') applyPrivacy(); });
     applyPrivacy();
+
+    /* 📷 🎤 camera + mic — the switches and settings live here and in the popcorn
+       window (embed/popcornWindow.js), sharing these localStorage keys; each side
+       fires a document 'rvdevices' event so the other catches up straight away */
+    var K_CAM = 'rvCamAllowed', K_MIC = 'rvMicAllowed', K_FACE = 'rvCamFacing',
+        K_MIRROR = 'rvCamMirror', K_BRIGHT = 'rvCamBright', K_CONTRAST = 'rvCamContrast';
+    function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function tellDevices() {
+      try { document.dispatchEvent(new CustomEvent('rvdevices', { detail: { from: 'useRbox' } })); } catch (e) {}
+      renderDevices();
+    }
+    function renderDevices() {
+      var pc = window.rvPopcorn;
+      [['#rbCam', K_CAM, 'camOn'], ['#rbMic', K_MIC, 'micOn']].forEach(function (d) {
+        var b = q(d[0]), allowed = lsGet(d[1]) === '1';
+        var live = !!(pc && pc[d[2]] && pc[d[2]]());
+        b.classList.toggle('on', allowed);
+        b.querySelector('small').textContent = live ? 'ON — running'
+          : allowed ? 'ON — starts in 🍿' : 'OFF';
+      });
+      var facing = lsGet(K_FACE) === 'environment' ? 'environment' : 'user';
+      q('#rbFacing').value = facing;
+      var m = lsGet(K_MIRROR);
+      q('#rbMirror').checked = m === '1' ? true : m === '0' ? false : facing === 'user';
+      var br = parseInt(lsGet(K_BRIGHT), 10) || 0, ct = parseInt(lsGet(K_CONTRAST), 10) || 0;
+      q('#rbBright').value = br;
+      q('#rbContrast').value = ct;
+      q('#rbBrightVal').textContent = (br > 0 ? '+' : '') + br;
+      q('#rbContrastVal').textContent = (ct > 0 ? '+' : '') + ct;
+      q('#rbOpenPopcorn').style.display = pc ? '' : 'none';
+      // 📲 the app install lives in embed/rvView.js; hidden once installed
+      q('#rbGetApp').style.display = window.rvView && window.rvView.canInstall && window.rvView.canInstall() ? '' : 'none';
+    }
+    q('#rbGetApp').onclick = function () { if (window.rvView) window.rvView.install(); };
+    q('#rbCam').onclick = function () { lsSet(K_CAM, lsGet(K_CAM) === '1' ? '0' : '1'); tellDevices(); };
+    q('#rbMic').onclick = function () { lsSet(K_MIC, lsGet(K_MIC) === '1' ? '0' : '1'); tellDevices(); };
+    q('#rbFacing').onchange = function () { lsSet(K_FACE, this.value); tellDevices(); };
+    q('#rbMirror').onchange = function () { lsSet(K_MIRROR, this.checked ? '1' : '0'); tellDevices(); };
+    q('#rbBright').oninput = function () { lsSet(K_BRIGHT, this.value); tellDevices(); };
+    q('#rbContrast').oninput = function () { lsSet(K_CONTRAST, this.value); tellDevices(); };
+    q('#rbCamReset').onclick = function () {
+      [K_MIRROR, K_BRIGHT, K_CONTRAST].forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+      tellDevices();
+    };
+    q('#rbOpenPopcorn').onclick = function () {
+      if (!window.rvPopcorn) return;
+      useRbox.classList.add('hidden');   // out of the way of the popcorn window's door
+      root.classList.remove('open');
+      window.rvPopcorn.open();
+    };
+    document.addEventListener('rvdevices', function (e) { if (!e.detail || e.detail.from !== 'useRbox') renderDevices(); });
+    window.addEventListener('storage', function (e) { if (e.key && e.key.indexOf('rvCam') === 0) renderDevices(); });
+    // popcornWindow.js loads after this script on the hub; catch up once it's there
+    window.addEventListener('load', renderDevices);
+    q('#iconUser').addEventListener('click', renderDevices);
+    renderDevices();
 
     q('#refreshUser').onclick = loadUser;
     q('#channelInfo').onclick = function () { alert('Channel set on login!'); };

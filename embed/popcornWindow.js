@@ -19,6 +19,10 @@
    - 🌐 online / 🕶 private is a per-device switch (localStorage 'rvPrivacy').
      Private: 📷 and 🎤 are greyed out and unavailable, useRbox goes incognito.
    - 📷 and 🎤 each have their own allowance, remembered per device.
+   - The same 📷 / 🎤 switches and the camera settings (front/back, mirror,
+     brightness, contrast) are also in useRbox (embed/useRbox.js). Both sides
+     share the localStorage keys below and tell each other about changes with
+     a document 'rvdevices' event ({ detail: { from: 'useRbox' | 'popcorn' } }).
 
    Inside the popcorn window
      top middle    back-recording palette: replay 10s / 30s / 60s / all, keep the
@@ -58,6 +62,7 @@
   }, window.rvPopcornConfig || {});
 
   var K_CAM = 'rvCamAllowed', K_MIC = 'rvMicAllowed', K_MODE = 'rvPrivacy', K_NAME = 'rvUserName';
+  var K_FACE = 'rvCamFacing', K_MIRROR = 'rvCamMirror', K_BRIGHT = 'rvCamBright', K_CONTRAST = 'rvCamContrast';
   var K_AFTER = 'rvpAfter', K_LEGACY = 'rvpLegacyDone';
   var COLORS = ['#00ff41', '#ff00ff', '#00ffff', '#ffeb3b', '#ff3333', '#ffffff'];
   var SIZES = [3, 6, 12];
@@ -235,7 +240,7 @@
 
   // ---------------------------------------------------------------- state
   var sealed = false, sealOk = false;
-  var camStream = null, micStream = null, facing = 'user';
+  var camStream = null, micStream = null, facing = lsGet(K_FACE) === 'environment' ? 'environment' : 'user';
   var actx = null, recDest = null, micNode = null;
   var mix, mixCtx, mixStream = null, loopOn = false, lastFrame = 0;
   var recs = [], recPaused = false, mime = '', recTimer = null, keptAt = 0;
@@ -246,6 +251,18 @@
   function camAllowed() { return lsGet(K_CAM) === '1'; }
   function micAllowed() { return lsGet(K_MIC) === '1'; }
   function devicesUsable() { return sealOk && !rvPrivacy.isPrivate(); }
+  // camera settings from useRbox: mirror defaults to on for the front camera only
+  function mirrorOn() {
+    var m = lsGet(K_MIRROR);
+    return m === '1' ? true : m === '0' ? false : facing === 'user';
+  }
+  function camFilter() {
+    var b = 100 + (parseInt(lsGet(K_BRIGHT), 10) || 0), c = 100 + (parseInt(lsGet(K_CONTRAST), 10) || 0);
+    return b === 100 && c === 100 ? 'none' : 'brightness(' + b + '%) contrast(' + c + '%)';
+  }
+  function tellDevices() {
+    try { document.dispatchEvent(new CustomEvent('rvdevices', { detail: { from: 'popcorn' } })); } catch (e) {}
+  }
   function userName() {
     if (rvPrivacy.isPrivate()) return 'incognito';
     try {
@@ -363,7 +380,14 @@
   }
   function flipCam() {
     if (!camStream) return;
-    facing = facing === 'user' ? 'environment' : 'user';
+    setFacing(facing === 'user' ? 'environment' : 'user');
+  }
+  function setFacing(want) {
+    if (want === facing) return;
+    var was = facing;
+    facing = want;
+    lsSet(K_FACE, facing);
+    if (!camStream) { refresh(); return; }
     var old = camStream;
     navigator.mediaDevices.getUserMedia({
       video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
@@ -374,7 +398,7 @@
       cam.play().catch(function () {});
       watchEnd(s, function () { if (camStream === s) stopCam(true); });
       refresh();
-    }, function () { facing = facing === 'user' ? 'environment' : 'user'; toast('Could not switch camera'); });
+    }, function () { facing = was; lsSet(K_FACE, facing); refresh(); toast('Could not switch camera'); });
   }
   function startMic() {
     if (micStream) return Promise.resolve(micStream);
@@ -446,6 +470,7 @@
     if (!vw || !vh) return;
     var s = Math.max(W / vw, H / vh), dw = vw * s, dh = vh * s;
     ctx.save();
+    ctx.filter = camFilter();
     if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
     ctx.drawImage(video, (W - dw) / 2, (H - dh) / 2, dw, dh);
     ctx.restore();
@@ -455,7 +480,7 @@
     requestAnimationFrame(frame);
     if (t - lastFrame < 1000 / CFG.fps - 2) return;
     lastFrame = t;
-    if (camStream) coverDraw(mixCtx, cam, mix.width, mix.height, facing === 'user');
+    if (camStream) coverDraw(mixCtx, cam, mix.width, mix.height, mirrorOn());
     paintShapes(mixCtx, mix.width, mix.height, shapes.concat(cur ? [cur] : []));
   }
 
@@ -535,7 +560,7 @@
     var k = Math.min(2, Math.max(1, 1920 / Math.max(w, h)));
     cv.width = Math.round(w * k); cv.height = Math.round(h * k);
     var ctx = cv.getContext('2d');
-    if (camStream) coverDraw(ctx, cam, cv.width, cv.height, facing === 'user');
+    if (camStream) coverDraw(ctx, cam, cv.width, cv.height, mirrorOn());
     else { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height); }
     paintShapes(ctx, cv.width, cv.height, shapes);
     cv.toBlob(function (b) {
@@ -1014,6 +1039,18 @@
         if (ui.door.classList.contains('open')) hideWindow(); else closePanels();
       } else leave('');
     });
+    // 📷 / 🎤 switches and camera settings changed in useRbox
+    document.addEventListener('rvdevices', function (e) {
+      if (!e.detail || e.detail.from !== 'useRbox') return;
+      setFacing(lsGet(K_FACE) === 'environment' ? 'environment' : 'user');
+      if (devicesUsable()) {
+        if (camAllowed() && !camStream) startCam().catch(function (err) { deviceError('Camera', err); });
+        if (micAllowed() && !micStream) startMic().catch(function (err) { deviceError('Microphone', err); });
+      }
+      if (!camAllowed() && camStream) stopCam(true);
+      if (!micAllowed() && micStream) stopMic(true);
+      refresh();
+    });
     document.addEventListener('rvprivacy', function () {
       if (rvPrivacy.isPrivate()) { stopCam(true); stopMic(true); }
       refresh();
@@ -1084,7 +1121,9 @@
     ui.mode.classList.toggle('on', priv);
     ui.pause.classList.toggle('on', recPaused);
     ui.pause.disabled = !camStream || !canRecord();
-    cam.classList.toggle('mirror', facing === 'user');
+    cam.classList.toggle('mirror', mirrorOn());
+    cam.style.filter = camFilter() === 'none' ? '' : camFilter();
+    tellDevices();
     Object.keys(ui.tools).forEach(function (k) { ui.tools[k].classList.toggle('on', tool === k); });
     ui.swatch.style.background = color;
     ui.swatch.style.borderColor = color;
@@ -1156,6 +1195,8 @@
     sealed: function () { return sealOk; },
     db: DB, saveMedia: saveMedia, refreshSession: refreshSession,
     micStream: function () { return micStream; },
+    camOn: function () { return !!camStream; },
+    micOn: function () { return !!micStream; },
     audioContext: function () { return ensureAudio(); },
     shapes: function () { return shapes.slice(); },
     paintShapes: paintShapes, toast: toast, download: download, fileName: fileName,
