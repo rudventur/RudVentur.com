@@ -98,9 +98,8 @@ body::before{
 }
 
 /* ─── PANELS ─── */
-/* Translucent + blurred rather than solid, so the live camera background
-   (see #cameraBackground below) actually reads through the grid instead of
-   being hidden behind opaque cards. */
+/* Translucent + blurred rather than solid, so the background grid reads
+   through instead of being hidden behind opaque cards. */
 .panel{
   background:rgba(14,14,16,.72);
   backdrop-filter:blur(10px);
@@ -579,122 +578,6 @@ body::before{
   .panel.fullscreen{padding:1.5rem 1rem}
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   LIVE CAMERA BACKGROUND — sits behind body::before's subtle grid (z-index
-   -1 vs 0), with every panel now translucent+blurred (see .panel above) so
-   it actually shows through instead of being hidden behind opaque cards.
-   ═══════════════════════════════════════════════════════════════════════ */
-#cameraBackground{
-  position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;
-}
-#cameraFallback{
-  position:fixed;inset:0;
-  background:linear-gradient(135deg,#1a1a1a,#2a2a2a);
-  z-index:-1;display:none;
-}
-
-/* Permission gate — above literally everything else (2000 was the previous
-   highest, the logo menu), since it's the very first thing a visitor deals
-   with and must never end up buried under another panel. */
-#cameraCheckModal{
-  position:fixed;inset:0;z-index:2100;
-  background:rgba(0,0,0,.95);
-  display:flex;align-items:center;justify-content:center;
-}
-.cam-modal-content{
-  background:rgba(20,20,20,.9);
-  border:2px solid rgba(100,200,255,.6);
-  border-radius:12px;padding:50px;text-align:center;color:#fff;max-width:500px;margin:20px;
-}
-.cam-modal-content h2{font-size:32px;margin-bottom:20px;text-transform:uppercase;letter-spacing:2px}
-.cam-modal-content p{font-size:15px;margin-bottom:24px;opacity:.9;line-height:1.6}
-.cam-modal-buttons{display:flex;gap:15px;justify-content:center}
-.cam-modal-buttons button{
-  padding:12px 30px;font-size:14px;font-weight:bold;border:none;border-radius:6px;
-  cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .3s;
-  font-family:'DM Mono',monospace;
-}
-.cam-allow-btn{background:rgba(100,200,100,.7);color:#fff}
-.cam-allow-btn:hover{background:rgba(100,200,100,.9)}
-.cam-deny-btn{background:rgba(200,100,100,.7);color:#fff}
-.cam-deny-btn:hover{background:rgba(200,100,100,.9)}
-
-/* Floating control panel. Every screen corner and the full bottom strip is
-   already claimed by existing site widgets (rvd-notch + its menu top-left,
-   useRbox's "R" circle top-right, rvDesk's keyboard/chat + popcorn icon
-   clusters at bottom-left/right, the taskbar spanning bottom:0-46px) — so
-   this sits vertically centered on the right edge instead, with a hard
-   max-height that keeps a clear 130px margin from both the top and bottom
-   bands no matter the viewport height, rather than guessing a fixed offset
-   that might still creep into one of them on a short screen. */
-#cameraControlPanel{
-  position:fixed;top:50%;right:20px;transform:translateY(-50%);z-index:500;
-  background:rgba(0,0,0,.85);border:1px solid rgba(255,255,255,.2);
-  border-radius:8px;padding:18px;color:#fff;font-size:13px;
-  min-width:230px;max-height:calc(100vh - 260px);overflow-y:auto;
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  display:none;
-}
-.cam-control-group{margin-bottom:13px}
-.cam-control-group:last-child{margin-bottom:0}
-.cam-control-group label{
-  display:block;margin-bottom:5px;font-weight:600;font-size:11px;
-  text-transform:uppercase;opacity:.8;
-}
-.cam-control-group select,
-.cam-control-group input[type="range"],
-.cam-control-group button{
-  width:100%;padding:9px;border:1px solid rgba(255,255,255,.3);
-  background:rgba(255,255,255,.1);color:#fff;border-radius:4px;cursor:pointer;
-  font-size:12px;font-weight:600;transition:all .2s;font-family:'DM Mono',monospace;
-}
-.cam-control-group button:hover{background:rgba(255,255,255,.15)}
-.cam-record-btn{background:rgba(255,50,50,.3);border-color:rgba(255,50,50,.6)}
-.cam-record-btn:hover{background:rgba(255,50,50,.5)}
-.cam-record-btn.recording{
-  background:rgba(255,50,50,.7);box-shadow:0 0 10px rgba(255,50,50,.8);
-  animation:cam-pulse 1s infinite;
-}
-@keyframes cam-pulse{0%,100%{opacity:1}50%{opacity:.7}}
-.cam-videos-btn{background:rgba(100,200,255,.3);border-color:rgba(100,200,255,.6)}
-.cam-videos-btn:hover{background:rgba(100,200,255,.5)}
-
-/* Video playback modal — same tier as the permission gate; opening either
-   one closes the other (and the logo menu), per the one-overlay-at-a-time
-   rule used everywhere else on this page. */
-#videoModal{
-  position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,.95);
-  display:none;align-items:center;justify-content:center;overflow-y:auto;
-}
-.cam-video-modal-content{
-  background:rgba(20,20,20,.95);border:1px solid rgba(255,255,255,.2);
-  border-radius:8px;padding:30px;max-width:700px;color:#fff;margin:20px;
-}
-.cam-video-modal-content h2{margin-bottom:20px;text-transform:uppercase;font-size:22px}
-.cam-video-list{max-height:400px;overflow-y:auto;margin-bottom:20px}
-.cam-video-item{
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
-  border-radius:6px;padding:12px;margin-bottom:10px;
-  display:flex;justify-content:space-between;align-items:center;
-}
-.cam-video-item-time{font-size:12px;opacity:.7;margin-top:4px}
-.cam-video-item-actions{display:flex;gap:8px}
-.cam-video-item-actions button{
-  padding:6px 12px;font-size:11px;background:rgba(100,200,255,.3);
-  border:1px solid rgba(100,200,255,.5);color:#fff;border-radius:4px;cursor:pointer;
-  font-family:'DM Mono',monospace;
-}
-.cam-video-item-actions button:hover{background:rgba(100,200,255,.5)}
-.cam-delete-btn{background:rgba(255,100,100,.3);border-color:rgba(255,100,100,.5)}
-.cam-delete-btn:hover{background:rgba(255,100,100,.5)}
-.cam-close-modal-btn{
-  background:rgba(200,100,100,.3);border:1px solid rgba(200,100,100,.5);
-  padding:10px 20px;color:#fff;cursor:pointer;border-radius:4px;font-weight:600;
-  font-family:'DM Mono',monospace;
-}
-@media(max-width:480px){
-  #cameraControlPanel{left:12px;right:12px;min-width:0;max-height:calc(100vh - 220px)}
-}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#000000">
@@ -705,54 +588,6 @@ body::before{
 <script src="embed/rvView.js"></script>
 </head>
 <body>
-
-<!-- LIVE CAMERA BACKGROUND -->
-<video id="cameraBackground" autoplay playsinline muted></video>
-<div id="cameraFallback"></div>
-
-<div id="cameraCheckModal">
-  <div class="cam-modal-content">
-    <h2>cameraCheck</h2>
-    <p>This will access your device camera to stream as the RudVentur background.</p>
-    <p style="font-size:12px;opacity:.6">Recording stays local on your device.</p>
-    <div class="cam-modal-buttons">
-      <button class="cam-allow-btn" id="camAllowBtn">Allow</button>
-      <button class="cam-deny-btn" id="camDenyBtn">Deny</button>
-    </div>
-  </div>
-</div>
-
-<div id="cameraControlPanel">
-  <div class="cam-control-group">
-    <label>Camera</label>
-    <select id="cameraSelect"><option value="">Select Camera</option></select>
-  </div>
-  <div class="cam-control-group">
-    <label>Brightness</label>
-    <input type="range" id="brightnessSlider" min="-100" max="100" value="0">
-  </div>
-  <div class="cam-control-group">
-    <label>Contrast</label>
-    <input type="range" id="contrastSlider" min="-100" max="100" value="0">
-  </div>
-  <div class="cam-control-group">
-    <button id="flipButton">Mirror</button>
-  </div>
-  <div class="cam-control-group">
-    <button id="recordBtn" class="cam-record-btn">Start Recording</button>
-  </div>
-  <div class="cam-control-group">
-    <button id="videosBtn" class="cam-videos-btn">View Videos</button>
-  </div>
-</div>
-
-<div id="videoModal">
-  <div class="cam-video-modal-content">
-    <h2>Recorded Videos</h2>
-    <div class="cam-video-list" id="videoList"></div>
-    <button class="cam-close-modal-btn" id="closeVideoModalBtn">Close</button>
-  </div>
-</div>
 
 <!-- HEADER -->
 <header class="site-header">
@@ -832,7 +667,6 @@ body::before{
     <ul class="tool-list">
       <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox v2 (upgraded)</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">Translator v7</a></li>
-      <li><a class="tool-link" href="camera-background.html" target="_blank">📷 Camera Background</a></li>
     </ul>
   </section>
 
@@ -931,7 +765,6 @@ function toggleLogoMenu(e) {
     closeLogoMenu();
     return;
   }
-  closeCamVideoModal();
   const rect = e.currentTarget.getBoundingClientRect();
   const menuWidth = 250;
   menu.style.top = (rect.bottom + 10) + 'px';
@@ -946,12 +779,6 @@ function closeLogoMenu() {
   document.getElementById('logo-menu').classList.remove('open');
   document.getElementById('logo-submenu').classList.remove('open');
   document.querySelector('.settings-toggle').classList.remove('open');
-}
-
-// One overlay at a time — the video modal and the logo menu can otherwise
-// both end up open together, stacking on top of each other.
-function closeCamVideoModal() {
-  document.getElementById('videoModal').style.display = 'none';
 }
 
 function toggleSettingsSubmenu(e) {
@@ -1048,7 +875,6 @@ document.addEventListener('keydown', function(e) {
     document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
     document.body.style.overflow = '';
     closeLogoMenu();
-    closeCamVideoModal();
   }
 });
 
@@ -1092,209 +918,28 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
 })();
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     LIVE CAMERA BACKGROUND — permission gate, device picker, brightness/
-     contrast/mirror, and local recording saved to IndexedDB. Ported from
-     camera-background.html; the standalone "mainContent" placeholder from
-     that file is dropped since this page already has real content.
-     ═══════════════════════════════════════════════════════════════════ -->
-<script>
-(function () {
-  const video = document.getElementById('cameraBackground');
-  const cameraFallback = document.getElementById('cameraFallback');
-  const cameraCheckModal = document.getElementById('cameraCheckModal');
-  const controlPanel = document.getElementById('cameraControlPanel');
-  const camAllowBtn = document.getElementById('camAllowBtn');
-  const camDenyBtn = document.getElementById('camDenyBtn');
-  const recordBtn = document.getElementById('recordBtn');
-  const videosBtn = document.getElementById('videosBtn');
-  const videoModal = document.getElementById('videoModal');
-  const closeVideoModalBtn = document.getElementById('closeVideoModalBtn');
-  const videoList = document.getElementById('videoList');
-  const cameraSelect = document.getElementById('cameraSelect');
-  const brightnessSlider = document.getElementById('brightnessSlider');
-  const contrastSlider = document.getElementById('contrastSlider');
-  const flipButton = document.getElementById('flipButton');
-
-  let currentStream = null;
-  let mediaRecorder = null;
-  let recordedChunks = [];
-  let isRecording = false;
-  let isMirrored = false;
-
-  camAllowBtn.addEventListener('click', async () => {
-    await requestCamera();
-    cameraCheckModal.style.display = 'none';
-    controlPanel.style.display = 'block';
-  });
-
-  camDenyBtn.addEventListener('click', () => {
-    cameraCheckModal.style.display = 'none';
-    cameraFallback.style.display = 'block';
-    controlPanel.style.display = 'block';
-  });
-
-  async function requestCamera() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-      video.srcObject = stream;
-      currentStream = stream;
-      cameraFallback.style.display = 'none';
-      video.style.display = 'block';
-      setupMediaRecorder(stream);
-      loadCameraList();
-    } catch (err) {
-      console.error('Camera error:', err);
-      cameraFallback.style.display = 'block';
-      video.style.display = 'none';
-    }
-  }
-
-  function setupMediaRecorder(stream) {
-    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) recordedChunks.push(event.data);
-    };
-    mediaRecorder.onstop = async () => {
-      const blob = new Blob(recordedChunks, { type: 'video/webm' });
-      recordedChunks = [];
-      await saveVideo(blob);
-    };
-  }
-
-  async function saveVideo(blob) {
-    const db = await openCamDB();
-    const timestamp = new Date().toLocaleString();
-    const duration = Math.floor(blob.size / (1024 * 500)); // rough estimate
-    const record = { timestamp, blob, duration, id: Date.now() };
-    const tx = db.transaction(['videos'], 'readwrite');
-    tx.objectStore('videos').add(record);
-  }
-
-  function openCamDB() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open('rudVentureVideos', 1);
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains('videos')) db.createObjectStore('videos', { keyPath: 'id' });
-      };
-    });
-  }
-
-  recordBtn.addEventListener('click', () => {
-    if (!mediaRecorder) return;
-    if (!isRecording) {
-      mediaRecorder.start();
-      isRecording = true;
-      recordBtn.textContent = '⏹ Stop Recording';
-      recordBtn.classList.add('recording');
-    } else {
-      mediaRecorder.stop();
-      isRecording = false;
-      recordBtn.textContent = 'Start Recording';
-      recordBtn.classList.remove('recording');
-    }
-  });
-
-  videosBtn.addEventListener('click', async () => {
-    closeLogoMenu();
-    await displayVideos();
-    videoModal.style.display = 'flex';
-  });
-
-  closeVideoModalBtn.addEventListener('click', closeCamVideoModal);
-
-  async function displayVideos() {
-    const db = await openCamDB();
-    const request = db.transaction(['videos'], 'readonly').objectStore('videos').getAll();
-    request.onsuccess = () => {
-      const videos = request.result;
-      videoList.innerHTML = '';
-      if (videos.length === 0) {
-        videoList.innerHTML = '<p style="opacity:.6">No videos recorded yet.</p>';
-        return;
-      }
-      videos.forEach((v) => {
-        const item = document.createElement('div');
-        item.className = 'cam-video-item';
-        const info = document.createElement('div');
-        info.innerHTML = `<div>${v.timestamp}</div><div class="cam-video-item-time">~${v.duration}s</div>`;
-        const actions = document.createElement('div');
-        actions.className = 'cam-video-item-actions';
-        const playBtn = document.createElement('button');
-        playBtn.textContent = 'Play';
-        playBtn.addEventListener('click', () => playCamVideo(v.id));
-        const delBtn = document.createElement('button');
-        delBtn.className = 'cam-delete-btn';
-        delBtn.textContent = 'Delete';
-        delBtn.addEventListener('click', () => deleteCamVideo(v.id));
-        actions.appendChild(playBtn);
-        actions.appendChild(delBtn);
-        item.appendChild(info);
-        item.appendChild(actions);
-        videoList.appendChild(item);
-      });
-    };
-  }
-
-  async function playCamVideo(id) {
-    const db = await openCamDB();
-    const request = db.transaction(['videos'], 'readonly').objectStore('videos').get(id);
-    request.onsuccess = () => {
-      const v = request.result;
-      if (v) window.open(URL.createObjectURL(v.blob), '_blank');
-    };
-  }
-
-  async function deleteCamVideo(id) {
-    const db = await openCamDB();
-    db.transaction(['videos'], 'readwrite').objectStore('videos').delete(id);
-    await displayVideos();
-  }
-
-  cameraSelect.addEventListener('change', async (e) => {
-    if (currentStream) currentStream.getTracks().forEach(track => track.stop());
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: e.target.value } });
-      video.srcObject = stream;
-      currentStream = stream;
-      setupMediaRecorder(stream);
-    } catch (err) {
-      console.error('Error switching camera:', err);
-    }
-  });
-
-  async function loadCameraList() {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    devices.filter(d => d.kind === 'videoinput').forEach((device, index) => {
-      const option = document.createElement('option');
-      option.value = device.deviceId;
-      option.textContent = device.label || `Camera ${index + 1}`;
-      cameraSelect.appendChild(option);
-    });
-  }
-
-  function updateFilter() {
-    const brightness = 100 + parseInt(brightnessSlider.value, 10);
-    const contrast = 100 + parseInt(contrastSlider.value, 10);
-    video.style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
-  }
-  brightnessSlider.addEventListener('input', updateFilter);
-  contrastSlider.addEventListener('input', updateFilter);
-
-  flipButton.addEventListener('click', () => {
-    isMirrored = !isMirrored;
-    video.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
-    flipButton.textContent = isMirrored ? 'Mirror (ON)' : 'Mirror';
-  });
-})();
-</script>
-
 <!-- Windows 13 desktop: notch menu top-left, useRbox R top-right, keyboard + chat
      bottom-left, Popcorn bottom-right, taskbar bottom-middle. Ko-fi lives in the notch menu. -->
 <script src="embed/useRbox.js" defer></script>
 <script src="embed/rvDesk.js" defer></script>
+<!-- 🍿 popcorn window = the sealed bunker: the only place the camera and microphone
+     are used. Entering cuts this page off from the internet; leaving reloads it.
+     Its own 🍿 and 💬 leave the bunker, then open the Popcorn Hub / chat. -->
+<script>
+  window.rvPopcornConfig = {
+    zIndex: 1050,       // under the useRbox R (999999), which stays usable inside
+    userOffset: 72,     // left of the useRbox R
+    button: false,      // rvDesk's own bottom-right 🍿 opens it
+    legacyDB: 'rudVentureVideos',   // recordings from the old camera background come along
+    onPopcorn: function () { window.rvDesk && rvDesk.open('popcorn'); },
+    onChat: function () { window.rvDesk && rvDesk.open('chat'); },
+    onUser: function () {
+      var box = document.getElementById('useRbox');
+      if (box) box.classList.remove('hidden');
+    }
+  };
+</script>
+<script src="embed/popcornWindow.js" defer></script>
+<script src="embed/popcornMovie.js" defer></script>
 </body>
 </html>

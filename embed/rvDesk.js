@@ -8,7 +8,8 @@
                    view modes, Ko-fi)
      top-right     the R circle + useRbox (embed/useRbox.js; not built here)
      bottom-left   ⌨️ Keyboards, 💬 Global Chat
-     bottom-right  🍿 Popcorn Hub
+     bottom-right  🍿 popcorn window (embed/popcornWindow.js) — its own 🍿 opens
+                   the Popcorn Hub; without popcornWindow.js it opens the Popcorn Hub
      bottom-middle taskbar: 🎃 start button, one button per open window, clock
 
    Services open in floating windows (drag the title bar, resize from the
@@ -82,6 +83,7 @@
     /* bottom corners */
     '.rvd-corner{position:fixed;bottom:62px;z-index:1600;display:flex;gap:8px}',
     '#rvd-bl{left:12px}#rvd-br{right:12px}',
+    'html.rvp-open .rvd-corner{display:none}', /* the popcorn window has its own corners */
     '.rvd-cbtn{width:46px;height:46px;border-radius:50%;border:1px solid var(--rvd-neon);background:#000;font-size:21px;',
     'line-height:1;cursor:pointer;box-shadow:0 0 12px rgba(0,255,65,.35);padding:0;transition:transform .15s}',
     '.rvd-cbtn:hover{transform:scale(1.1)}',
@@ -340,6 +342,9 @@
     b.type = 'button';
     b.title = a.title;
     b.addEventListener('click', function () {
+      // 🍿 opens the popcorn window (embed/popcornWindow.js) when the page has it;
+      // the Popcorn Hub is then the popcorn window's own 🍿
+      if (id === 'popcorn' && window.rvPopcorn) { rvPopcorn.toggle(); return; }
       var w = wins[id];
       if (w && isFront(w)) minimise(w); else open(id);
     });

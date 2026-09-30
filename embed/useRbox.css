@@ -94,6 +94,8 @@
   border-left: 3px solid var(--neon);
   border-radius: 0;
   padding: 24px max(20px, calc(50% - 230px));
+  /* room to scroll the last field (SAVE PROFILE) above the hub's 46px taskbar */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
   box-shadow: 0 0 60px rgba(0,255,65,0.25);
   backdrop-filter: blur(12px);
   z-index: 1;
@@ -222,6 +224,7 @@
 }
 
 #useRbox input[type="text"],
+#useRbox select,
 #useRbox textarea {
   width: 100%;
   background: #000;
@@ -237,6 +240,7 @@
 }
 
 #useRbox input[type="text"]:focus,
+#useRbox select:focus,
 #useRbox textarea:focus {
   box-shadow: 0 0 12px rgba(0,255,65,0.3);
   border-color: var(--yellow);
@@ -378,3 +382,11 @@
   background: var(--neon);
   border-radius: 4px;
 }
+
+/* ===== 🕶 PRIVATE MODE (incognito) ===== */
+.rb-incognito { display: none; text-align: center; padding: 24px 8px; }
+#useRbox.incognito .rb-incognito { display: block; }
+#useRbox.incognito > :not(.useRbox-header):not(.useRbox-notch):not(#liveClock):not(.rb-incognito) { display: none !important; }
+.rb-incognito-mask { font-size: 64px; margin-bottom: 10px; filter: grayscale(1); }
+.rb-incognito p { opacity: 0.8; line-height: 1.5; margin: 12px 0 18px; }
+#Rcircle.incognito { filter: grayscale(1); opacity: 0.7; }

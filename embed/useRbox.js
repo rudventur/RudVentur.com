@@ -35,12 +35,20 @@
       '  <div class="useRbox-header">' +
       '    <strong>⚡ useRbox v2.0</strong>' +
       '    <div class="useRbox-header-btns">' +
+      '      <button id="togglePrivacy" title="Online / private">🌐</button>' +
       '      <button id="toggleTransparency" title="Toggle transparency">🌑</button>' +
       '      <button id="collapseUser" title="Collapse to notch">⤢</button>' +
       '      <button id="closeUser" title="Close">✖</button>' +
       '    </div>' +
       '  </div>' +
       '  <div id="liveClock">--:--:--</div>' +
+      '  <div class="rb-incognito">' +
+      '    <div class="rb-incognito-mask">🕶</div>' +
+      '    <strong>INCOGNITO — PRIVATE MODE</strong>' +
+      '    <p>No login, no profile, nothing saved about you. Camera and microphone are off. ' +
+      'You can still use every public tool.</p>' +
+      '    <button class="btn" id="goOnline">🌐 GO ONLINE (only your name is shown)</button>' +
+      '  </div>' +
       '  <div class="avatar-wrap">' +
       '    <div id="avatarHalftone"></div>' +
       '    <small>pure CSS halftone signature</small>' +
@@ -209,6 +217,8 @@
         username: q('#username').value,
         channel: q('#channel').value,
         psignature: q('#psignature').value,
+        funeralKind: q('#funeralKind').value,
+        funeralNote: q('#funeralNote').value,
         currentLoc: q('#currentLoc').value,
         lat: q('#lat').value,
         lon: q('#lon').value,
@@ -217,6 +227,7 @@
       };
     }
     function persist() {
+      if (isPrivate()) return;   // incognito: nothing about you is kept
       localStorage.setItem('rud_useRbox_v2', JSON.stringify(collectUserData()));
     }
     function saveUser() {
@@ -237,6 +248,8 @@
       q('#username').value = u.username || 'Rudy';
       q('#channel').value = u.channel || 'main';
       q('#psignature').value = u.psignature || '';
+      q('#funeralKind').value = u.funeralKind || '';
+      q('#funeralNote').value = u.funeralNote || '';
       q('#currentLoc').value = u.currentLoc || '';
       q('#lat').value = u.lat || '';
       q('#lon').value = u.lon || '';
@@ -244,6 +257,28 @@
       savedLocations = u.savedLocations || [];
       renderGPSList();
     }
+    /* 🌐 online / 🕶 private — per device, shared with the popcorn window
+       (embed/popcornWindow.js) through localStorage 'rvPrivacy' */
+    function isPrivate() { return localStorage.getItem('rvPrivacy') === 'private'; }
+    function setPrivacy(mode) {
+      if (window.rvPrivacy) { window.rvPrivacy.set(mode); return; }
+      localStorage.setItem('rvPrivacy', mode);
+      applyPrivacy();
+    }
+    function applyPrivacy() {
+      var priv = isPrivate();
+      useRbox.classList.toggle('incognito', priv);
+      Rcircle.classList.toggle('incognito', priv);
+      var b = q('#togglePrivacy');
+      b.textContent = priv ? '🕶' : '🌐';
+      b.title = priv ? 'Private mode — tap to go online' : 'Online — tap for private mode';
+    }
+    q('#togglePrivacy').onclick = function () { setPrivacy(isPrivate() ? 'online' : 'private'); };
+    q('#goOnline').onclick = function () { setPrivacy('online'); };
+    document.addEventListener('rvprivacy', applyPrivacy);
+    window.addEventListener('storage', function (e) { if (e.key === 'rvPrivacy') applyPrivacy(); });
+    applyPrivacy();
+
     q('#refreshUser').onclick = loadUser;
     q('#channelInfo').onclick = function () { alert('Channel set on login!'); };
     q('#saveUser').onclick = saveUser;
