@@ -94,6 +94,8 @@
   border-left: 3px solid var(--neon);
   border-radius: 0;
   padding: 24px max(20px, calc(50% - 230px));
+  /* room to scroll the last field (SAVE PROFILE) above the hub's 46px taskbar */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
   box-shadow: 0 0 60px rgba(0,255,65,0.25);
   backdrop-filter: blur(12px);
   z-index: 1;
@@ -222,6 +224,7 @@
 }
 
 #useRbox input[type="text"],
+#useRbox select,
 #useRbox textarea {
   width: 100%;
   background: #000;
@@ -237,6 +240,7 @@
 }
 
 #useRbox input[type="text"]:focus,
+#useRbox select:focus,
 #useRbox textarea:focus {
   box-shadow: 0 0 12px rgba(0,255,65,0.3);
   border-color: var(--yellow);
@@ -326,52 +330,6 @@
   padding: 0 4px;
 }
 
-/* ===== SOCIAL MEDIA SECTION ===== */
-.social-section {
-  margin: 24px 0;
-  padding: 16px;
-  background: rgba(0,0,0,0.3);
-  border: 2px dashed var(--neon);
-  border-radius: 8px;
-}
-
-.social-title {
-  text-align: center;
-  color: var(--yellow);
-  font-size: 1.1rem;
-  margin-bottom: 14px;
-  text-shadow: 0 0 8px var(--yellow);
-}
-
-.social-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-  gap: 10px;
-}
-
-.social-icon {
-  width: 50px;
-  height: 50px;
-  background: #000;
-  border: 2px solid var(--neon);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1.5rem;
-  transition: all 0.3s;
-  text-decoration: none;
-  color: var(--neon);
-}
-
-.social-icon:hover {
-  background: var(--neon);
-  color: #000;
-  transform: scale(1.15) rotate(5deg);
-  box-shadow: 0 0 20px var(--neon);
-}
-
 /* ===== CHECKBOX / TOGGLE ===== */
 #useRbox .toggle {
   display: flex;
@@ -424,3 +382,11 @@
   background: var(--neon);
   border-radius: 4px;
 }
+
+/* ===== 🕶 PRIVATE MODE (incognito) ===== */
+.rb-incognito { display: none; text-align: center; padding: 24px 8px; }
+#useRbox.incognito .rb-incognito { display: block; }
+#useRbox.incognito > :not(.useRbox-header):not(.useRbox-notch):not(#liveClock):not(.rb-incognito) { display: none !important; }
+.rb-incognito-mask { font-size: 64px; margin-bottom: 10px; filter: grayscale(1); }
+.rb-incognito p { opacity: 0.8; line-height: 1.5; margin: 12px 0 18px; }
+#Rcircle.incognito { filter: grayscale(1); opacity: 0.7; }

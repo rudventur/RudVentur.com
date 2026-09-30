@@ -98,8 +98,12 @@ body::before{
 }
 
 /* ─── PANELS ─── */
+/* Translucent + blurred rather than solid, so the background grid reads
+   through instead of being hidden behind opaque cards. */
 .panel{
-  background:#0e0e10;
+  background:rgba(14,14,16,.72);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
   border:1px solid #1a1a1a;
   padding:1.8rem 1.5rem;
   position:relative;
@@ -573,6 +577,7 @@ body::before{
   .panel{padding:1.2rem 1rem}
   .panel.fullscreen{padding:1.5rem 1rem}
 }
+
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#000000">
@@ -635,6 +640,7 @@ body::before{
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/" target="_blank">Map Merger Venti (ArtSpace City)</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">↳ Translator v7</a></li>
       <li><a class="tool-link" href="map-merger-venti/snout-first.html" target="_blank">↳ SnoutFirst</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/rudTrip20/" target="_blank">🎲 Feeling Lucky (rudTrip20)</a></li>
       <li><a class="tool-link soon">Browser</a></li>
     </ul>
   </section>
@@ -918,5 +924,24 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
      bottom-left, Popcorn bottom-right, taskbar bottom-middle. Ko-fi lives in the notch menu. -->
 <script src="embed/useRbox.js" defer></script>
 <script src="embed/rvDesk.js" defer></script>
+<!-- 🍿 popcorn window = the sealed bunker: the only place the camera and microphone
+     are used. Entering cuts this page off from the internet; leaving reloads it.
+     Its own 🍿 and 💬 leave the bunker, then open the Popcorn Hub / chat. -->
+<script>
+  window.rvPopcornConfig = {
+    zIndex: 1050,       // under the useRbox R (999999), which stays usable inside
+    userOffset: 72,     // left of the useRbox R
+    button: false,      // rvDesk's own bottom-right 🍿 opens it
+    legacyDB: 'rudVentureVideos',   // recordings from the old camera background come along
+    onPopcorn: function () { window.rvDesk && rvDesk.open('popcorn'); },
+    onChat: function () { window.rvDesk && rvDesk.open('chat'); },
+    onUser: function () {
+      var box = document.getElementById('useRbox');
+      if (box) box.classList.remove('hidden');
+    }
+  };
+</script>
+<script src="embed/popcornWindow.js" defer></script>
+<script src="embed/popcornMovie.js" defer></script>
 </body>
 </html>
