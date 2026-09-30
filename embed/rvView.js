@@ -34,15 +34,11 @@
       phone's back button closes it, ↗ opens it in a real tab. data-rv-nolayer on
       a link opts it out. Pages loaded inside the layer hand their own new-tab
       links and view changes up to the top page.
-      SAFETY: only RUDVENTUR addresses are ever opened in the layer
-      (rudventur.github.io/…, rudventur.com, www.rudventur.com, and this page's
-      own site). Anything else opens as a normal new tab, exactly as the browser
-      would do without this script. The layer only lets a page use what
-      RUDVENTUR apps actually need (see PERMISSIONS below); camera, microphone
-      and motion sensors are only given to the few pages that use them.
-   6. Install: "📲 Install RUDVENTUR app" in the logo menu (each repository ships a
+   6. Install: "📲 Download the RUDVENTUR app" in the logo menu (each repo ships a
       manifest.webmanifest with display: fullscreen), so the installed app
-      opens full screen straight away.
+      opens fullscreen straight away. Any element marked data-rv-install shows
+      until the app is installed; when the browser has no install prompt ready
+      it explains the steps for that phone / browser instead.
 
    API (window.rvView) — everything older pages call still works the same:
      rvView.set(mode)        save + apply ('horizontal'|'panoramic'|'vertical'|'normal')
@@ -379,7 +375,8 @@
   // 6. install as an app (manifest.webmanifest with display: fullscreen)
   var installEvt = null;
   var IOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '');
-  function canInstall() { return !installed() && !IN_FRAME && (!!installEvt || IOS); }
+  // the button always shows until installed: without a ready prompt, install() explains the steps
+  function canInstall() { return !installed() && !IN_FRAME; }
   function syncInstall() {
     Array.prototype.forEach.call(document.querySelectorAll('[data-rv-install]'), function (el) {
       el.style.display = canInstall() ? '' : 'none';
@@ -395,8 +392,22 @@
       syncInstall();
       return;
     }
-    if (IOS) alert('To install RUDVENTUR: tap the Share button, then "Add to Home Screen". ' +
-      'It then opens without the browser bars.');
+    alert(installHelp());
+  }
+  function installHelp() {
+    var ua = navigator.userAgent || '';
+    var tail = '\n\nIt then opens from your home screen like any other app, without the browser bars.';
+    if (IOS) return 'To get the RUDVENTUR app on iPhone / iPad: open this page in Safari, tap the Share button ' +
+      '(the square with the arrow), then "Add to Home Screen".' + tail;
+    if (/SamsungBrowser/.test(ua)) return 'To get the RUDVENTUR app: tap the menu (☰), then "Add page to" → "Home screen".' + tail;
+    if (/Android/.test(ua)) return 'To get the RUDVENTUR app: tap the browser menu (⋮ top-right), then ' +
+      '"Install app" or "Add to Home screen".' + tail;
+    if (/Firefox\//.test(ua)) return 'Firefox on computers can\'t install web apps. Open rudventur.com in Chrome or Edge ' +
+      'and use this button there, or use it on your phone.';
+    if (/Safari\//.test(ua) && !/Chrome|Chromium|Edg\//.test(ua)) return 'To get the RUDVENTUR app on a Mac: in Safari choose ' +
+      'File → "Add to Dock".' + tail;
+    return 'To get the RUDVENTUR app: click the install icon at the right end of the address bar ' +
+      '(a screen with a down arrow), or open the browser menu (⋮) → "Cast, save and share" → "Install page as app".' + tail;
   }
 
   // 4. logo menu — same options as the hub's RUDVENTUR logo
@@ -467,7 +478,7 @@
     var isep = Object.assign(document.createElement('div'), { className: 'rv-sep' });
     isep.setAttribute('data-rv-install', '');
     menu.appendChild(isep);
-    var ib = btn(menu, '\uD83D\uDCF2 Install RUDVENTUR app', function (e) { e.stopPropagation(); closeMenu(); install(); });
+    var ib = btn(menu, '\uD83D\uDCF2 Download the RUDVENTUR app', function (e) { e.stopPropagation(); closeMenu(); install(); });
     ib.setAttribute('data-rv-install', '');
     document.body.appendChild(menu);
     syncInstall();

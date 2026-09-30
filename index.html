@@ -298,6 +298,24 @@ body::before{
   border-left-color:transparent;
   padding-left:.5rem;
 }
+.user-btns{display:flex;flex-direction:column;gap:.6rem;margin-top:1rem}
+.user-btn{
+  display:block;width:100%;text-align:center;text-decoration:none;cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:3px;
+  padding:.6rem .8rem;border-radius:10px;transition:transform .15s,box-shadow .15s;
+}
+.user-btn:hover{transform:scale(1.03)}
+.user-btn--cheese{
+  color:#1a1200;border:none;
+  background:linear-gradient(135deg,#ffe066,#ffc800 55%,#ff9f1a);
+  box-shadow:0 0 18px rgba(255,200,0,.35);
+}
+.user-btn--cheese:hover{box-shadow:0 0 28px rgba(255,200,0,.6)}
+.user-btn--app{
+  color:var(--map);background:#000;border:1px solid var(--map);
+  box-shadow:0 0 14px rgba(0,255,65,.25);
+}
+.user-btn--app:hover{background:var(--map);color:#000}
 .tool-link.soon::after{
   content:' — soon';
   font-size:.6rem;
@@ -612,7 +630,7 @@ body::before{
     <button role="menuitem" onclick="setView('vertical')">↳ Full Screen Vertical</button>
   </div>
   <div class="menu-sep" data-rv-install style="display:none"></div>
-  <button role="menuitem" data-rv-install style="display:none" onclick="closeLogoMenu();rvView.install()">📲 Install RUDVENTUR app</button>
+  <button role="menuitem" data-rv-install style="display:none" onclick="closeLogoMenu();rvView.install()">📲 Download the RUDVENTUR app</button>
 </div>
 
 <!-- INDEX NAV STRIP — jump to any tile (content that used to live in THE INDEX tile) -->
@@ -640,7 +658,8 @@ body::before{
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/" target="_blank">Map Merger Venti (ArtSpace City)</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">↳ Translator v7</a></li>
       <li><a class="tool-link" href="map-merger-venti/snout-first.html" target="_blank">↳ SnoutFirst</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/rudTrip20/" target="_blank">🎲 Feeling Lucky (rudTrip20)</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/rudTrip20/" target="_blank">📍 rudTrip20</a></li>
+      <li><a class="tool-link" href="rudtrip20/" target="_blank">↳ rudTrip20 intro (R orb → R pin)</a></li>
       <li><a class="tool-link soon">Browser</a></li>
     </ul>
   </section>
@@ -670,6 +689,10 @@ body::before{
       <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox v2 (upgraded)</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">Translator v7</a></li>
     </ul>
+    <div class="user-btns">
+      <a class="user-btn user-btn--cheese" href="cheese-ouiji-empire/index.html" target="_blank">🧀 CHEESE CASINO</a>
+      <button type="button" class="user-btn user-btn--app" data-rv-install onclick="rvView.install()">📲 DOWNLOAD THE APP</button>
+    </div>
   </section>
 
   <!-- PANEL 4 — SOCIAL ZONE (bottom left) -->
