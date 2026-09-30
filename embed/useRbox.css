@@ -326,52 +326,6 @@
   padding: 0 4px;
 }
 
-/* ===== SOCIAL MEDIA SECTION ===== */
-.social-section {
-  margin: 24px 0;
-  padding: 16px;
-  background: rgba(0,0,0,0.3);
-  border: 2px dashed var(--neon);
-  border-radius: 8px;
-}
-
-.social-title {
-  text-align: center;
-  color: var(--yellow);
-  font-size: 1.1rem;
-  margin-bottom: 14px;
-  text-shadow: 0 0 8px var(--yellow);
-}
-
-.social-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-  gap: 10px;
-}
-
-.social-icon {
-  width: 50px;
-  height: 50px;
-  background: #000;
-  border: 2px solid var(--neon);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1.5rem;
-  transition: all 0.3s;
-  text-decoration: none;
-  color: var(--neon);
-}
-
-.social-icon:hover {
-  background: var(--neon);
-  color: #000;
-  transform: scale(1.15) rotate(5deg);
-  box-shadow: 0 0 20px var(--neon);
-}
-
 /* ===== CHECKBOX / TOGGLE ===== */
 #useRbox .toggle {
   display: flex;
