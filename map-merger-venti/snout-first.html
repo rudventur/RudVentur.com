@@ -2,6 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- OLD COPY. The live Snout First is https://rudventur.github.io/map-merger-venti/snout-first.html
+     (repository rudventur/map-merger-venti). This hub copy stopped being updated
+     in August 2026, so it now forwards there straight away, keeping ?view= and
+     anything after #. Add ?stay to the address to look at the old copy.
+     Please don't edit this copy; see THIS-IS-AN-OLD-COPY.md in this folder. -->
+<link rel="canonical" href="https://rudventur.github.io/map-merger-venti/snout-first.html">
+<script>
+(function () {
+  if (/[?&]stay(=|&|$)/.test(location.search)) return;
+  location.replace('https://rudventur.github.io/map-merger-venti/snout-first.html' + location.search + location.hash);
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Snout First — Pet Map</title>
 <style>
@@ -54,10 +66,16 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
 .pet-userbox .ub-tags{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
 .pet-userbox .ub-tag{background:rgba(136,204,68,0.12);border:1px solid rgba(136,204,68,0.3);color:#88cc44;padding:2px 7px;border-radius:10px;font-size:.75rem}
 .pet-userbox .ub-mood{text-align:center;font-size:1.1rem;margin:4px 0}
+.pet-userbox .ub-tracker{display:none;text-align:center;font-size:.72rem;color:#88cc44;background:rgba(136,204,68,0.1);border:1px solid rgba(136,204,68,0.3);border-radius:8px;padding:2px 6px;margin:4px auto;width:fit-content}
 .pet-userbox .ub-time{color:rgba(255,204,102,0.3);font-size:.72rem;text-align:center}
 .pet-userbox .ub-actions{display:flex;gap:6px;margin-top:8px}
 .pet-userbox .ub-actions button{flex:1;font-size:.82rem;padding:4px}
 .pet-userbox .ub-wags{text-align:center;color:#88cc44;font-size:.85rem;margin-top:4px}
+.pet-userbox .ub-hold-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:#88cc44;border-radius:16px 0 0 0;transition:width linear}
+.pet-userbox .ub-more{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(204,136,51,0.3);font-size:.78rem;color:rgba(255,204,102,0.65);line-height:1.5}
+.pet-userbox.expanded .ub-more{display:block}
+.pet-userbox .ub-hold-hint{text-align:center;color:rgba(255,204,102,0.2);font-size:.65rem;margin-top:6px;font-style:italic}
+.pet-userbox.expanded .ub-hold-hint{display:none}
 
 /* ── PET CARD (pack panel) ── */
 .pet-card{background:rgba(0,0,0,0.3);border:2px solid rgba(204,136,51,0.25);border-radius:12px;padding:10px;margin:6px 0;cursor:pointer;transition:all .15s}
@@ -93,9 +111,58 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
 .zoom-axis .zbtn:hover{background:#cc8833;color:#1a120a}
 .zoom-axis .zlev{font-family:'Press Start 2P',monospace;font-size:.16rem;color:#ffcc66;margin:3px 0}
 
-/* ── BACK BUTTON ── */
-.back-btn{position:fixed;bottom:12px;left:12px;z-index:1000;background:rgba(26,18,10,0.95);border:2px solid #cc8833;color:#ffcc66;padding:6px 12px;border-radius:12px;cursor:pointer;font-family:'Bubblegum Sans',cursive;font-size:1rem;transition:all .15s;text-decoration:none;display:flex;align-items:center;gap:6px}
-.back-btn:hover{background:#cc8833;color:#1a120a}
+/* ── REDIRECT (big modal, reuses .modal-overlay) ── */
+.redirect-wrap{position:relative;display:inline-block;flex-shrink:0}
+.redirect-modal{max-width:560px;width:92%}
+.redirect-grid{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.redirect-card{display:block;width:100%;text-align:left;background:rgba(0,0,0,0.3);border:2px solid rgba(204,136,51,0.4);color:#ffcc66;border-radius:12px;padding:18px 20px;font-family:'Bubblegum Sans',cursive;font-size:1.25rem;cursor:pointer;transition:all .15s}
+.redirect-card:hover{border-color:#cc8833;background:rgba(204,136,51,0.12)}
+.redirect-card.cur{color:rgba(255,204,102,0.35);cursor:default}
+.redirect-card.cur:hover{background:rgba(0,0,0,0.3);border-color:rgba(204,136,51,0.4)}
+.redirect-card small{opacity:.7;font-size:.75em}
+
+/* ── VIEW MODE MENU (logo click) ── */
+.view-menu{display:none;position:fixed;background:rgba(26,18,10,0.98);border:2px solid #cc8833;border-radius:12px;padding:6px;z-index:2100;min-width:250px;box-shadow:0 12px 40px rgba(0,0,0,.6);font-family:'VT323',monospace}
+.view-menu.show{display:block}
+.view-menu button{display:block;width:100%;text-align:left;background:none;border:none;color:#ffcc66;font-family:inherit;font-size:1rem;padding:9px 10px;cursor:pointer;border-radius:8px}
+.view-menu button:hover{background:#cc8833;color:#1a120a}
+.view-menu .menu-sep{border-top:1px solid rgba(204,136,51,0.3);margin:4px 2px}
+.view-menu .settings-toggle{display:flex;align-items:center;justify-content:space-between}
+.view-menu .settings-toggle::after{content:'▸';font-size:.8rem;transition:transform .2s}
+.view-menu .settings-toggle.open::after{transform:rotate(90deg)}
+.view-submenu{display:none;padding-left:.6rem;margin:0 .2rem;border-left:2px solid rgba(204,136,51,0.3)}
+.view-submenu.open{display:block}
+.view-submenu button{font-size:.88rem;color:rgba(255,204,102,0.8)}
+
+/* ── ACCOUNT HUB (ported from windows13's useRbox v2) ── */
+#sfuHub{position:fixed;top:60px;right:10px;z-index:1600;font-family:'VT323',monospace}
+#sfuCircle{width:44px;height:44px;border-radius:50%;background:rgba(26,18,10,0.95);border:3px solid #cc8833;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;box-shadow:0 0 16px rgba(204,136,51,0.35);transition:all .2s}
+#sfuCircle:hover{transform:scale(1.08) rotate(-4deg);box-shadow:0 0 26px rgba(204,136,51,0.55)}
+#sfuPanel{position:absolute;top:52px;right:0;width:280px;max-height:80vh;overflow-y:auto;background:rgba(26,18,10,0.98);border:3px solid #cc8833;border-radius:14px;padding:14px;box-shadow:0 4px 28px rgba(0,0,0,0.5)}
+#sfuPanel.sfu-hidden{display:none}
+.sfu-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(204,136,51,0.25)}
+.sfu-header strong{font-family:'Bubblegum Sans',cursive;color:#ffcc66;font-size:1rem}
+.sfu-header button{background:none;border:1px solid #cc8833;color:#cc8833;font-size:.95rem;cursor:pointer;padding:2px 7px;border-radius:6px}
+.sfu-header button:hover{background:#cc8833;color:#1a120a}
+#sfuClock{text-align:center;font-size:1.1rem;color:#ffcc66;font-weight:bold;margin-bottom:10px;padding:6px;background:rgba(255,204,102,0.05);border:1px solid rgba(255,204,102,0.25);border-radius:8px}
+#sfuPanel label{display:block;margin:8px 0 3px;font-size:.75rem;color:rgba(255,204,102,0.6);text-transform:uppercase;letter-spacing:1px}
+#sfuPanel input[type=text],#sfuPanel textarea{width:100%;background:rgba(0,0,0,0.4);color:#ffcc66;border:1.5px solid rgba(204,136,51,0.4);padding:6px 8px;font-family:'VT323',monospace;font-size:.9rem;border-radius:8px;outline:none}
+#sfuPanel input[type=text]:focus,#sfuPanel textarea:focus{border-color:#ffcc66}
+#sfuPanel textarea{resize:vertical;min-height:44px}
+.sfu-row{display:flex;gap:6px;align-items:center}
+.sfu-row input{flex:1}
+.sfu-section{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(204,136,51,0.25)}
+#sfuSpotList{max-height:120px;overflow-y:auto;margin-top:6px}
+.sfu-spot-item{display:flex;justify-content:space-between;align-items:center;padding:5px 7px;margin-bottom:5px;background:rgba(0,0,0,0.3);border:1px solid rgba(204,136,51,0.25);border-radius:8px;font-size:.8rem}
+.sfu-spot-item:hover{border-color:#cc8833}
+.sfu-spot-name{display:block;font-family:'Bubblegum Sans',cursive;color:#ffcc66}
+.sfu-spot-coords{display:block;font-size:.65rem;color:rgba(255,204,102,0.4)}
+.sfu-spot-del{background:none;border:none;color:#ff6666;cursor:pointer;font-size:.85rem;padding:0 4px}
+.sfu-social-section{margin-top:12px;padding-top:10px;border-top:1px dashed rgba(204,136,51,0.25)}
+.sfu-social-title{text-align:center;color:#ffcc66;font-size:.85rem;margin-bottom:8px;font-family:'Bubblegum Sans',cursive}
+.sfu-social-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.sfu-social-icon{width:38px;height:38px;background:rgba(0,0,0,0.3);border:2px solid #cc8833;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;text-decoration:none;color:#ffcc66;transition:all .15s}
+.sfu-social-icon:hover{background:#cc8833;color:#1a120a;transform:scale(1.1)}
 
 /* ── BONE DIVIDER ── */
 .bone-divider{text-align:center;color:rgba(204,136,51,0.2);font-size:.7rem;margin:8px 0;letter-spacing:4px}
@@ -106,12 +173,19 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
 .db:active,.db.pressed{background:#cc8833;color:#1a120a}
 .db-c{font-family:'Press Start 2P',monospace;font-size:.18rem;color:rgba(204,136,51,0.3);border-color:rgba(204,136,51,0.15)}
 </style>
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/RudVentur.com/embed/apple-touch-icon.png">
+<script src="../embed/rvView.js"></script>
 </head>
 <body>
 
 <!-- HUD -->
 <div class="hud">
-  <div class="htitle" onclick="toggleFullscreen()" title="Toggle fullscreen" style="cursor:pointer">&#128062; Snout First</div>
+  <div class="htitle" onclick="toggleViewMenu(event)" title="View options" style="cursor:pointer">&#128062; Snout First</div>
   <div class="hsep"></div>
   <div class="csearch">
     <input class="cinput" id="searchInput" type="text" placeholder="Sniff sniff...">
@@ -121,7 +195,336 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
   <button class="hbtn paw" onclick="togglePinPet()">&#128062; PIN PET</button>
   <button class="hbtn" onclick="toggleTrail()">&#128017; TRAIL</button>
   <button class="hbtn" onclick="togglePack()">&#128058; PACK</button>
+  <div class="redirect-wrap">
+    <button class="hbtn" onclick="openRedirectMenu(event)">&#128257; Redirect</button>
+  </div>
 </div>
+
+<!-- VIEW MODE MENU (logo click) -->
+<div class="view-menu" id="viewMenu">
+  <button onclick="setView('horizontal')">Full Screen Horizontal</button>
+  <button onclick="setView('panoramic')">Full Screen Panoramic</button>
+  <button onclick="setView('normal')">Normal / Default Browser</button>
+  <div class="menu-sep"></div>
+  <button class="settings-toggle" onclick="toggleSettingsSubmenu(event)">Settings One</button>
+  <div class="view-submenu" id="viewSubmenu">
+    <button onclick="setView('horizontal')">&#8618; Panoramic — Locked</button>
+    <button onclick="setView('panoramic')">&#8618; Panoramic — Default Rotation</button>
+    <button onclick="setView('vertical')">&#8618; Full Screen Vertical</button>
+  </div>
+</div>
+
+<!-- REDIRECT — big modal; destinations open in a new tab carrying the current view mode -->
+<div class="modal-overlay" id="redirectOverlay" onclick="if(event.target===this) closeRedirectMenu()">
+  <div class="modal redirect-modal">
+    <h2>&#128257; Redirect</h2>
+    <div class="redirect-grid">
+      <span class="redirect-card cur">&#128062; Snout First <small>(here)</small></span>
+      <button class="redirect-card" onclick="goTo('index.html')">&#128506;&#65039; Map Merger</button>
+      <button class="redirect-card" onclick="goTo('translator_v7.html')">&#127760; Translator</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── View mode (Full Screen Horizontal / Panoramic / Vertical / Normal) ──
+// Shared with index.html (the RUDVENTUR hub) and translator_v7.html via the
+// same localStorage key, so "Redirect" can carry the current mode across tabs.
+const VIEW_MODE_KEY = 'rvViewMode';
+
+function requestFS() {
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  return fn ? fn.call(el).catch(() => {}) : Promise.resolve();
+}
+function exitFS() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) return Promise.resolve();
+  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  return fn ? fn.call(document).catch(() => {}) : Promise.resolve();
+}
+function lockOrientation(type) {
+  try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock(type).catch(() => {}); } catch (e) {}
+}
+function unlockOrientation() {
+  try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+}
+function applyViewMode(mode) {
+  switch (mode) {
+    case 'horizontal': requestFS().then(() => lockOrientation('landscape')); break;
+    case 'panoramic':  requestFS().then(() => unlockOrientation()); break;
+    case 'vertical':   requestFS().then(() => lockOrientation('portrait')); break;
+    case 'normal':      unlockOrientation(); exitFS(); break;
+  }
+}
+function currentViewMode() {
+  return localStorage.getItem(VIEW_MODE_KEY) || '';
+}
+function setView(mode) {
+  localStorage.setItem(VIEW_MODE_KEY, mode);
+  closeViewMenu();
+  applyViewMode(mode);
+}
+
+// Adopt ?view= from a Redirect link (highest priority), else fall back to the
+// last mode chosen on this device. Fullscreen needs a real user gesture, so
+// it's applied on first touch/click rather than immediately on load.
+let pendingViewMode = null;
+(function initViewModeFromNavigation() {
+  const params = new URLSearchParams(location.search);
+  const urlMode = params.get('view');
+  if (urlMode) {
+    localStorage.setItem(VIEW_MODE_KEY, urlMode);
+    params.delete('view');
+    const clean = location.pathname + (params.toString() ? '?' + params.toString() : '') + location.hash;
+    history.replaceState(null, '', clean);
+    pendingViewMode = urlMode;
+  } else {
+    pendingViewMode = localStorage.getItem(VIEW_MODE_KEY);
+  }
+})();
+document.addEventListener('touchstart', function once() {
+  document.removeEventListener('touchstart', once);
+  if (pendingViewMode && pendingViewMode !== 'normal') {
+    applyViewMode(pendingViewMode);
+  } else if (window.innerWidth < 800 && document.documentElement.requestFullscreen) {
+    requestFS();
+  }
+}, { once: true });
+
+// ── View mode menu (logo click) ──
+function toggleViewMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('viewMenu');
+  if (menu.classList.contains('show')) { closeViewMenu(); return; }
+  const rect = e.currentTarget.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 8) + 'px';
+  menu.style.left = Math.min(Math.max(rect.left, 8), window.innerWidth - 258) + 'px';
+  menu.classList.add('show');
+}
+function closeViewMenu() {
+  document.getElementById('viewMenu').classList.remove('show');
+  document.getElementById('viewSubmenu').classList.remove('open');
+  document.querySelector('.settings-toggle').classList.remove('open');
+}
+function toggleSettingsSubmenu(e) {
+  e.stopPropagation();
+  document.getElementById('viewSubmenu').classList.toggle('open');
+  e.currentTarget.classList.toggle('open');
+}
+
+// ── Redirect (big modal) — opens the destination in a new tab, in the current view mode ──
+function openRedirectMenu(e) {
+  e.stopPropagation();
+  document.getElementById('redirectOverlay').classList.add('show');
+}
+function closeRedirectMenu() {
+  document.getElementById('redirectOverlay').classList.remove('show');
+}
+function goTo(url) {
+  closeRedirectMenu();
+  const mode = currentViewMode();
+  const qs = mode && mode !== 'normal' ? '?view=' + encodeURIComponent(mode) : '';
+  window.open(url + qs, '_blank', 'noopener');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.view-menu') && !e.target.closest('.htitle')) closeViewMenu();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeViewMenu(); closeRedirectMenu(); }
+});
+</script>
+
+<!-- ═══ ACCOUNT HUB (ported from windows13's useRbox v2, restyled to Snout First) ═══ -->
+<div id="sfuHub">
+  <div id="sfuCircle" onclick="sfuToggle()" title="useRbox">&#128062;</div>
+  <div id="sfuPanel" class="sfu-hidden">
+    <div class="sfu-header">
+      <strong>&#128062; useRbox</strong>
+      <button onclick="sfuToggle()">&times;</button>
+    </div>
+    <div id="sfuClock">--:--:--</div>
+
+    <label>&#128100; Display Name</label>
+    <div class="sfu-row">
+      <input type="text" id="sfuUsername" placeholder="Anonymous Walker">
+      <button class="hbtn paw" onclick="sfuSaveName()">&#128190;</button>
+    </div>
+
+    <label>&#128221; Your Motto</label>
+    <textarea id="sfuSignature" placeholder="e.g. Professional treat negotiator, full-time good boy manager..."></textarea>
+
+    <div class="sfu-section">
+      <label>&#128205; Saved Walk Spots</label>
+      <div class="sfu-row">
+        <input type="text" id="sfuSpotLat" placeholder="lat (or refresh)">
+        <input type="text" id="sfuSpotLon" placeholder="lon">
+        <button class="hbtn" id="sfuGpsBtn" onclick="sfuRefreshGPS()" title="Use my real GPS location">&#128205;</button>
+      </div>
+      <div class="sfu-row" style="margin-top:5px">
+        <input type="text" id="sfuSpotName" placeholder="Spot name...">
+        <button class="hbtn paw" onclick="sfuSaveSpot()">&#128190; Save</button>
+      </div>
+      <div id="sfuSpotList"></div>
+    </div>
+
+    <div class="sfu-social-section">
+      <div class="sfu-social-title">&#128062; Part of RudVentur</div>
+      <div class="sfu-social-grid">
+        <a href="https://github.com/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="GitHub">&#128187;</a>
+        <a href="https://discord.gg/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Discord">&#128172;</a>
+        <a href="https://twitter.com/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Twitter/X">&#120143;</a>
+        <a href="https://instagram.com/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Instagram">&#128247;</a>
+        <a href="https://youtube.com/@rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="YouTube">&#9654;&#65039;</a>
+        <a href="https://ko-fi.com/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Ko-fi">&#9749;</a>
+        <a href="https://tiktok.com/@rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="TikTok">&#127925;</a>
+        <a href="https://t.me/rudventur" target="_blank" rel="noopener" class="sfu-social-icon" title="Telegram">&#9992;&#65039;</a>
+        <a href="mailto:RudVentur@gmail.com" class="sfu-social-icon" title="Email">&#128231;</a>
+      </div>
+    </div>
+
+    <button class="hbtn red" style="width:100%;margin-top:10px" onclick="sfuClearData()">&#128465;&#65039; Reset local data</button>
+  </div>
+</div>
+
+<script>
+// ═══ Account hub logic ═══
+function sfuToggle() {
+  document.getElementById('sfuPanel').classList.toggle('sfu-hidden');
+  if (!document.getElementById('sfuPanel').classList.contains('sfu-hidden')) sfuLoad();
+}
+
+// Anchor to the right panel's outer edge instead of a fixed viewport spot, so it
+// moves with the panel (collapsed vs expanded) instead of sitting on top of it.
+// #rpRoot doesn't exist yet when this script runs (panel-right.js loads later),
+// so the first call falls back to a default until it appears.
+function sfuRepositionHub() {
+  const hub = document.getElementById('sfuHub');
+  const rp = document.getElementById('rpRoot');
+  if (!hub) return;
+  if (rp) {
+    const rect = rp.getBoundingClientRect();
+    hub.style.right = (window.innerWidth - rect.left + 8) + 'px';
+  } else {
+    hub.style.right = '10px';
+  }
+}
+sfuRepositionHub();
+// panel-right.js's own init() is itself deferred to DOMContentLoaded (its script
+// isn't the last thing in the document either), so #rpRoot may not exist yet even
+// here. Re-run one macrotask after DOMContentLoaded — by then every synchronous
+// DOMContentLoaded listener, including panel-right's, has already finished, so this
+// isn't a timing guess the way a fixed setTimeout delay would be.
+document.addEventListener('DOMContentLoaded', () => setTimeout(sfuRepositionHub, 0));
+window.addEventListener('resize', sfuRepositionHub);
+document.addEventListener('transitionend', e => {
+  if (e.target && e.target.id === 'rpRoot') sfuRepositionHub();
+});
+
+function sfuUpdateClock() {
+  const el = document.getElementById('sfuClock');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-GB', { hour12: false });
+}
+setInterval(sfuUpdateClock, 1000);
+sfuUpdateClock();
+
+function sfuLoad() {
+  document.getElementById('sfuUsername').value = (typeof getUserName === 'function') ? getUserName() : 'Anonymous Walker';
+  document.getElementById('sfuSignature').value = localStorage.getItem('sf_owner_signature') || '';
+  sfuRenderSpots();
+}
+
+function sfuSaveName() {
+  const name = document.getElementById('sfuUsername').value.trim();
+  if (!name) { if (typeof toast === 'function') toast('Every walker needs a name! \u{1F43E}'); return; }
+  if (typeof setUserName === 'function') setUserName(name);
+  if (typeof toast === 'function') toast('\u{1F464} Name updated to ' + name + '!');
+}
+
+document.getElementById('sfuSignature') && document.getElementById('sfuSignature').addEventListener('blur', () => {
+  localStorage.setItem('sf_owner_signature', document.getElementById('sfuSignature').value);
+});
+
+function sfuGetSpots() {
+  try { return JSON.parse(localStorage.getItem('sf_walk_spots') || '[]'); } catch(e) { return []; }
+}
+
+// Real device GPS, not just wherever the map happens to be panned to.
+function sfuRefreshGPS() {
+  const btn = document.getElementById('sfuGpsBtn');
+  if (!navigator.geolocation) { if (typeof toast === 'function') toast('GPS not supported by this browser \u{1F43E}'); return; }
+  btn.textContent = '⏳';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      document.getElementById('sfuSpotLat').value = pos.coords.latitude.toFixed(6);
+      document.getElementById('sfuSpotLon').value = pos.coords.longitude.toFixed(6);
+      btn.textContent = '✅';
+      setTimeout(() => { btn.textContent = '\u{1F4CD}'; }, 1500);
+    },
+    err => {
+      if (typeof toast === 'function') toast('GPS error: ' + err.message);
+      btn.textContent = '❌';
+      setTimeout(() => { btn.textContent = '\u{1F4CD}'; }, 1500);
+    },
+    { timeout: 8000 }
+  );
+}
+
+function sfuSaveSpot() {
+  const name = document.getElementById('sfuSpotName').value.trim();
+  if (!name) { if (typeof toast === 'function') toast('Name this spot first! \u{1F43E}'); return; }
+  const typedLat = parseFloat(document.getElementById('sfuSpotLat').value);
+  const typedLon = parseFloat(document.getElementById('sfuSpotLon').value);
+  // Falls back to the current map centre if GPS was never refreshed for this save.
+  const lat = isNaN(typedLat) ? (typeof S !== 'undefined' ? S.lat : null) : typedLat;
+  const lon = isNaN(typedLon) ? (typeof S !== 'undefined' ? S.lon : null) : typedLon;
+  if (lat == null || lon == null) return;
+  const spots = sfuGetSpots();
+  spots.push({ id: Date.now(), name, lat, lon });
+  localStorage.setItem('sf_walk_spots', JSON.stringify(spots));
+  document.getElementById('sfuSpotName').value = '';
+  document.getElementById('sfuSpotLat').value = '';
+  document.getElementById('sfuSpotLon').value = '';
+  sfuRenderSpots();
+  if (typeof toast === 'function') toast('\u{1F4CD} ' + name + ' saved!');
+}
+function sfuRenderSpots() {
+  const list = document.getElementById('sfuSpotList');
+  const spots = sfuGetSpots();
+  if (!spots.length) {
+    list.innerHTML = '<div style="text-align:center;opacity:.4;padding:8px;font-size:.75rem">No saved spots yet</div>';
+    return;
+  }
+  list.innerHTML = spots.map(s => `
+    <div class="sfu-spot-item">
+      <span onclick="sfuGoToSpot(${s.id})" style="cursor:pointer;flex:1">
+        <span class="sfu-spot-name">${s.name.replace(/</g,'&lt;')}</span>
+        <span class="sfu-spot-coords">${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}</span>
+      </span>
+      <button class="sfu-spot-del" onclick="sfuDeleteSpot(${s.id})">&#128465;&#65039;</button>
+    </div>
+  `).join('');
+}
+function sfuGoToSpot(id) {
+  const spot = sfuGetSpots().find(s => s.id === id);
+  if (!spot || typeof S === 'undefined') return;
+  S.lat = spot.lat; S.lon = spot.lon;
+  if (typeof zoomTarget !== 'undefined') zoomTarget = 15;
+  sfuToggle();
+}
+function sfuDeleteSpot(id) {
+  const spots = sfuGetSpots().filter(s => s.id !== id);
+  localStorage.setItem('sf_walk_spots', JSON.stringify(spots));
+  sfuRenderSpots();
+}
+
+function sfuClearData() {
+  if (!confirm('Reset all local Snout First data on this device? This clears pets pinned only in this browser, your notes, saved spots, and settings. Pets already saved to the network are not affected.')) return;
+  ['snoutfirst_pets','snoutfirst_sniffs','snoutfirst_pets_v2','sf_notes','sf_home','sf_lost_pets','sf_vets_custom','sf_food_custom','sf_walk_spots','sf_owner_signature','rv_username','rv_local_uid'].forEach(k => localStorage.removeItem(k));
+  if (typeof toast === 'function') toast('\u{1F5D1}\u{FE0F} Local data cleared! Reloading...');
+  setTimeout(() => location.reload(), 900);
+}
+</script>
 
 <!-- STATS -->
 <div class="stats">
@@ -197,6 +600,7 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
 
 <!-- PET USERBOX (floating popup) -->
 <div class="pet-userbox" id="petUserbox">
+  <div class="ub-hold-bar" id="ubHoldBar"></div>
   <button class="ub-close" onclick="closeUserbox()">&times;</button>
   <div class="ub-emoji" id="ubEmoji"></div>
   <div class="ub-name" id="ubName"></div>
@@ -204,17 +608,17 @@ canvas#snoutMap{position:fixed;inset:0;z-index:1}
   <div class="ub-bio" id="ubBio"></div>
   <div class="ub-tags" id="ubTags"></div>
   <div class="ub-mood" id="ubMood"></div>
+  <div class="ub-tracker" id="ubTracker"></div>
   <div class="ub-wags" id="ubWags"></div>
   <div class="ub-time" id="ubTime"></div>
+  <div class="ub-more" id="ubMore"></div>
+  <div class="ub-hold-hint" id="ubHoldHint">hold anywhere here for 3s for more info 🐾</div>
   <div class="ub-actions">
     <button class="hbtn paw" onclick="wagFromUserbox()">&#128062; Wag!</button>
     <button class="hbtn" onclick="panToPetFromUserbox()">&#127760; Go To</button>
     <button class="hbtn red" onclick="deletePetFromUserbox()">&#128465; Remove</button>
   </div>
 </div>
-
-<!-- BACK TO ARTSPACE -->
-<a class="back-btn" href="index.html">&#128072; ArtSpace City</a>
 
 <canvas id="snoutMap"></canvas>
 
@@ -456,6 +860,9 @@ function zoomOut() { zoomTarget = Math.max(ZOOM_MIN, zoomTarget - 0.5); }
 
 // Scroll wheel — trackpad-friendly
 document.addEventListener('wheel', e => {
+  // Only zoom the map when the cursor is actually over the map canvas —
+  // otherwise let panels, modals, and scrollable lists scroll normally.
+  if (e.target !== cv) return;
   const px = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY;
   const delta = -px / 340;
   const clamped = Math.max(-0.6, Math.min(0.6, delta));
@@ -502,6 +909,18 @@ cv.addEventListener('pointerup', e => {
       // Close userbox if clicking empty space
       closeUserbox();
     }
+  }
+});
+
+// Right-click a pin -> same actions userbox (Wag/Go/Remove), no need to left-click first.
+// Long-press is left alone on purpose: panel-drag.js already uses a 300ms hold to start
+// dragging a pin onto a side panel, so binding hold to "open menu" too would fight that
+// gesture. On touch, a plain tap already opens the userbox below.
+cv.addEventListener('contextmenu', e => {
+  const petIdx = petAtScreen(e.clientX, e.clientY);
+  if (petIdx >= 0) {
+    e.preventDefault();
+    openUserbox(petIdx, e.clientX, e.clientY);
   }
 });
 
@@ -583,6 +1002,13 @@ function openUserbox(petIdx, screenX, screenY) {
     '<span class="ub-tag">' + t + '</span>'
   ).join('');
   document.getElementById('ubMood').textContent = (MOOD_EM[pet.mood] || '') + ' ' + (pet.mood || '');
+  const trackerEl = document.getElementById('ubTracker');
+  if (pet.trackerSource === 'tractive') {
+    trackerEl.textContent = '📡 Live via Tractive';
+    trackerEl.style.display = 'block';
+  } else {
+    trackerEl.style.display = 'none';
+  }
   document.getElementById('ubTime').textContent = 'Pinned ' + timeAgo(pet.timestamp);
 
   // Find wag count from sniffs
@@ -621,8 +1047,58 @@ function updateUserboxPosition() {
 
 function closeUserbox() {
   activeUserboxPetIndex = -1;
-  document.getElementById('petUserbox').classList.remove('show');
+  const ub = document.getElementById('petUserbox');
+  ub.classList.remove('show');
+  ub.classList.remove('expanded');
+  resetHoldBar();
 }
+
+// ── Hold 3s on the userbox to reveal extra detail ──
+let ubHoldTimer = null;
+function resetHoldBar() {
+  const bar = document.getElementById('ubHoldBar');
+  if (!bar) return;
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+}
+function buildUbMoreHtml(pet) {
+  if (!pet) return '';
+  const lines = [];
+  lines.push('📅 Pinned: ' + new Date(pet.timestamp).toLocaleString());
+  if (pet.owner_name) lines.push('🧑 Owner: ' + pet.owner_name);
+  if (pet.status) lines.push('🏠 Status: ' + pet.status);
+  if (pet.stats) {
+    if (pet.stats.lifetime_distance_km) lines.push('🚶 Lifetime walks: ' + pet.stats.lifetime_distance_km.toFixed ? pet.stats.lifetime_distance_km.toFixed(1) + 'km' : pet.stats.lifetime_distance_km + 'km');
+    if (pet.stats.total_walks) lines.push('🎾 Total walks: ' + pet.stats.total_walks);
+    if (pet.stats.total_feedings) lines.push('🍖 Total feedings: ' + pet.stats.total_feedings);
+  }
+  lines.push('📍 ' + pet.lat.toFixed(5) + ', ' + (pet.lon ?? pet.lng).toFixed(5));
+  return lines.map(l => '<div>' + l + '</div>').join('');
+}
+document.getElementById('petUserbox').addEventListener('pointerdown', e => {
+  if (e.target.closest('button')) return; // let close/wag/go/remove work normally
+  const bar = document.getElementById('ubHoldBar');
+  bar.style.transition = 'width 3000ms linear';
+  bar.style.width = '100%';
+  ubHoldTimer = setTimeout(() => {
+    const ub = document.getElementById('petUserbox');
+    const pet = S.pets[activeUserboxPetIndex];
+    const willExpand = !ub.classList.contains('expanded');
+    if (willExpand) document.getElementById('ubMore').innerHTML = buildUbMoreHtml(pet);
+    ub.classList.toggle('expanded', willExpand);
+    resetHoldBar();
+  }, 3000);
+});
+// Only pointerup/pointercancel end the hold — NOT pointerleave. The box tracks its pet's
+// screen position every frame (updateUserboxPosition), so it can shift under a genuinely
+// stationary finger/cursor during zoom-smoothing; treating that as "pointer left" would
+// cancel a real hold that the user never actually released.
+['pointerup', 'pointercancel'].forEach(evt => {
+  document.getElementById('petUserbox').addEventListener(evt, () => {
+    clearTimeout(ubHoldTimer);
+    resetHoldBar();
+  });
+});
 
 function wagFromUserbox() {
   if (activeUserboxPetIndex < 0) return;
@@ -887,26 +1363,6 @@ function seedDemoPets() {
     });
   });
   savePets();
-}
-
-// ── Auto fullscreen on mobile ──
-function tryFullscreen() {
-  if (window.innerWidth < 800 && document.documentElement.requestFullscreen) {
-    document.documentElement.requestFullscreen().catch(() => {});
-  }
-}
-document.addEventListener('touchstart', function once() {
-  tryFullscreen();
-  document.removeEventListener('touchstart', once);
-}, { once: true });
-
-// ── Fullscreen toggle (logo click) ──
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(() => {});
-  } else {
-    document.exitFullscreen().catch(() => {});
-  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1242,5 +1698,15 @@ render();
 // Init Firebase after render starts
 setTimeout(initFirebaseIntegration, 500);
 </script>
+
+<!-- adiCtive additive panels: LOST mode, Pack/Family/Home/Vets, drag, DogLost embed -->
+<script src="js/lost-zone.js"></script>
+<script src="js/lost-pet.js"></script>
+<script src="js/lost-social.js"></script>
+<script src="js/panel-left.js"></script>
+<script src="js/panel-right.js"></script>
+<script src="js/panel-drag.js"></script>
+<script src="js/doglost-embed.js"></script>
+<script src="js/map-spots.js"></script>
 </body>
 </html>

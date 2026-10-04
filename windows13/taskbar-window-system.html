@@ -227,6 +227,13 @@ iframe {
   margin-bottom: 10px;
 }
 </style>
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/RudVentur.com/embed/apple-touch-icon.png">
+<script src="../embed/rvView.js"></script>
 </head>
 
 <body>
@@ -239,7 +246,7 @@ iframe {
 
 <!-- TASKBAR -->
 <div id="taskbar">
-  <div style="color: var(--yellow); font-weight: bold; margin-right: 20px;">WINDOWS 13</div>
+  <div data-rv-logo style="color: var(--yellow); font-weight: bold; margin-right: 20px;">WINDOWS 13</div>
   <!-- Taskbar items will be added here dynamically -->
 </div>
 
@@ -538,5 +545,6 @@ console.log('  Alt+W - Close active window');
 console.log('  Alt+M - Minimize active window');
 </script>
 
+<script src="../embed/useRbox.js" defer></script>
 </body>
 </html>

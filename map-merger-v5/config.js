@@ -39,8 +39,10 @@ const ZOOM_LEVELS = [
   { z: 19, name: 'Close-up',    desc: 'Max detail',   tileZ: 19 },
 ];
 
+// CARTO basemaps now stamp "API KEY REQUIRED" on every tile without a paid key;
+// Esri's canvas / street tiles are free and keyless (z/y/x order)
 const TILE_URLS = {
-  dark:       'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+  dark:       'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
   osm:        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   topo:       'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
   watercolor: 'https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg',

@@ -351,6 +351,13 @@ body {
   border-radius: 3px;
 }
 </style>
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/RudVentur.com/embed/apple-touch-icon.png">
+<script src="../embed/rvView.js"></script>
 </head>
 
 <body>
@@ -359,7 +366,7 @@ body {
   
   <!-- HEADER -->
   <div class="userbox-header">
-    <div class="userbox-title">
+    <div data-rv-logo class="userbox-title">
       <span>👤</span>
       <span>useRbox v2.0</span>
     </div>
@@ -393,7 +400,7 @@ body {
   <!-- P.S. SIGNATURE -->
   <div class="field-group">
     <label class="field-label">P.S. PERSONAL SIGNATURE</label>
-    <textarea class="field-input textarea" id="signature" placeholder="Your personal message..."></textarea>
+    <textarea class="field-input textarea" id="signature" placeholder="You don't have to have legs to Trip"></textarea>
   </div>
 
   <!-- CURRENT LOCATION -->

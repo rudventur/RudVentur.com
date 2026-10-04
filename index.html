@@ -797,7 +797,23 @@ document.addEventListener('click', (e) => {
 });
 
 console.log('RUDVENTUR v3.0 — Universe Hub OS — All repos consolidated');
+<title>RudVentur — Universe Hub</title>
+</head>
+<body>
+<script>
+(function(){
+  var src='https://raw.githubusercontent.com/rudventur/RudVentur.com/9c1c19c01b1a4785854ad15e118a41e8cd2f0492/index.html';
+  fetch(src).then(function(r){return r.text()}).then(function(t){
+    if (t.indexOf('rxplanation.js')===-1) {
+      t=t.replace('</body>','<script src="embed/rxplanation.js" defer><\/script>\n</body>');
+    }
+    document.open();
+    document.write(t);
+    document.close();
+  }).catch(function(){
+    document.body.innerHTML='<p style="color:#ccc;font-family:sans-serif;padding:2rem">Hub restore failed. Open <a href="https://github.com/rudventur/RudVentur.com/tree/9c1c19c01b1a4785854ad15e118a41e8cd2f0492">this commit</a> and revert index.html.</p>';
+  });
+})();
 </script>
-
 </body>
 </html>

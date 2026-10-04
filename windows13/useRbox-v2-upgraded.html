@@ -413,6 +413,13 @@ input[type="checkbox"] {
   border-radius: 4px;
 }
 </style>
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/RudVentur.com/embed/apple-touch-icon.png">
+<script src="../embed/rvView.js"></script>
 </head>
 
 <body style="background: #000; min-height: 100vh;">
@@ -431,7 +438,7 @@ input[type="checkbox"] {
   <!-- useRbox -->
   <div id="useRbox" class="hidden">
     <div class="useRbox-header">
-      <strong>⚡ useRbox v2.0</strong>
+      <strong data-rv-logo>⚡ useRbox v2.0</strong>
       <button id="closeUser">✖</button>
     </div>
 
@@ -460,7 +467,7 @@ input[type="checkbox"] {
 
     <!-- P.S. Personal Signature -->
     <label>📝 P.S. (Personal Signature)</label>
-    <textarea id="psignature" placeholder="Your personal motto, signature, or note..."></textarea>
+    <textarea id="psignature" placeholder="You don't have to have legs to Trip"></textarea>
 
     <!-- Current Location -->
     <label>📍 Current Location</label>

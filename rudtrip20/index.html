@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en" data-rv-nologo>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>rudTrip20 — RudVentur</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../embed/rvView.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0a;
+  --green:#00ff41;
+  --green-deep:#00b82f;
+  --ink:#0a0a0a;
+}
+html,body{height:100%;background:var(--bg);color:#ccc;font-family:'DM Mono',monospace;overflow:hidden}
+
+/* ─── MAP (behind everything, fades in when the orb launches) ─── */
+#map{position:fixed;inset:0;z-index:0;background:var(--bg);opacity:0;transition:opacity 1.2s ease}
+body.on-map #map{opacity:1}
+.leaflet-container{background:var(--bg)}
+.leaflet-control-attribution{background:rgba(10,10,10,.7)!important;color:#555!important;font-size:9px}
+.leaflet-control-attribution a{color:#777!important}
+
+/* ─── INTRO STAGE ─── */
+#stage{
+  position:fixed;inset:0;z-index:5;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.2rem;
+  background:radial-gradient(circle at 50% 45%,#0f1a12 0%,var(--bg) 60%);
+  transition:opacity .9s ease .5s;
+}
+#stage::before{ /* same faint grid as the hub */
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+body.launched #stage{opacity:0;pointer-events:none}
+body.on-map #stage{display:none}
+
+.hint{
+  font-size:.72rem;letter-spacing:4px;color:#4a4a4a;text-transform:uppercase;
+  animation:hintPulse 2.4s ease-in-out infinite;
+}
+@keyframes hintPulse{50%{color:#8aff9f}}
+body.launched .hint{opacity:0;transition:opacity .2s}
+
+/* ─── THE ORB ─── */
+.orb-wrap{position:relative;width:min(46vw,210px);aspect-ratio:1}
+.orb{
+  all:unset;cursor:pointer;
+  position:absolute;inset:0;
+  display:grid;place-items:center;
+  -webkit-tap-highlight-color:transparent;
+  animation:breathe 4.2s ease-in-out infinite;
+}
+.orb:focus-visible .orb-body{outline:2px solid #fff;outline-offset:8px}
+
+/* outer halo */
+.orb::before{
+  content:'';position:absolute;inset:-35%;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,255,65,.28) 0%,rgba(0,255,65,.08) 40%,transparent 68%);
+  animation:halo 4.2s ease-in-out infinite;
+  pointer-events:none;
+}
+.orb-body{
+  position:absolute;inset:0;overflow:hidden;
+  border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#d6ffe0 0%,var(--green) 26%,var(--green-deep) 68%,#004d14 100%);
+  box-shadow:
+    0 0 40px rgba(0,255,65,.55),
+    0 0 110px rgba(0,255,65,.25),
+    inset -14px -18px 40px rgba(0,40,10,.55),
+    inset 10px 12px 30px rgba(255,255,255,.35);
+  animation:blob 7s ease-in-out infinite;
+  transition:border-radius .45s cubic-bezier(.5,0,.3,1.4),transform .45s cubic-bezier(.5,0,.3,1.4);
+}
+/* slow swirl of light inside the orb */
+.orb-body::before{
+  content:'';position:absolute;inset:-30%;
+  background:conic-gradient(from 0deg,transparent 0 20%,rgba(255,255,255,.35) 28%,transparent 40% 62%,rgba(0,80,20,.45) 72%,transparent 84%);
+  animation:swirl 6s linear infinite;
+  mix-blend-mode:overlay;
+}
+/* glossy highlight */
+.orb-body::after{
+  content:'';position:absolute;left:18%;top:12%;width:34%;height:22%;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,255,255,.75),transparent 70%);
+  filter:blur(2px);
+}
+.orb-r{
+  position:relative;z-index:1;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:calc(min(46vw,210px) * .56);
+  line-height:1;color:var(--ink);
+  padding-top:.08em; /* Bebas sits high */
+  text-shadow:0 2px 0 rgba(255,255,255,.25);
+  transition:transform .45s cubic-bezier(.5,0,.3,1.4);
+  pointer-events:none;
+}
+.orb:hover .orb-body{animation-duration:2.4s}
+.orb:hover .orb-body::before{animation-duration:2.2s}
+.orb:active .orb-body{transform:scale(.9)}
+
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes halo{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+@keyframes swirl{to{transform:rotate(360deg)}}
+@keyframes blob{
+  0%,100%{border-radius:50% 50% 50% 50% / 50% 50% 50% 50%}
+  25%{border-radius:56% 44% 52% 48% / 46% 56% 44% 54%}
+  50%{border-radius:47% 53% 44% 56% / 54% 46% 55% 45%}
+  75%{border-radius:53% 47% 57% 43% / 48% 52% 47% 53%}
+}
+
+/* ─── LAUNCH: orb squashes, becomes an R pin, shoots up ─── */
+body.charging .orb{animation:none}
+body.charging .orb-body{animation:none;transform:scale(.82,.74) translateY(10%)}
+body.launched .orb{animation:launch .75s cubic-bezier(.55,0,.8,.3) forwards}
+body.launched .orb-body{
+  animation:none;
+  border-radius:50% 50% 50% 0;          /* teardrop */
+  transform:rotate(-45deg) scale(.62);
+}
+body.launched .orb-r{transform:scale(.62)}
+@keyframes launch{
+  0%{transform:translateY(0)}
+  30%{transform:translateY(12%)}
+  100%{transform:translateY(-120vh)}
+}
+
+/* ─── THE R PIN on the map ─── */
+.r-pin{background:none;border:none}
+.r-pin .pin{
+  position:absolute;left:50%;bottom:0;width:54px;height:54px;margin-left:-27px;
+  cursor:pointer;
+  animation:drop .9s cubic-bezier(.3,1.5,.5,1) both;
+}
+.r-pin .pin-body{
+  position:absolute;inset:0;
+  border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  background:radial-gradient(circle at 34% 30%,#d6ffe0 0%,var(--green) 30%,var(--green-deep) 75%);
+  box-shadow:0 0 22px rgba(0,255,65,.7),inset -5px -6px 14px rgba(0,40,10,.5);
+  transform-origin:50% 50%;
+}
+.r-pin .pin-r{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--ink);padding-top:3px;
+}
+/* the pin's tip is the bottom-left corner of the rotated square: sits ~12px below its box */
+.r-pin .pin{bottom:12px}
+.r-pin .shadow{
+  position:absolute;left:50%;bottom:-3px;width:26px;height:8px;margin-left:-13px;border-radius:50%;
+  background:rgba(0,0,0,.55);filter:blur(2px);
+  animation:shadow .9s cubic-bezier(.3,1.5,.5,1) both;
+}
+.r-pin .ring{
+  position:absolute;left:50%;bottom:0;width:14px;height:14px;margin:0 0 -7px -7px;border-radius:50%;
+  border:2px solid var(--green);opacity:0;
+  animation:ring 2.2s ease-out .75s infinite;
+}
+.r-pin .ring.r2{animation-delay:1.45s}
+.r-pin.lift .pin{animation:lift .5s cubic-bezier(.6,0,.9,.4) forwards}
+.r-pin.lift .shadow,.r-pin.lift .ring{opacity:0;animation:none}
+@keyframes drop{
+  0%{transform:translateY(-110vh) scale(.8)}
+  70%{transform:translateY(0) scale(1.08,.9)}
+  85%{transform:translateY(-8px) scale(.96,1.04)}
+  100%{transform:translateY(0) scale(1)}
+}
+@keyframes shadow{0%{transform:scale(.2);opacity:0}70%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes ring{0%{transform:scale(1);opacity:.9}100%{transform:scale(7);opacity:0}}
+@keyframes lift{to{transform:translateY(-110vh) scale(.8)}}
+
+/* ─── CAPTION ─── */
+#caption{
+  position:fixed;z-index:6;left:50%;bottom:max(1.4rem,env(safe-area-inset-bottom));
+  transform:translate(-50%,30px);opacity:0;
+  width:min(92vw,420px);
+  padding:1rem 1.2rem;border:1px solid #1f3a25;border-radius:14px;
+  background:rgba(10,10,10,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  text-align:center;
+  transition:opacity .5s ease,transform .5s ease;
+  pointer-events:none;
+}
+#caption.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#caption .trip{
+  font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:4px;color:var(--green);
+  text-shadow:0 0 20px rgba(0,255,65,.35);line-height:1;
+}
+#caption .place{margin-top:.35rem;font-size:.85rem;color:#eee;letter-spacing:1px;min-height:1.2em}
+#caption .meta{margin-top:.25rem;font-size:.65rem;color:#555;letter-spacing:2px;text-transform:uppercase}
+#caption .btns{margin-top:.8rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+#caption button{
+  font:inherit;font-size:.7rem;letter-spacing:1px;cursor:pointer;
+  padding:.45rem .8rem;border-radius:8px;border:1px solid #2a2a2a;background:#141414;color:#bbb;
+}
+#caption button:hover{border-color:var(--green);color:#fff}
+#caption button.primary{background:var(--green);border-color:var(--green);color:var(--ink);font-weight:500}
+
+@media (prefers-reduced-motion:reduce){
+  .orb,.orb-body,.orb-body::before,.orb::before,.hint{animation:none!important}
+  .r-pin .ring{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<section id="stage">
+  <div class="orb-wrap">
+    <button class="orb" id="orb" aria-label="Start rudTrip20">
+      <span class="orb-body"></span>
+      <span class="orb-r">R</span>
+    </button>
+  </div>
+  <div class="hint">tap the R</div>
+</section>
+
+<div id="caption" role="status" aria-live="polite">
+  <div class="trip" id="tripName">rudTrip20</div>
+  <div class="place" id="placeName"></div>
+  <div class="meta" id="meta"></div>
+  <div class="btns">
+    <button id="prevBtn">◂ prev</button>
+    <button class="primary" id="nextBtn">next stop ▸</button>
+    <button id="replayBtn">↺ intro</button>
+  </div>
+</div>
+
+<script>
+/* ─── TRIP CONFIG ───────────────────────────────────────────────
+   Edit the stops here, or override from the URL without touching the file:
+     ?stops=Kraków@50.0614,19.9366;Vienna@48.2082,16.3738
+   Each stop gets the R pin dropped on it, in order.                    */
+const TRIP = {
+  name: 'rudTrip20',
+  stops: [
+    { name: 'London',  lat: 51.5074, lng: -0.1278 },
+    { name: 'Berlin',  lat: 52.5200, lng: 13.4050 },
+    { name: 'Kraków',  lat: 50.0614, lng: 19.9366 },
+  ],
+};
+
+(function readUrl() {
+  const p = new URLSearchParams(location.search);
+  if (p.get('name')) TRIP.name = p.get('name');
+  const raw = p.get('stops');
+  if (!raw) return;
+  const stops = raw.split(';').map(s => {
+    const m = s.match(/^(.*)@\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*$/);
+    return m && { name: m[1].trim() || 'Stop', lat: +m[2], lng: +m[3] };
+  }).filter(Boolean);
+  if (stops.length) TRIP.stops = stops;
+})();
+
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+document.title = TRIP.name + ' — RudVentur';
+$('tripName').textContent = TRIP.name;
+$('orb').setAttribute('aria-label', 'Start ' + TRIP.name);
+
+// ─── map ─── (if Leaflet can't load, the intro still plays and the stops still step through)
+const map = window.L && L.map('map', {
+  zoomControl: false, attributionControl: true, worldCopyJump: true,
+}).setView([30, 10], 2);
+if (map) {
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16, attribution: 'Tiles &copy; Esri',
+  }).addTo(map);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16,
+  }).addTo(map);
+}
+
+const pinIcon = map && L.divIcon({
+  className: 'r-pin',
+  html: '<span class="ring"></span><span class="ring r2"></span><span class="shadow"></span>' +
+        '<span class="pin"><span class="pin-body"></span><span class="pin-r">R</span></span>',
+  iconSize: [0, 0], iconAnchor: [0, 0],
+});
+
+let marker = null, idx = 0, busy = false;
+const trail = map && L.polyline([], { color: '#00ff41', weight: 2, opacity: .5, dashArray: '4 8' }).addTo(map);
+
+function showCaption(i) {
+  const s = TRIP.stops[i];
+  $('placeName').textContent = s.name;
+  $('meta').textContent = 'stop ' + (i + 1) + ' / ' + TRIP.stops.length +
+    '  ·  ' + s.lat.toFixed(3) + ', ' + s.lng.toFixed(3);
+  $('prevBtn').disabled = i === 0;
+  $('nextBtn').textContent = i === TRIP.stops.length - 1 ? '⟲ back to start' : 'next stop ▸';
+  $('caption').classList.add('show');
+}
+
+function dropPin(i) {
+  const s = TRIP.stops[i];
+  if (!map) { busy = false; showCaption(i); return; }
+  marker = L.marker([s.lat, s.lng], { icon: pinIcon, keyboard: false }).addTo(map);
+  marker.on('click', () => goTo(idx + 1));
+  trail.setLatLngs(TRIP.stops.slice(0, i + 1).map(t => [t.lat, t.lng]));
+  setTimeout(() => { busy = false; showCaption(i); }, reduced ? 0 : 700);
+}
+
+function flyThenDrop(i, zoom) {
+  const s = TRIP.stops[i];
+  if (!map) { dropPin(i); return; }
+  if (reduced) { map.setView([s.lat, s.lng], zoom); dropPin(i); return; }
+  map.once('moveend', () => dropPin(i));
+  map.flyTo([s.lat, s.lng], zoom, { duration: 2.2, easeLinearity: .2 });
+}
+
+// hop the R pin to another stop: it lifts off, the map flies, it drops again
+function goTo(i) {
+  if (busy) return;
+  busy = true;
+  idx = (i + TRIP.stops.length) % TRIP.stops.length;
+  $('caption').classList.remove('show');
+  const old = marker;
+  if (old) {
+    old.getElement() && old.getElement().classList.add('lift');
+    setTimeout(() => map.removeLayer(old), 500);
+  }
+  setTimeout(() => flyThenDrop(idx, 12), old && !reduced ? 350 : 0);
+}
+
+// ─── the intro: tap the orb ───
+function launch() {
+  if (busy || document.body.classList.contains('charging')) return;
+  busy = true;
+  document.body.classList.add('charging');           // squash
+  setTimeout(() => {
+    document.body.classList.remove('charging');
+    document.body.classList.add('launched');         // turns into a pin and shoots up
+    setTimeout(() => {
+      document.body.classList.add('on-map');
+      if (map) map.invalidateSize();
+      idx = 0;
+      flyThenDrop(0, 12);
+    }, reduced ? 0 : 650);
+  }, reduced ? 0 : 280);
+}
+
+function replay() {
+  if (busy) return;
+  $('caption').classList.remove('show');
+  if (map) {
+    if (marker) { map.removeLayer(marker); marker = null; }
+    trail.setLatLngs([]);
+    map.setView([30, 10], 2);
+  }
+  document.body.classList.remove('on-map', 'launched');
+  $('orb').focus();
+}
+
+$('orb').addEventListener('click', launch);
+$('nextBtn').addEventListener('click', () => goTo(idx + 1));
+$('prevBtn').addEventListener('click', () => goTo(idx - 1));
+$('replayBtn').addEventListener('click', replay);
+addEventListener('keydown', e => {
+  if (!document.body.classList.contains('on-map')) return;
+  if (e.key === 'ArrowRight') goTo(idx + 1);
+  if (e.key === 'ArrowLeft') goTo(idx - 1);
+  if (e.key === 'Escape') replay();
+});
+</script>
+</body>
+</html>
