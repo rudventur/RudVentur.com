@@ -412,6 +412,19 @@ input[type="checkbox"] {
   background: var(--neon);
   border-radius: 4px;
 }
+
+    .tilt-stage { position:relative; height:160px; overflow:hidden; background:#000; }
+    .tilt-stage video { width:100%; height:100%; object-fit:cover; display:block; }
+    .tilt-stage.look-tilt { transform: rotate(-7deg) scale(1.18); }
+    .tilt-stage.look-tilt video { filter: blur(7px) saturate(1.3); }
+    .tilt-stage.look-tilt video.sharp { position:absolute; inset:0; filter: saturate(1.2);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 18%, #000 42%, #000 58%, transparent 82%);
+      mask-image: linear-gradient(to bottom, transparent 18%, #000 42%, #000 58%, transparent 82%); }
+    .tilt-stage.look-neon video { filter: contrast(1.4) hue-rotate(80deg) saturate(2); }
+    .tilt-stage.look-mono video { filter: grayscale(1) contrast(1.2); }
+    .tilt-stage video.sharp { display:none; }
+    .tilt-stage.look-tilt video.sharp { display:block; }
+
 </style>
 <link rel="manifest" href="../manifest.webmanifest">
 <meta name="theme-color" content="#000000">
@@ -465,7 +478,39 @@ input[type="checkbox"] {
       <button class="btn btn-small" onclick="refreshChannel()" title="reload saved channel">🔄 Refresh</button>
     </div>
     <button class="btn" onclick="openChannelScreen()" style="width:100%;margin-top:8px;">Enter channel name</button>
-    <p style="font-size:12px;opacity:.75;margin:6px 0 0;">Same name = same room (prompter, chemventur, and tools that do not exist yet). Full-screen picker lists known rooms now; live rooms later.</p>
+    <p style="font-size:12px;opacity:.75;margin:6px 0 0;">Same name = same room (prompter, chemventur, and tools that do not exist yet). Names only for now — live rooms are not wired yet.</p>
+
+    <!-- Camera / mic — local filters + bunker-style block -->
+    <label>📷🎤 Camera + mic (this device only)</label>
+    <div id="senseBox" style="border:2px solid #00ff41;padding:10px;margin:8px 0 14px;">
+      <div class="tilt-stage" id="tiltStage">
+        <video id="camBlur" autoplay playsinline muted></video>
+        <video id="camSharp" class="sharp" autoplay playsinline muted></video>
+        <div id="camOff" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#ff3355;font-size:13px;text-align:center;padding:8px;">camera blocked / off</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+        <button class="btn btn-small" type="button" onclick="senseCam(true)">camera on</button>
+        <button class="btn btn-small" type="button" onclick="senseCam(false)">block camera</button>
+        <button class="btn btn-small" type="button" onclick="setCamLook('tilt')">tilt lens</button>
+        <button class="btn btn-small" type="button" onclick="setCamLook('neon')">neon</button>
+        <button class="btn btn-small" type="button" onclick="setCamLook('mono')">mono</button>
+        <button class="btn btn-small" type="button" onclick="setCamLook('plain')">plain</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+        <span id="micMeter" style="flex:1;height:8px;background:#111;border:1px solid #00ff41;"><i style="display:block;height:100%;width:0;background:#00ff41;"></i></span>
+        <span id="micState" style="font-size:12px;">mic blocked</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+        <button class="btn btn-small" type="button" onclick="senseMic(true)">mic on</button>
+        <button class="btn btn-small" type="button" onclick="senseMic(false)">block mic</button>
+        <button class="btn btn-small" type="button" onclick="setMicFx('dry')">dry</button>
+        <button class="btn btn-small" type="button" onclick="setMicFx('radio')">radio</button>
+        <button class="btn btn-small" type="button" onclick="setMicFx('cave')">cave</button>
+        <button class="btn btn-small" type="button" onclick="setMicFx('robot')">robot</button>
+      </div>
+      <button class="btn" type="button" onclick="sensePrivate(true)" style="width:100%;margin-top:8px;background:#111;color:#ff3355;border:2px solid #ff3355;">block both (private, like the bunker)</button>
+      <p style="font-size:11px;opacity:.75;margin:8px 0 0;">Blocks stop this page and set the same flags the bunker uses (rvCamAllowed / rvMicAllowed / rvPrivacy). The bunker still seals the page and encrypts its files. These buttons do not stop other websites, and they do not replace the browser permission prompt.</p>
+    </div>
 
     <!-- P.S. Personal Signature -->
     <label>📝 P.S. (Personal Signature)</label>
@@ -781,6 +826,96 @@ document.getElementById('iconTranslator').onclick = () => {
 
 /* ===== SAVE BUTTON ===== */
 document.getElementById('saveUser').onclick = saveUser;
+
+
+/* ===== CAMERA / MIC — local filters + bunker flags ===== */
+let senseCamStream = null, senseMicStream = null, senseActx = null, senseFx = 'dry';
+function senseFlag(key, on) { localStorage.setItem(key, on ? '1' : '0'); }
+function stopTracks(stream) { if (stream) stream.getTracks().forEach(tr => tr.stop()); }
+function setCamLook(look) {
+  const stage = document.getElementById('tiltStage');
+  stage.classList.remove('look-tilt','look-neon','look-mono');
+  if (look !== 'plain') stage.classList.add('look-' + look);
+  localStorage.setItem('rvCamLook', look);
+}
+function paintMic(on) {
+  document.getElementById('micState').textContent = on ? ('mic on · ' + senseFx) : 'mic blocked';
+}
+async function senseCam(on) {
+  const off = document.getElementById('camOff');
+  if (!on) {
+    stopTracks(senseCamStream); senseCamStream = null;
+    senseFlag('rvCamAllowed', false);
+    document.getElementById('camBlur').srcObject = null;
+    document.getElementById('camSharp').srcObject = null;
+    off.style.display = 'flex';
+    return;
+  }
+  if (localStorage.getItem('rvPrivacy') === 'private') {
+    alert('Private mode is on. Unblock both before the camera can open.');
+    return;
+  }
+  senseFlag('rvCamAllowed', true);
+  senseCamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+  document.getElementById('camBlur').srcObject = senseCamStream;
+  document.getElementById('camSharp').srcObject = senseCamStream;
+  off.style.display = 'none';
+  setCamLook(localStorage.getItem('rvCamLook') || 'tilt');
+}
+function wireMicFx() {
+  if (!senseMicStream) return;
+  if (!senseActx) senseActx = new (window.AudioContext || window.webkitAudioContext)();
+  const src = senseActx.createMediaStreamSource(senseMicStream);
+  const out = senseActx.createGain();
+  out.gain.value = 0.8;
+  src.disconnect && null;
+  let node = src;
+  if (senseFx === 'radio') {
+    const hp = senseActx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 400;
+    const lp = senseActx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2800;
+    src.connect(hp); hp.connect(lp); node = lp;
+  } else if (senseFx === 'cave') {
+    const d = senseActx.createDelay(); d.delayTime.value = 0.28;
+    const fb = senseActx.createGain(); fb.gain.value = 0.4;
+    src.connect(d); d.connect(fb); fb.connect(d); node = d;
+  } else if (senseFx === 'robot') {
+    const bp = senseActx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 180; bp.Q.value = 8;
+    src.connect(bp); node = bp;
+  }
+  node.connect(out); out.connect(senseActx.destination);
+  const an = senseActx.createAnalyser(); an.fftSize = 256;
+  src.connect(an);
+  const data = new Uint8Array(an.fftSize);
+  (function tick() {
+    if (!senseMicStream) return;
+    an.getByteTimeDomainData(data);
+    let sum = 0; for (let i = 0; i < data.length; i++) sum += Math.abs(data[i] - 128);
+    const bar = document.querySelector('#micMeter i');
+    if (bar) bar.style.width = Math.min(100, sum / 20) + '%';
+    requestAnimationFrame(tick);
+  })();
+}
+async function senseMic(on) {
+  if (!on) {
+    stopTracks(senseMicStream); senseMicStream = null;
+    senseFlag('rvMicAllowed', false);
+    paintMic(false);
+    return;
+  }
+  if (localStorage.getItem('rvPrivacy') === 'private') {
+    alert('Private mode is on. Unblock both before the mic can open.');
+    return;
+  }
+  senseFlag('rvMicAllowed', true);
+  senseMicStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  paintMic(true);
+  wireMicFx();
+}
+function setMicFx(fx) { senseFx = fx; paintMic(!!senseMicStream); if (senseMicStream) wireMicFx(); }
+function sensePrivate(on) {
+  localStorage.setItem('rvPrivacy', on ? 'private' : 'online');
+  if (on) { senseCam(false); senseMic(false); }
+}
 
 /* ===== INIT ===== */
 loadUser();
