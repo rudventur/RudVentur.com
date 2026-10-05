@@ -3,6 +3,800 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUDVENTUR — Universe Hub OS</title>
+<style>
+:root {
+  --bg: #000;
+  --neon: #00ff41;
+  --panel: #001100;
+  --dash: #0a0;
+  --yellow: #ffe600;
+  --gold: #ffd700;
+  --panel-bg: rgba(0, 15, 5, 0.96);
+  --social: #ff3c78;
+  --os: #00e5ff;
+  --tools: #c78fff;
+  --user: #ff9933;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--neon);
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+  background-image:
+    linear-gradient(rgba(0,255,65,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,65,0.04) 1px, transparent 1px);
+  background-size: 45px 45px;
+}
+
+/* ===== LOGIN SCREEN ===== */
+#login {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+  background: #000;
+  z-index: 99999;
+}
+
+#login h1 {
+  font-size: 3.5rem;
+  text-shadow: 0 0 80px var(--neon);
+  animation: glowPulse 3s infinite;
+}
+
+#login .subtitle {
+  color: var(--dash);
+  font-size: 0.9rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 80px var(--neon); }
+  50% { text-shadow: 0 0 120px var(--neon), 0 0 40px var(--neon); }
+}
+
+#channelInput {
+  padding: 14px 20px;
+  width: 440px;
+  max-width: 90%;
+  font-size: 1.2rem;
+  background: #000;
+  color: var(--neon);
+  border: 4px solid var(--neon);
+  outline: none;
+  border-radius: 8px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+
+#enterBtn {
+  padding: 14px 50px;
+  font-size: 1.2rem;
+  background: var(--neon);
+  color: #000;
+  border: none;
+  font-weight: 900;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s;
+  font-family: 'Courier New', monospace;
+}
+
+#enterBtn:hover {
+  box-shadow: 0 0 40px var(--neon);
+  transform: scale(1.05);
+}
+
+/* ===== DESKTOP ===== */
+#desktop {
+  display: none;
+  height: 100vh;
+  padding-bottom: 60px;
+}
+
+/* ===== NOTCH (TOP-LEFT) ===== */
+#notch {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--neon);
+  color: #000;
+  padding: 12px 24px;
+  font-weight: 900;
+  font-size: 1.4rem;
+  box-shadow: 0 0 30px rgba(0,255,65,0.3);
+  cursor: pointer;
+  border-radius: 0 0 16px 0;
+  z-index: 9999;
+  user-select: none;
+}
+
+#notchMenu {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  background: var(--panel);
+  border: 4px solid var(--neon);
+  border-top: none;
+  width: 360px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 16px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 0 40px rgba(0,255,65,0.15);
+  display: none;
+  z-index: 9998;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: #000;
+  border: 2px solid var(--neon);
+  color: var(--neon);
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+}
+
+.menu-item:hover {
+  background: var(--neon);
+  color: #000;
+  box-shadow: 0 0 20px rgba(0,255,65,0.5);
+}
+
+.menu-item.chemventur {
+  background: linear-gradient(90deg, #330, #550);
+  border-color: #ff0;
+  color: #ff0;
+}
+
+.menu-item.electric {
+  background: linear-gradient(90deg, #330, #550);
+  border-color: var(--yellow);
+  color: var(--yellow);
+  animation: electricPulse 2s ease-in-out infinite;
+}
+
+@keyframes electricPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(255,255,0,0.3); }
+  50% { box-shadow: 0 0 20px rgba(255,255,0,0.6); }
+}
+
+.sub-menu {
+  margin-left: 20px;
+  padding-left: 12px;
+  border-left: 3px dashed var(--dash);
+  display: none;
+}
+
+.sub-item {
+  padding: 8px;
+  color: #0a0;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.sub-item:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ===== R CIRCLE (TOP-RIGHT) ===== */
+#Rcircle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: var(--neon);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(0,255,65,0.4);
+  z-index: 9999;
+  user-select: none;
+  transition: all 0.3s;
+}
+
+#Rcircle:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 0 50px rgba(0,255,65,0.7);
+}
+
+/* ===== BOTTOM BUTTONS ===== */
+#bottomButtons {
+  position: fixed;
+  bottom: 70px;
+  left: 20px;
+  display: flex;
+  gap: 12px;
+  z-index: 9999;
+}
+
+.bottom-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 3px solid var(--neon);
+  color: var(--neon);
+  font-size: 26px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 20px rgba(0,255,65,0.3);
+  transition: all 0.3s;
+  user-select: none;
+}
+
+.bottom-btn:hover {
+  transform: scale(1.1) rotate(-5deg);
+  box-shadow: 0 0 35px var(--neon);
+}
+
+/* ===== POPCORN BUTTON (BOTTOM-RIGHT) ===== */
+#popcornBtn {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #001a00;
+  border: 2.5px solid var(--neon);
+  color: var(--neon);
+  font-size: 2.2rem;
+  cursor: pointer;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: breathe 4s infinite ease-in-out;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); box-shadow: 0 0 30px var(--neon); }
+}
+
+/* ===== TASKBAR (BOTTOM) ===== */
+#taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(to top, #010, #020);
+  border-top: 3px solid var(--neon);
+  box-shadow: 0 0 20px var(--neon);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  z-index: 10000;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.taskbar-item {
+  background: #020;
+  color: var(--neon);
+  border: 2px solid var(--neon);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 0 10px var(--neon);
+  transition: all 0.3s;
+  min-width: 150px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+
+.taskbar-item:hover {
+  background: var(--neon);
+  color: #000;
+  transform: translateY(-4px);
+}
+
+.taskbar-item.active {
+  background: rgba(0,255,65,0.2);
+  box-shadow: 0 0 15px var(--neon);
+}
+
+/* ===== WINDOWS ===== */
+.window {
+  position: absolute;
+  background: var(--panel-bg);
+  border: 3px solid var(--neon);
+  border-radius: 12px;
+  box-shadow: 0 0 40px rgba(0,255,65,0.2);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  resize: both;
+  min-width: 400px;
+  min-height: 300px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.window.minimized { display: none; }
+
+.window.maximized {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: calc(100% - 60px) !important;
+  border-radius: 0;
+  resize: none;
+}
+
+.window.active {
+  z-index: 1000;
+  border-color: var(--yellow);
+  box-shadow: 0 0 60px rgba(255,230,0,0.4);
+}
+
+.window-header {
+  background: rgba(0,255,65,0.15);
+  padding: 12px 16px;
+  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,255,65,0.3);
+  user-select: none;
+}
+
+.window-title {
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--neon);
+  text-shadow: 0 0 8px var(--neon);
+}
+
+.window-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.window-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--neon);
+  background: rgba(0,0,0,0.5);
+  color: var(--neon);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-family: 'Courier New', monospace;
+}
+
+.window-btn:hover {
+  background: var(--neon);
+  color: #000;
+}
+
+.window-btn.close:hover {
+  background: #f00;
+  border-color: #f00;
+  color: #fff;
+}
+
+.window-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.window-content.no-padding {
+  padding: 0;
+}
+
+.window-content iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ===== TOAST ===== */
+#toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  background: rgba(0,20,0,0.97);
+  border: 2px solid var(--neon);
+  color: var(--neon);
+  padding: 1rem 2rem;
+  border-radius: 999px;
+  box-shadow: 0 0 24px rgba(0,255,65,0.35);
+  transition: all 0.45s;
+  opacity: 0;
+  z-index: 100000;
+  font-family: 'Courier New', monospace;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#toast.gold {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login">
+  <h1>RUDVENTUR</h1>
+  <div class="subtitle">a creative web universe</div>
+  <input id="channelInput" placeholder="Enter channel name..." />
+  <button id="enterBtn" onclick="login()">ENTER RUDVENTUR</button>
+  <div style="color: var(--dash); font-size: 0.8rem; margin-top: 10px; letter-spacing: 2px;">
+    v3.0 — all repos consolidated
+  </div>
+</div>
+
+<!-- DESKTOP -->
+<div id="desktop">
+
+  <!-- TOP-LEFT: NOTCH MENU -->
+  <div id="notch" onclick="toggleNotch()">RUDVENTUR</div>
+  <div id="notchMenu">
+
+    <div class="menu-item" onclick="toggleSub(this)">🗺️ THE MAP</div>
+    <div class="sub-menu">
+      <div class="sub-item" onclick="openLocal('map-merger-venti/index.html','🗺️ Map Merger Venti')">Map Merger Venti</div>
+      <div class="sub-item" onclick="openLocal('map-merger-v5/index.html','🗺️ Map Merger v5')">Map Merger v5</div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSub(this)">👤 THE USER</div>
+    <div class="sub-menu">
+      <div class="sub-item" onclick="openLocal('windows13/useRbox-v2-upgraded.html','👤 useRbox v2')">useRbox</div>
+      <div class="sub-item" onclick="openLocal('punk-script/index.html','📝 Punk Script')">Punk Script</div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSub(this)">💬 THE SOCIAL</div>
+    <div class="sub-menu">
+      <div class="sub-item" onclick="openLocal('windows13/keyboard-realistic.html','⌨️ Keyboards')">Keyboards</div>
+      <div class="sub-item" onclick="openLocal('global-chat-v5/index.html','💬 Global Chat v5')">Global Chat v5</div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSub(this)">🖥️ THE OS</div>
+    <div class="sub-menu">
+      <div class="sub-item" onclick="openLocal('LuxWin13/notch-menu-final.html','🖥️ LuxWin13')">LuxWin13</div>
+      <div class="sub-item" onclick="openLocal('windows13/WINDOWS13-MASTER.html','🖥️ WINDOWS13 Master')">WINDOWS13 Master</div>
+      <div class="sub-item" onclick="openLocal('windows13/taskbar-window-system.html','🖥️ Taskbar System')">Taskbar &amp; Windows System</div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSub(this)">🔧 THE TOOLS</div>
+    <div class="sub-menu">
+      <div class="sub-item" onclick="openLocal('windows13/bottom-right-popcorn-complete.html','🍿 Popcorn')">Popcorn</div>
+      <div class="sub-item" onclick="openLocal('cheese-ouiji-empire/index.html','🧀 Cheese Ouiji Empire')">Cheese Ouiji Empire</div>
+      <div class="sub-item" onclick="openLocal('pumpKIN-Guy/index.html','🎃 pumpKIN Guy')">pumpKIN Guy</div>
+    </div>
+
+    <div class="menu-item chemventur" onclick="toggleSub(this)">☢️ CHEMVENTUR</div>
+    <div class="sub-menu">
+      <div class="sub-item" onclick="openLocal('ChemVentur-Multi-v118/index.html','☢️ ChemVentur Multi v118')">ChemVentur Multi v118</div>
+      <div class="sub-item" onclick="openLocal('ChemVentur/index.html','☢️ ChemVentur')">ChemVentur</div>
+      <div class="sub-item" onclick="openLocal('ChemVentur.v114/index.html','☢️ ChemVentur v114')">ChemVentur v114</div>
+      <div class="sub-item" onclick="openLocal('chem.ventur.112/index.html','☢️ chem.ventur.112')">chem.ventur.112</div>
+      <div class="sub-item" onclick="openLocal('another-ChemVentur-77/index.html','☢️ ChemVentur 77')">another-ChemVentur-77</div>
+    </div>
+
+    <div class="menu-item electric" onclick="window.open('https://ko-fi.com/rudventur','_blank')">⚡ Buy Pumpkin Electricity! 🎃</div>
+  </div>
+
+  <!-- TOP-RIGHT: R CIRCLE -->
+  <div id="Rcircle" onclick="openLocal('windows13/useRbox-v2-upgraded.html','👤 useRbox v2')">R</div>
+
+  <!-- BOTTOM-LEFT: BUTTONS -->
+  <div id="bottomButtons">
+    <div class="bottom-btn" onclick="openLocal('windows13/keyboard-realistic.html','⌨️ Keyboards')" title="Keyboards">⌨️</div>
+    <div class="bottom-btn" onclick="openLocal('global-chat-v5/index.html','💬 Global Chat')" title="Global Chat">💬</div>
+    <div class="bottom-btn" onclick="openLocal('map-merger-venti/index.html','🗺️ Map Merger')" title="Map Merger">🗺️</div>
+  </div>
+
+  <!-- BOTTOM-RIGHT: POPCORN -->
+  <div id="popcornBtn" onclick="openLocal('windows13/bottom-right-popcorn-complete.html','🍿 Popcorn Hub')" title="Popcorn Hub">🍿</div>
+
+  <!-- TASKBAR -->
+  <div id="taskbar">
+    <div style="color: var(--yellow); font-weight: bold; margin-right: 20px;">RUDVENTUR v3.0</div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+/* ===== GLOBAL STATE ===== */
+let currentChannel = 'main';
+
+/* ===== LOGIN ===== */
+function login() {
+  const channel = document.getElementById('channelInput').value.trim();
+  if (!channel) {
+    alert('Please enter a channel name!');
+    return;
+  }
+
+  currentChannel = channel;
+  localStorage.setItem('rudventur_channel', channel);
+
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('desktop').style.display = 'block';
+
+  showToast('Welcome to ' + channel + '! All repos consolidated.', 'gold');
+}
+
+/* ===== NOTCH MENU ===== */
+function toggleNotch() {
+  const menu = document.getElementById('notchMenu');
+  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+function toggleSub(el) {
+  const sub = el.nextElementSibling;
+  if (sub && sub.classList.contains('sub-menu')) {
+    sub.style.display = sub.style.display === 'block' ? 'none' : 'block';
+  }
+}
+
+/* ===== OPEN LOCAL REPO IN WINDOW ===== */
+function openLocal(path, title) {
+  const id = 'win_' + path.replace(/[^a-z0-9]/gi, '_');
+  // If window already exists, bring it to front
+  if (WindowManager.windows[id]) {
+    WindowManager.restore(id);
+    return;
+  }
+  WindowManager.createWindow({
+    id: id,
+    title: title || path,
+    icon: title ? title.split(' ')[0] : '📁',
+    x: 80 + Math.random() * 200,
+    y: 40 + Math.random() * 150,
+    width: 900,
+    height: 650,
+    noPadding: true,
+    content: '<iframe src="' + path + '" allowfullscreen></iframe>'
+  });
+  // Close notch menu after opening
+  document.getElementById('notchMenu').style.display = 'none';
+}
+
+/* ===== WINDOW MANAGER ===== */
+const WindowManager = {
+  windows: {},
+  zIndex: 100,
+  dragState: { active: false, windowId: null, offsetX: 0, offsetY: 0 },
+
+  createWindow(options) {
+    const id = options.id || 'win_' + Date.now();
+    const win = document.createElement('div');
+    win.className = 'window';
+    win.id = id;
+    win.style.left = (options.x || 100) + 'px';
+    win.style.top = (options.y || 100) + 'px';
+    win.style.width = (options.width || 600) + 'px';
+    win.style.height = (options.height || 400) + 'px';
+
+    win.innerHTML = `
+      <div class="window-header">
+        <div class="window-title">
+          ${options.icon || ''} ${options.title || 'Window'}
+        </div>
+        <div class="window-controls">
+          <div class="window-btn minimize" onclick="WindowManager.minimize('${id}')">_</div>
+          <div class="window-btn maximize" onclick="WindowManager.toggleMaximize('${id}')">&#9633;</div>
+          <div class="window-btn close" onclick="WindowManager.close('${id}')">&#10005;</div>
+        </div>
+      </div>
+      <div class="window-content ${options.noPadding ? 'no-padding' : ''}">
+        ${options.content || ''}
+      </div>
+    `;
+
+    document.getElementById('desktop').appendChild(win);
+
+    this.windows[id] = {
+      element: win,
+      title: options.title,
+      icon: options.icon,
+      minimized: false,
+      maximized: false
+    };
+
+    const header = win.querySelector('.window-header');
+    header.addEventListener('mousedown', (e) => this.startDrag(e, id));
+    win.addEventListener('mousedown', () => this.bringToFront(id));
+
+    this.updateTaskbar();
+    this.bringToFront(id);
+
+    return id;
+  },
+
+  minimize(id) {
+    const win = this.windows[id];
+    if (!win) return;
+    win.element.classList.add('minimized');
+    win.minimized = true;
+    this.updateTaskbar();
+  },
+
+  restore(id) {
+    const win = this.windows[id];
+    if (!win) return;
+    win.element.classList.remove('minimized');
+    win.minimized = false;
+    this.bringToFront(id);
+    this.updateTaskbar();
+  },
+
+  toggleMaximize(id) {
+    const win = this.windows[id];
+    if (!win) return;
+    if (win.maximized) {
+      win.element.classList.remove('maximized');
+      win.maximized = false;
+    } else {
+      win.element.classList.add('maximized');
+      win.maximized = true;
+    }
+  },
+
+  close(id) {
+    const win = this.windows[id];
+    if (!win) return;
+    win.element.remove();
+    delete this.windows[id];
+    this.updateTaskbar();
+  },
+
+  bringToFront(id) {
+    Object.values(this.windows).forEach(w => w.element.classList.remove('active'));
+    const win = this.windows[id];
+    if (win && !win.minimized) {
+      this.zIndex++;
+      win.element.style.zIndex = this.zIndex;
+      win.element.classList.add('active');
+    }
+  },
+
+  startDrag(e, id) {
+    const win = this.windows[id];
+    if (!win || win.maximized) return;
+    this.dragState.active = true;
+    this.dragState.windowId = id;
+    this.dragState.offsetX = e.clientX - win.element.offsetLeft;
+    this.dragState.offsetY = e.clientY - win.element.offsetTop;
+    document.addEventListener('mousemove', this.onDrag);
+    document.addEventListener('mouseup', this.stopDrag);
+    e.preventDefault();
+  },
+
+  onDrag(e) {
+    if (!WindowManager.dragState.active) return;
+    const id = WindowManager.dragState.windowId;
+    const win = WindowManager.windows[id];
+    if (!win) return;
+    win.element.style.left = (e.clientX - WindowManager.dragState.offsetX) + 'px';
+    win.element.style.top = (e.clientY - WindowManager.dragState.offsetY) + 'px';
+  },
+
+  stopDrag() {
+    WindowManager.dragState.active = false;
+    document.removeEventListener('mousemove', WindowManager.onDrag);
+    document.removeEventListener('mouseup', WindowManager.stopDrag);
+  },
+
+  updateTaskbar() {
+    const taskbar = document.getElementById('taskbar');
+    const items = taskbar.querySelectorAll('.taskbar-item');
+    items.forEach(item => item.remove());
+
+    Object.entries(this.windows).forEach(([id, win]) => {
+      const item = document.createElement('div');
+      item.className = 'taskbar-item';
+      if (!win.minimized) item.classList.add('active');
+      item.innerHTML = (win.icon || '') + ' ' + (win.title || 'Window');
+      item.onclick = () => {
+        if (win.minimized) this.restore(id);
+        else this.bringToFront(id);
+      };
+      taskbar.appendChild(item);
+    });
+  }
+};
+
+/* ===== TOAST ===== */
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = '';
+  if (type === 'gold') toast.classList.add('gold');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+/* ===== AUTO-LOAD LAST CHANNEL ===== */
+window.addEventListener('load', () => {
+  const lastChannel = localStorage.getItem('rudventur_channel');
+  if (lastChannel) {
+    document.getElementById('channelInput').value = lastChannel;
+  }
+  document.getElementById('channelInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') login();
+  });
+});
+
+/* ===== KEYBOARD SHORTCUTS ===== */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('notchMenu').style.display = 'none';
+  }
+  if (e.altKey && e.key === 'w') {
+    const activeWin = Object.entries(WindowManager.windows)
+      .find(([id, win]) => win.element.classList.contains('active'));
+    if (activeWin) WindowManager.close(activeWin[0]);
+  }
+  if (e.altKey && e.key === 'm') {
+    const activeWin = Object.entries(WindowManager.windows)
+      .find(([id, win]) => win.element.classList.contains('active'));
+    if (activeWin) WindowManager.minimize(activeWin[0]);
+  }
+});
+
+// Close notch when clicking outside
+document.addEventListener('click', (e) => {
+  const notch = document.getElementById('notch');
+  const menu = document.getElementById('notchMenu');
+  if (!notch.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+
+console.log('RUDVENTUR v3.0 — Universe Hub OS — All repos consolidated');
 <title>RudVentur — Universe Hub</title>
 </head>
 <body>
