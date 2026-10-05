@@ -87,6 +87,22 @@
     '.rvd-cbtn{width:46px;height:46px;border-radius:50%;border:1px solid var(--rvd-neon);background:#000;font-size:21px;',
     'line-height:1;cursor:pointer;box-shadow:0 0 12px rgba(0,255,65,.35);padding:0;transition:transform .15s}',
     '.rvd-cbtn:hover{transform:scale(1.1)}',
+    /* PB1 🍿 — popped with love: butter-gold glow, soft lub-dub heartbeat
+       (animates `scale`, so hover can still tilt with `rotate`), tiny ❤ badge */
+    '.rvd-cbtn.rvd-pb1{position:relative;width:52px;height:52px;font-size:24px;border:2px solid #ffcf5a;',
+    'background:radial-gradient(circle at 34% 28%,rgba(255,243,214,.22),transparent 42%),radial-gradient(circle at 50% 60%,#3a2100,#160800 72%);',
+    'box-shadow:0 0 14px rgba(255,190,80,.5),0 0 30px rgba(255,77,125,.18),inset 0 0 10px rgba(255,207,90,.25);',
+    'animation:rvdPb1Beat 2.8s infinite ease-in-out;transition:rotate .45s cubic-bezier(.34,1.56,.64,1),translate .45s cubic-bezier(.34,1.56,.64,1),box-shadow .3s}',
+    ".rvd-cbtn.rvd-pb1::after{content:'\\2764';position:absolute;top:-1px;right:-1px;font-size:11px;line-height:1;color:#ff4d7d;",
+    'text-shadow:0 0 6px rgba(255,77,125,.85);animation:rvdPb1Beat 2.8s infinite ease-in-out;pointer-events:none}',
+    '.rvd-cbtn.rvd-pb1:hover,.rvd-cbtn.rvd-pb1:focus-visible{transform:none;rotate:-10deg;translate:0 -3px;outline:none;',
+    'box-shadow:0 0 22px rgba(255,207,90,.85),0 0 44px rgba(255,77,125,.4),inset 0 0 12px rgba(255,207,90,.35)}',
+    '@keyframes rvdPb1Beat{0%,100%{scale:1}10%{scale:1.09}20%{scale:.98}30%{scale:1.06}44%{scale:1}}',
+    '.rvd-pb1-float{position:fixed;z-index:2000003;pointer-events:none;font-size:17px;line-height:1;',
+    'animation:rvdPb1Float 1.1s cubic-bezier(.2,.7,.3,1) forwards}',
+    '@keyframes rvdPb1Float{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}15%{opacity:1}',
+    '100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,-70px))) scale(1.1) rotate(var(--rot,0deg))}}',
+    '@media (prefers-reduced-motion:reduce){.rvd-cbtn.rvd-pb1,.rvd-cbtn.rvd-pb1::after{animation:none}.rvd-pb1-float{display:none}}',
     /* taskbar (bottom-middle) */
     '#rvd-taskbar{position:fixed;left:0;right:0;bottom:0;height:46px;z-index:2000001;display:flex;align-items:center;gap:6px;',
     'padding:0 8px;background:rgba(0,0,0,.92);border-top:1px solid var(--rvd-neon);box-shadow:0 -4px 18px rgba(0,255,65,.18);',
@@ -338,14 +354,38 @@
     return function () { menu.classList.toggle('open'); };
   }
 
+  // PB1 love: a few hearts + kernels drift up from the 🍿 when it is tapped
+  function pb1Burst(btn) {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var r = btn.getBoundingClientRect();
+    var bits = ['\u2764\uFE0F', '\uD83C\uDF7F', '\uD83D\uDC9B', '\uD83C\uDF7F', '\u2764\uFE0F'];
+    bits.forEach(function (ch, i) {
+      var s = el('span', 'rvd-pb1-float', ch);
+      s.style.left = (r.left + r.width / 2) + 'px';
+      s.style.top = (r.top + r.height / 2) + 'px';
+      s.style.setProperty('--dx', Math.round((i - 2) * 20 + (Math.random() * 12 - 6)) + 'px');
+      s.style.setProperty('--dy', Math.round(-55 - Math.random() * 45) + 'px');
+      s.style.setProperty('--rot', Math.round(Math.random() * 50 - 25) + 'deg');
+      s.style.animationDelay = (i * 45) + 'ms';
+      document.body.appendChild(s);
+      setTimeout(function () { s.remove(); }, 1400 + i * 45);
+    });
+  }
+
   function cornerBtn(parent, id) {
     var a = APPS[id];
     var b = el('button', 'rvd-cbtn', a.icon);
     b.type = 'button';
     b.title = a.title;
+    if (id === 'popcorn') {
+      b.classList.add('rvd-pb1');
+      b.title = 'PB1 \u00B7 Popcorn Hub \u2014 freshly popped with \u2764\uFE0F';
+      b.setAttribute('aria-label', 'Open the Popcorn Hub (PB1), made with love');
+    }
     b.addEventListener('click', function () {
       // PB1 (bottom-right 🍿): open the Popcorn Hub. Inside the hub, PB2 opens
       // the bunker for secret movie making; the PIX tab is the pix describer.
+      if (id === 'popcorn') pb1Burst(b);
       var w = wins[id];
       if (w && isFront(w)) minimise(w); else open(id);
     });
