@@ -398,6 +398,237 @@ body {
   transition:width 0.3s ease;
 }
 
+
+/* ===== EMBEDDED IN DESKTOP WINDOW ===== */
+html.embedded #popcorn-trigger { display: none !important; }
+html.embedded #popcorn-panel {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  border-radius: 0 !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+  box-shadow: none;
+}
+html.embedded body { overflow: hidden; min-height: 100%; }
+
+/* ===== PB2 bunker control ===== */
+.pb2-btn {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font: 700 0.72rem var(--font);
+  cursor: pointer;
+  letter-spacing: 0.6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s var(--ease);
+  box-shadow: 0 0 10px var(--gold-dim);
+}
+.pb2-btn:hover {
+  background: var(--gold);
+  color: #000;
+  transform: scale(1.06) rotate(-4deg);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.55);
+}
+.pb2-btn.on {
+  background: rgba(255, 42, 109, 0.15);
+  border-color: var(--danger);
+  color: var(--danger);
+  box-shadow: 0 0 14px rgba(255, 42, 109, 0.35);
+}
+.pp-header-actions { display: flex; align-items: center; gap: 10px; }
+
+/* ===== PIX DESCRIBER ===== */
+.pix-stage {
+  position: relative;
+  border: 1px solid var(--neon-green);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  min-height: 280px;
+  height: min(42vh, 340px);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.18);
+}
+.pix-stage video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  background: #020805;
+}
+.pix-fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  padding: 1.2rem;
+  text-align: center;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(0, 255, 65, 0.08), transparent 45%),
+    linear-gradient(160deg, #031008, #000);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  z-index: 1;
+}
+.pix-fallback.show { display: flex; }
+.pix-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 28%, transparent 72%, rgba(0,0,0,0.6) 100%);
+}
+.pix-title-badge {
+  align-self: flex-start;
+  background: rgba(0, 20, 8, 0.82);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+  max-width: 92%;
+}
+.pix-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  pointer-events: none;
+}
+.pix-chip {
+  background: rgba(0, 30, 10, 0.78);
+  border: 1px dashed rgba(0, 255, 65, 0.55);
+  color: var(--neon-green);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.68rem;
+  letter-spacing: 0.3px;
+}
+.pix-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pix-controls .pp-btn { width: 100%; padding: 0.65rem 0.6rem; font-size: 0.78rem; }
+.pix-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 4px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+.pix-meta strong { color: var(--gold); }
+.pix-hint {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  margin-bottom: 12px;
+  line-height: 1.45;
+}
+
+/* ===== BUNKER PANEL ===== */
+#bunker-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1000001;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at center, rgba(20, 8, 0, 0.2), rgba(0, 0, 0, 0.92)),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255, 215, 0, 0.02) 3px, rgba(255, 215, 0, 0.02) 4px);
+  padding: 16px;
+}
+#bunker-panel.open { display: flex; }
+.bunker-card {
+  width: min(440px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  background: linear-gradient(165deg, #0a0704 0%, #120c05 40%, #050805 100%);
+  border: 1.5px solid #8a6a12;
+  border-radius: 14px;
+  box-shadow: 0 0 40px rgba(255, 180, 0, 0.18), inset 0 0 30px rgba(255, 215, 0, 0.05);
+  padding: 1.25rem 1.35rem 1.4rem;
+  color: #f3e6b0;
+  font-family: var(--font);
+}
+.bunker-card h2 {
+  color: var(--gold);
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bunker-card .bunker-sub {
+  color: #8a7a4a;
+  font-size: 0.75rem;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.bunker-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+.bunker-tile {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid #5a4810;
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: #d8c878;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.bunker-tile .ico { font-size: 1.35rem; }
+.bunker-note {
+  font-size: 0.72rem;
+  color: #6a6040;
+  line-height: 1.45;
+  margin-bottom: 14px;
+  border-left: 2px solid #5a4810;
+  padding-left: 10px;
+}
+.bunker-actions { display: flex; gap: 8px; }
+.bunker-actions .pp-btn { flex: 1; }
+.bunker-close-gold {
+  background: rgba(255, 215, 0, 0.08) !important;
+  border-color: var(--gold) !important;
+  color: var(--gold) !important;
+}
+
 /* ===== TOAST ===== */
 #toast {
   position:fixed;
@@ -677,11 +908,15 @@ body {
 <div id="popcorn-panel">
   <div class="pp-header">
     <div data-rv-logo class="pp-title">🍿 POPCORN HUB</div>
-    <button class="pp-close" id="pp-close">×</button>
+    <div class="pp-header-actions">
+      <button type="button" id="pb2-btn" class="pb2-btn" title="Open the bunker for secret movie making">🍿 PB2</button>
+      <button class="pp-close" id="pp-close">×</button>
+    </div>
   </div>
 
   <div class="pp-tabs">
     <div class="pp-tab active" data-tab="maker">🍿 MAKER</div>
+    <div class="pp-tab" data-tab="pix">📛 PIX</div>
     <div class="pp-tab" data-tab="cookies">🍪 COOKIES</div>
     <div class="pp-tab" data-tab="popcoin">🍿 PopCOIN</div>
     <div class="pp-tab" data-tab="launch">🚀 LAUNCH</div>
@@ -717,6 +952,38 @@ Example: 'A chemistry tutorial showing how atoms bond together with colorful 3D 
       <button class="pp-btn" onclick="saveDescription()">💾 SAVE DESCRIPTION</button>
 
       <div class="saved-descriptions" id="saved-descriptions"></div>
+    </div>
+
+    <!-- PIX DESCRIBER TAB -->
+    <div class="tab-view" id="view-pix">
+      <h3 style="color: var(--gold); margin-bottom: 8px;">📛 Pix Describer</h3>
+      <p class="pix-hint">
+        Point your camera at the challenge. Match the picture indicators, then submit for random popCoins (1–200). Soft &amp; playful — no pressure, just popcorn vibes.
+      </p>
+
+      <div class="pix-meta">
+        <span>Challenge <strong id="pix-challenge-num">1</strong> / <span id="pix-challenge-total">6</span></span>
+        <span>Earned <strong id="pix-earned">0</strong> popCoins</span>
+      </div>
+
+      <div class="pix-stage" id="pix-stage">
+        <video id="pix-video" playsinline muted autoplay></video>
+        <div class="pix-fallback" id="pix-fallback">
+          <div style="font-size:1.6rem;">📷</div>
+          <div id="pix-fallback-msg">Camera needs your OK to light up the stage.</div>
+          <div style="color:var(--gold);font-size:0.75rem;">You can still browse the challenge and submit when ready.</div>
+        </div>
+        <div class="pix-overlay">
+          <div class="pix-title-badge" id="pix-title">📛 Picture of sunset on sea</div>
+          <div class="pix-indicators" id="pix-indicators"></div>
+        </div>
+      </div>
+
+      <div class="pix-controls">
+        <button type="button" class="pp-btn" id="pix-cam-btn" onclick="pixEnableCamera()">📷 Enable camera</button>
+        <button type="button" class="pp-btn" id="pix-next-btn" onclick="pixNextChallenge()">🎲 New challenge</button>
+        <button type="button" class="pp-btn" id="pix-submit-btn" onclick="pixSubmitChallenge()" style="grid-column:1/-1;background:rgba(255,215,0,0.1);border-color:var(--gold);color:var(--gold);">✨ I took it — award popCoins</button>
+      </div>
     </div>
 
     <!-- COOKIES TAB -->
@@ -884,6 +1151,28 @@ Example: 'A chemistry tutorial showing how atoms bond together with colorful 3D 
   </div>
 </div>
 
+
+<!-- BUNKER: secret movie making (PB2) -->
+<div id="bunker-panel" aria-hidden="true">
+  <div class="bunker-card" role="dialog" aria-label="Secret movie bunker">
+    <h2>🛢️ Secret Movie Bunker</h2>
+    <div class="bunker-sub">PB2 · sealed vibe · neon gold on black · for playful clandestine clips</div>
+    <div class="bunker-grid">
+      <div class="bunker-tile"><span class="ico">🎬</span>Story board<br><span style="color:#6a6040">stub reel ready</span></div>
+      <div class="bunker-tile"><span class="ico">🤫</span>Quiet takes<br><span style="color:#6a6040">soft footsteps</span></div>
+      <div class="bunker-tile"><span class="ico">📼</span>Tape vault<br><span style="color:#6a6040">local only</span></div>
+      <div class="bunker-tile"><span class="ico">🍿</span>Popcorn lights<br><span style="color:#6a6040">action!</span></div>
+    </div>
+    <div class="bunker-note">
+      This bunker is the fun “secret movie making” room. On the RUDVENTUR home desktop, PB2 also wakes the sealed popcorn window when it is available. Stub content for now — polish over pulp.
+    </div>
+    <div class="bunker-actions">
+      <button type="button" class="pp-btn bunker-close-gold" onclick="closeBunker()">Leave bunker</button>
+      <button type="button" class="pp-btn" onclick="closeBunker(); switchToTab('pix')">📛 Pix instead</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST NOTIFICATION -->
 <div id="toast"></div>
 
@@ -908,17 +1197,20 @@ document.getElementById('pp-close').onclick = () => {
 };
 
 /* ===== TAB SWITCHING ===== */
+function switchToTab(tabName) {
+  const tab = document.querySelector('.pp-tab[data-tab="' + tabName + '"]');
+  const view = document.getElementById('view-' + tabName);
+  if (!tab || !view) return;
+  document.querySelectorAll('.pp-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active-view'));
+  view.classList.add('active-view');
+  if (tabName === 'pix') pixOnShow();
+}
+
 document.querySelectorAll('.pp-tab').forEach(tab => {
   tab.onclick = function() {
-    const tabName = this.dataset.tab;
-    
-    // Update active tab
-    document.querySelectorAll('.pp-tab').forEach(t => t.classList.remove('active'));
-    this.classList.add('active');
-    
-    // Update active view
-    document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active-view'));
-    document.getElementById(`view-${tabName}`).classList.add('active-view');
+    switchToTab(this.dataset.tab);
   };
 });
 
@@ -1277,7 +1569,204 @@ function startTicker() {
   tickerInterval = setInterval(fetchCryptoPrices, 60000);
 }
 
+
+/* ===== PB2 BUNKER ===== */
+function isEmbedded() {
+  try { return window.parent && window.parent !== window; } catch (e) { return true; }
+}
+
+function openParentBunker() {
+  try {
+    if (window.parent && window.parent !== window && window.parent.rvPopcorn && typeof window.parent.rvPopcorn.open === 'function') {
+      window.parent.rvPopcorn.open();
+      return true;
+    }
+  } catch (e) {}
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'rudventur-open-bunker', source: 'popcorn-hub' }, '*');
+    }
+  } catch (e) {}
+  return false;
+}
+
+function showLocalBunker(open) {
+  const panel = document.getElementById('bunker-panel');
+  const btn = document.getElementById('pb2-btn');
+  if (panel) {
+    panel.classList.toggle('open', !!open);
+    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+  }
+  if (btn) btn.classList.toggle('on', !!open);
+}
+
+function openBunker() {
+  // Prefer the sealed desktop bunker (popcornWindow) when the hub is embedded.
+  if (openParentBunker()) {
+    showToast('🛢️ Sealed bunker opening — secret movie making', 'gold');
+    return;
+  }
+  showLocalBunker(true);
+  showToast('🛢️ Bunker open — secret movie making mode', 'gold');
+}
+
+function closeBunker() {
+  showLocalBunker(false);
+}
+
+function toggleBunker() {
+  const panel = document.getElementById('bunker-panel');
+  if (panel && panel.classList.contains('open')) closeBunker();
+  else openBunker();
+}
+
+/* ===== PIX DESCRIBER ===== */
+const PIX_CHALLENGES = [
+  { title: 'Picture of sunset on sea', indicators: ['horizon line', 'sun', 'water', 'cloud'] },
+  { title: 'Forest path adventure', indicators: ['trees', 'path', 'leaves', 'shadow'] },
+  { title: 'Mountain morning glow', indicators: ['mountains', 'sky', 'rocks', 'mist'] },
+  { title: 'River picnic day', indicators: ['river', 'trees', 'grass', 'sky'] },
+  { title: 'City night lights', indicators: ['buildings', 'lights', 'street', 'skyline'] },
+  { title: 'Cozy café corner', indicators: ['cup', 'table', 'window', 'chair'] },
+  { title: 'Desert road horizon', indicators: ['sand', 'road', 'horizon line', 'sky'] },
+  { title: 'Rainy window story', indicators: ['raindrops', 'glass', 'blur', 'light'] }
+];
+
+const Pix = {
+  index: 0,
+  stream: null,
+  earned: parseInt(localStorage.getItem('rudventur_popcoins_pix') || '0', 10) || 0,
+  camAsked: false
+};
+
+function pixRender() {
+  const c = PIX_CHALLENGES[Pix.index];
+  const title = document.getElementById('pix-title');
+  const inds = document.getElementById('pix-indicators');
+  const num = document.getElementById('pix-challenge-num');
+  const total = document.getElementById('pix-challenge-total');
+  const earned = document.getElementById('pix-earned');
+  if (title) title.textContent = '📛 ' + c.title;
+  if (inds) {
+    inds.innerHTML = c.indicators.map(function (x) {
+      return '<span class="pix-chip">📍 ' + escapeHtml(x) + '</span>';
+    }).join('');
+  }
+  if (num) num.textContent = String(Pix.index + 1);
+  if (total) total.textContent = String(PIX_CHALLENGES.length);
+  if (earned) earned.textContent = String(Pix.earned);
+}
+
+function pixShowFallback(msg) {
+  const fb = document.getElementById('pix-fallback');
+  const m = document.getElementById('pix-fallback-msg');
+  if (m && msg) m.textContent = msg;
+  if (fb) fb.classList.add('show');
+}
+
+function pixHideFallback() {
+  const fb = document.getElementById('pix-fallback');
+  if (fb) fb.classList.remove('show');
+}
+
+async function pixEnableCamera() {
+  Pix.camAsked = true;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    pixShowFallback('This browser cannot open a camera here. You can still finish the challenge.');
+    showToast('📷 Camera not available in this browser', 'normal');
+    return;
+  }
+  try {
+    if (Pix.stream) {
+      Pix.stream.getTracks().forEach(function (t) { t.stop(); });
+      Pix.stream = null;
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' },
+      audio: false
+    });
+    Pix.stream = stream;
+    const video = document.getElementById('pix-video');
+    if (video) {
+      video.srcObject = stream;
+      video.play().catch(function () {});
+    }
+    pixHideFallback();
+    showToast('📷 Camera live — find those indicators!', 'gold');
+  } catch (err) {
+    const denied = err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+    pixShowFallback(denied
+      ? 'Camera permission denied. No worries — peek at the challenge and submit when you have snapped it another way.'
+      : 'Could not start the camera. Challenge still works without the live feed.');
+    showToast('📷 Camera unavailable — challenge still playable', 'normal');
+  }
+}
+
+function pixNextChallenge() {
+  Pix.index = (Pix.index + 1) % PIX_CHALLENGES.length;
+  pixRender();
+  showToast('🎲 New challenge unlocked', 'normal');
+}
+
+function awardPixPopCoins(reason) {
+  const coins = 1 + Math.floor(Math.random() * 200); // 1–200
+  Pix.earned += coins;
+  try { localStorage.setItem('rudventur_popcoins_pix', String(Pix.earned)); } catch (e) {}
+  // Shared wallet path: 100 pips = 1 PopCOIN. Treat awarded popCoins as pips
+  // (so 1–200 popCoins ≈ 0.01–2.00 PopCOIN) to stay within rate limits.
+  if (typeof window.PopCOINReward === 'function') {
+    try { window.PopCOINReward(coins, reason || 'pix-describer'); } catch (e) {}
+  } else {
+    // Fallback when the reward script is offline: keep a local popCoins tally only
+    try {
+      const frac = coins / 100;
+      State.balance = (parseFloat(State.balance) || 0) + frac;
+      localStorage.setItem('rudventur_popcoin_balance', State.balance.toFixed(4));
+      const wb = document.getElementById('wallet-balance');
+      if (wb) wb.textContent = State.balance.toFixed(4);
+    } catch (e) {}
+  }
+  const earned = document.getElementById('pix-earned');
+  if (earned) earned.textContent = String(Pix.earned);
+  showToast('📛 +' + coins + ' popCoins! Nice shot!', 'gold');
+  return coins;
+}
+
+function pixSubmitChallenge() {
+  const c = PIX_CHALLENGES[Pix.index];
+  awardPixPopCoins('pix:' + c.title);
+  // Advance to keep the game moving
+  Pix.index = (Pix.index + 1) % PIX_CHALLENGES.length;
+  pixRender();
+}
+
+function pixOnShow() {
+  pixRender();
+  if (!Pix.camAsked && !Pix.stream) {
+    // Soft prompt — do not auto-request until the user agrees
+    pixShowFallback('Tap “Enable camera” when you are happy to share the live view. 📛');
+  }
+}
+
 /* ===== INIT ===== */
+if (isEmbedded()) {
+  document.documentElement.classList.add('embedded');
+  document.getElementById('popcorn-panel').classList.add('active');
+}
+
+const pb2 = document.getElementById('pb2-btn');
+if (pb2) pb2.addEventListener('click', toggleBunker);
+const bunkerPanel = document.getElementById('bunker-panel');
+if (bunkerPanel) {
+  bunkerPanel.addEventListener('click', function (e) {
+    if (e.target === bunkerPanel) closeBunker();
+  });
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeBunker();
+});
+
+pixRender();
 renderDescriptions();
 document.getElementById('wallet-balance').textContent = State.balance.toFixed(4);
 document.getElementById('multiplier').textContent = State.multiplier.toFixed(2) + '×';
@@ -1285,6 +1774,8 @@ document.getElementById('last-hash').textContent = State.lastHash.substring(0, 1
 initMinerUI();
 startTicker();
 </script>
+
+<script src="https://rudventur.github.io/RudVentur.com/embed/popcoin-reward.js" defer></script>
 
 <script src="embed/useRbox.js" defer></script>
 </body>

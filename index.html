@@ -956,14 +956,14 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
      bottom-left, Popcorn bottom-right, taskbar bottom-middle. Ko-fi lives in the notch menu. -->
 <script src="embed/useRbox.js" defer></script>
 <script src="embed/rvDesk.js" defer></script>
-<!-- 🍿 popcorn window = the sealed bunker: the only place the camera and microphone
-     are used. Entering cuts this page off from the internet; leaving reloads it.
-     Its own 🍿 and 💬 leave the bunker, then open the Popcorn Hub / chat. -->
+<!-- 🍿 PB1 (rvDesk bottom-right) opens the Popcorn Hub. PB2 inside the hub opens
+     this sealed bunker for secret movie making (camera/mic). Leaving the bunker
+     via its own 🍿 / 💬 returns to the hub / chat. Pix describer camera lives in the hub. -->
 <script>
   window.rvPopcornConfig = {
     zIndex: 1050,       // under the useRbox R (999999), which stays usable inside
     userOffset: 72,     // left of the useRbox R
-    button: false,      // rvDesk's own bottom-right 🍿 opens it
+    button: false,      // bunker opens from PB2 in the Popcorn Hub (not PB1)
     legacyDB: 'rudVentureVideos',   // recordings from the old camera background come along
     onPopcorn: function () { window.rvDesk && rvDesk.open('popcorn'); },
     onChat: function () { window.rvDesk && rvDesk.open('chat'); },
@@ -972,6 +972,18 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
       if (box) box.classList.remove('hidden');
     }
   };
+</script>
+
+<script>
+  // PB2 inside the Popcorn Hub iframe may ask the desktop to open the sealed bunker
+  window.addEventListener('message', function (ev) {
+    try {
+      var d = ev.data || {};
+      if (d && d.type === 'rudventur-open-bunker' && window.rvPopcorn && typeof rvPopcorn.open === 'function') {
+        rvPopcorn.open();
+      }
+    } catch (e) {}
+  });
 </script>
 <script src="embed/popcornWindow.js" defer></script>
 <script src="embed/popcornMovie.js" defer></script>
