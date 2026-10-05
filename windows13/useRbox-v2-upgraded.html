@@ -458,12 +458,14 @@ input[type="checkbox"] {
       <button class="btn btn-small" onclick="loadUser()">🔄 Refresh</button>
     </div>
 
-    <!-- Channel (read-only) -->
-    <label>📡 Channel</label>
+    <!-- Channel / room -->
+    <label>📡 Chosen channel / room</label>
     <div class="field-row">
-      <input type="text" id="channel" value="main" disabled style="flex: 1;">
-      <button class="btn btn-small" onclick="alert('Channel set on login!')">ℹ️</button>
+      <input type="text" id="channel" value="main" style="flex: 1;" placeholder="channel name">
+      <button class="btn btn-small" onclick="refreshChannel()" title="reload saved channel">🔄 Refresh</button>
     </div>
+    <button class="btn" onclick="openChannelScreen()" style="width:100%;margin-top:8px;">Enter channel name</button>
+    <p style="font-size:12px;opacity:.75;margin:6px 0 0;">Same name = same room (prompter, chemventur, and tools that do not exist yet). Full-screen picker lists known rooms now; live rooms later.</p>
 
     <!-- P.S. Personal Signature -->
     <label>📝 P.S. (Personal Signature)</label>
@@ -720,8 +722,56 @@ function escapeHtml(text) {
 
 /* ===== LOAD CHANNEL ===== */
 function loadChannel() {
-  const channel = localStorage.getItem('rudventur_channel') || 'main';
+  const channel = localStorage.getItem('rudventur_channel') || document.getElementById('channel').value || 'main';
   document.getElementById('channel').value = channel;
+}
+
+function refreshChannel() {
+  loadChannel();
+  const note = document.getElementById('channel');
+  note.style.boxShadow = '0 0 16px #00ff41';
+  setTimeout(() => { note.style.boxShadow = ''; }, 600);
+}
+
+function openChannelScreen() {
+  let screen = document.getElementById('channelScreen');
+  if (!screen) {
+    screen = document.createElement('div');
+    screen.id = 'channelScreen';
+    screen.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#000;color:#00ff41;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Courier New,monospace;';
+    screen.innerHTML = '<button id="closeChannelScreen" style="position:absolute;top:16px;right:16px;background:#000;color:#ff3355;border:2px solid #ff3355;font-size:22px;padding:6px 12px;cursor:pointer;">✖</button>'
+      + '<h1 style="margin:0;">ENTER CHANNEL</h1>'
+      + '<p style="max-width:520px;text-align:center;">Rooms for people to meet. Type a name, or tap a known room. Later this screen lists every live room.</p>'
+      + '<input id="channelScreenInput" placeholder="Enter channel name..." style="padding:14px;width:440px;max-width:90%;background:#000;color:#00ff41;border:4px solid #00ff41;text-align:center;font-size:1.2rem;">'
+      + '<div id="knownRooms" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:520px;"></div>'
+      + '<button id="setChannelBtn" style="padding:14px 40px;background:#00ff41;color:#000;font-weight:900;border:none;cursor:pointer;">SET CHANNEL</button>';
+    document.body.appendChild(screen);
+    document.getElementById('closeChannelScreen').onclick = () => { screen.style.display = 'none'; };
+    document.getElementById('setChannelBtn').onclick = applyChannelFromScreen;
+    document.getElementById('channelScreenInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') applyChannelFromScreen(); });
+  }
+  const known = ['main', 'prompter', 'chemventur', 'map-merger', 'global-chat'];
+  const box = document.getElementById('knownRooms');
+  box.innerHTML = '';
+  known.forEach(name => {
+    const b = document.createElement('button');
+    b.textContent = name;
+    b.style.cssText = 'background:#111;color:#00ff41;border:1px solid #00ff41;padding:6px 10px;cursor:pointer;';
+    b.onclick = () => { document.getElementById('channelScreenInput').value = name; applyChannelFromScreen(); };
+    box.appendChild(b);
+  });
+  document.getElementById('channelScreenInput').value = document.getElementById('channel').value || 'main';
+  screen.style.display = 'flex';
+  document.getElementById('channelScreenInput').focus();
+}
+
+function applyChannelFromScreen() {
+  const name = document.getElementById('channelScreenInput').value.trim();
+  if (!name) { alert('Please enter a channel name'); return; }
+  document.getElementById('channel').value = name;
+  localStorage.setItem('rudventur_channel', name);
+  saveToLocalStorage();
+  document.getElementById('channelScreen').style.display = 'none';
 }
 
 /* ===== TRANSLATOR HOOK ===== */

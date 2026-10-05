@@ -33,7 +33,7 @@ html, body {
 #login {
   position: fixed;
   inset: 0;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -86,7 +86,7 @@ html, body {
 
 /* ===== DESKTOP ===== */
 #desktop {
-  display: none;
+  display: block;
   height: 100vh;
   padding-bottom: 60px;
 }
@@ -453,11 +453,14 @@ html, body {
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- CHANNEL ROOM SCREEN (not a boot gate — opened from useRbox) -->
 <div id="login">
-  <h1>WINDOWS 13 🎃</h1>
+  <button id="closeChannel" onclick="closeChannelScreen()" style="position:absolute;top:16px;right:16px;background:#000;color:#ff3355;border:2px solid #ff3355;font-size:22px;cursor:pointer;padding:6px 12px;">✖</button>
+  <h1>ENTER CHANNEL</h1>
+  <p style="color:#00ff41;max-width:520px;text-align:center;margin:0;">Rooms for people to meet. Same name = same room (prompter, chemventur, map merger, anything not built yet).</p>
   <input id="channelInput" placeholder="Enter channel name..." />
-  <button id="enterBtn" onclick="login()">ENTER RUDVENTUR</button>
+  <div id="knownRooms" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:520px;"></div>
+  <button id="enterBtn" onclick="login()">SET CHANNEL</button>
   <div style="color: var(--dash); font-size: 0.9rem; margin-top: 10px;">
     Powered by PumpkinG 🎃 (Claude + Grok)
   </div>
@@ -521,21 +524,63 @@ html, body {
 let currentChannel = 'main';
 let currentUser = 'Traveler';
 
+const KNOWN_ROOMS = ['main', 'prompter', 'chemventur', 'map-merger', 'global-chat'];
+
+function paintKnownRooms() {
+  const box = document.getElementById('knownRooms');
+  if (!box) return;
+  box.innerHTML = '';
+  KNOWN_ROOMS.forEach(name => {
+    const b = document.createElement('button');
+    b.textContent = name;
+    b.style.cssText = 'background:#111;color:#00ff41;border:1px solid #00ff41;padding:6px 10px;cursor:pointer;';
+    b.onclick = () => { document.getElementById('channelInput').value = name; login(); };
+    box.appendChild(b);
+  });
+}
+
+function openChannelScreen() {
+  const saved = localStorage.getItem('rudventur_channel') || currentChannel || 'main';
+  document.getElementById('channelInput').value = saved;
+  paintKnownRooms();
+  document.getElementById('login').style.display = 'flex';
+  document.getElementById('channelInput').focus();
+}
+
+function closeChannelScreen() {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('desktop').style.display = 'block';
+}
+
+function refreshChannelLine() {
+  const ch = localStorage.getItem('rudventur_channel') || 'main';
+  currentChannel = ch;
+  const line = document.getElementById('chosenChannel');
+  if (line) line.value = ch;
+  showToast('Channel refreshed: ' + ch, 'gold');
+}
+
+
 /* ===== LOGIN ===== */
 function login() {
   const channel = document.getElementById('channelInput').value.trim();
   if (!channel) {
-    alert('Please enter a channel name!');
+    alert('Please enter a channel name!'); // room required
     return;
   }
   
   currentChannel = channel;
   localStorage.setItem('rudventur_channel', channel);
   
-  document.getElementById('login').style.display = 'none';
-  document.getElementById('desktop').style.display = 'block';
-  
-  showToast(`Welcome to channel: ${channel}! 🎃`, 'gold');
+  try {
+    const raw = localStorage.getItem('rud_useRbox_v2');
+    const data = raw ? JSON.parse(raw) : {};
+    data.channel = channel;
+    localStorage.setItem('rud_useRbox_v2', JSON.stringify(data));
+  } catch (e) {}
+  closeChannelScreen();
+  refreshChannelLine();
+  showToast('Room set: ' + channel + ' 🎃', 'gold');
   
   // Load saved username if exists
   const savedUser = localStorage.getItem('rud_useRbox_v2');
@@ -752,7 +797,7 @@ function openWindow(type) {
       y: 100,
       width: 400,
       height: 650,
-      content: '<div style="padding: 20px; color: var(--neon);"><h2>👤 useRbox v2.0</h2><p>Replace this with your useRbox component!</p></div>'
+      content: '<div style="padding:20px;color:var(--neon);font-family:Courier New,monospace;"><h2>👤 useRbox</h2><label>Chosen channel / room</label><div style="display:flex;gap:8px;margin:8px 0 12px;"><input id="chosenChannel" readonly style="flex:1;background:#000;color:#00ff41;border:2px solid #00ff41;padding:8px;"><button onclick="refreshChannelLine()" style="background:#111;color:#00ff41;border:2px solid #00ff41;cursor:pointer;">🔄</button></div><button onclick="openChannelScreen()" style="width:100%;padding:10px;background:#00ff41;color:#000;font-weight:900;border:none;cursor:pointer;">Enter channel name</button><p style="margin-top:12px;color:#aaa;">Opens the full-screen room picker. Later that screen lists every live room. Same name = same room for prompter, chemventur, and tools that do not exist yet.</p></div>'
     },
     keyboard: {
       id: 'keyboard',
@@ -802,7 +847,12 @@ function showToast(msg, type = 'normal') {
 
 /* ===== AUTO-LOAD LAST CHANNEL ===== */
 window.addEventListener('load', () => {
-  const lastChannel = localStorage.getItem('rudventur_channel');
+  currentChannel = localStorage.getItem('rudventur_channel') || 'main';
+  document.getElementById('desktop').style.display = 'block';
+  document.getElementById('login').style.display = 'none';
+  const line = document.getElementById('chosenChannel');
+  if (line) line.value = currentChannel;
+  const lastChannel = currentChannel;
   if (lastChannel) {
     document.getElementById('channelInput').value = lastChannel;
   }
