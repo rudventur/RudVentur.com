@@ -276,3 +276,33 @@ as real tabs. Apps are listed in `APPS` / `MENU` at the top of the file.
   - **MAKE MOVIE** records the plan into one file in the session.
 - Config: `window.rvPopcornConfig = { onPopcorn, onChat, onUser, zIndex, userOffset,
   bottomOffset, button, legacyDB }`. 🍿 and 💬 leave the bunker first, then run.
+
+# panel-toggle + rvPanels — one hide / show pattern for every panel
+
+`embed/panel-toggle.js` is the shared panel script (the same one as Snout First in
+`map-merger-venti`): `window.sfPanels`, one page-wide click listener, the same
+header toggle (`.sf-ptoggle`: chevron + "hide" / "show"), a tab to bring a hidden
+panel back (`.sf-ptab`), and each panel's choice remembered on this device
+(local storage key `rv_panels`). Colours come from `--sf-panel-accent`,
+`--sf-panel-text` and `--sf-panel-ink`; fonts from `--sf-panel-font` and
+`--sf-panel-title-font`. Loading it twice is harmless (the second copy steps aside).
+
+Markup:
+
+```html
+<div class="sf-phead">
+  <span class="sf-ptitle">📊 STATS</span>
+  <button class="sf-ptoggle" type="button" data-panel-toggle="stats"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
+</div>
+<div class="sf-pbody">…</div>
+```
+
+Register with `sfPanels.register({ id, el, label, side: 'top'|'left'|'right'|'bottom', remember, open })`
+(optional `read()` / `apply(open)` for panels with their own open / close code).
+While a panel is hidden the body has the class `sf-hidden-<id>`.
+
+`embed/rvPanels.js` registers the hub page's panels (`index.html`): the RUDVENTUR
+title and the jump strip (top panels, brought back by tabs), the eight tiles (fold
+up to their header; clicking the header still opens full screen) and the rvDesk
+taskbar (a 🎃 tab at the bottom brings it back). It changes nothing inside
+`rvDesk.js`; it adds the toggle to the taskbar once rvDesk has built it.

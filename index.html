@@ -517,6 +517,47 @@ body::before{
 .footer-bar a{color:#444;text-decoration:none;transition:color .2s}
 .footer-bar a:hover{color:#888}
 
+/* ─── PANEL HIDE / SHOW (embed/panel-toggle.js, embed/rvPanels.js) ─── */
+:root{
+  --sf-panel-accent:#555;--sf-panel-text:#999;--sf-panel-ink:#000;
+  --sf-panel-font:'DM Mono',monospace;--sf-panel-font-size:.62rem;--sf-panel-radius:4px;
+  --sf-panel-title-font:'Syne',sans-serif;--sf-panel-title-size:clamp(.85rem,1.5vw,1.1rem);--sf-panel-title-spacing:2px;
+}
+.sf-ptoggle{letter-spacing:1px;text-transform:uppercase;padding:2px 7px}
+/* each tile's toggle in its own zone colour */
+.panel--map{--sf-panel-accent:var(--map);--sf-panel-text:var(--map)}
+.panel--bank{--sf-panel-accent:var(--bank);--sf-panel-text:var(--bank)}
+.panel--user{--sf-panel-accent:var(--user);--sf-panel-text:var(--user)}
+.panel--social{--sf-panel-accent:var(--social);--sf-panel-text:var(--social)}
+.panel--os{--sf-panel-accent:var(--os);--sf-panel-text:var(--os)}
+.panel--tools{--sf-panel-accent:var(--tools);--sf-panel-text:var(--tools)}
+.panel--chem{--sf-panel-accent:var(--chem);--sf-panel-text:var(--chem)}
+.panel--repos{--sf-panel-accent:var(--repos);--sf-panel-text:var(--repos)}
+.panel__head .sf-ptoggle{opacity:.6;transition:opacity .2s}
+.panel__head .sf-ptoggle:hover,.panel__head .sf-ptoggle:focus-visible,.panel.sf-panel-collapsed .sf-ptoggle{opacity:1}
+/* the full-screen mark sits after the toggle */
+.panel__head::after{margin-left:.2rem}
+.panel > .sf-pbody{flex:1;display:flex;flex-direction:column;min-height:0}
+/* a folded tile shrinks to its header inside its grid cell */
+.panel.sf-panel-collapsed{align-self:start;padding-bottom:.6rem}
+.panel.sf-panel-collapsed .panel__head{margin-bottom:0;border-bottom-color:transparent}
+/* top panels: the header and the jump strip hide; tabs bring them back */
+.site-header > .sf-ptoggle{position:absolute;right:1rem;bottom:.8rem;--sf-panel-accent:#444;--sf-panel-text:#777}
+body.sf-hidden-header .site-header{display:none}
+.zone-nav__toggle{display:flex;align-items:center}
+.zone-nav__toggle .sf-ptoggle{--sf-panel-accent:#444;--sf-panel-text:#777}
+body.sf-hidden-zones .zone-nav{display:none}
+.top-tabs{position:relative;z-index:2;display:none;justify-content:center;gap:6px;margin:0 auto .8rem}
+body.sf-hidden-header .top-tabs,body.sf-hidden-zones .top-tabs{display:flex}
+.top-tabs .sf-ptab{display:none;padding:3px 14px;border-radius:0 0 6px 6px;letter-spacing:2px;text-transform:uppercase;font-size:.62rem;--sf-panel-accent:#151515;--sf-panel-ink:#aaa;border:1px solid #333;border-top:0}
+body.sf-hidden-header .top-tabs .sf-ptab[data-panel-toggle="header"],
+body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
+@media(max-width:700px){
+  /* keep clear of the desktop's top corners (notch menu, useRbox R) */
+  body.sf-hidden-header .top-tabs{margin-top:3.6rem}
+  .site-header > .sf-ptoggle{bottom:.5rem}
+}
+
 /* ─── LOGO VIEW MENU ─── */
 .logo-menu{
   /* direct child of <body> on purpose — nesting inside .site-header (its own
@@ -604,11 +645,15 @@ body::before{
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="/RudVentur.com/embed/apple-touch-icon.png">
 <script src="embed/rvView.js"></script>
+<!-- one hide / show pattern for every panel (top panels, tiles, taskbar) -->
+<script src="embed/panel-toggle.js"></script>
+<script src="embed/rvPanels.js"></script>
 </head>
 <body>
 
 <!-- HEADER -->
-<header class="site-header">
+<header class="site-header" id="siteHeader">
+  <button class="sf-ptoggle" type="button" data-panel-toggle="header"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
   <div class="title-row">
     <h1 onclick="toggleLogoMenu(event)" title="click for view options">RUDVENTUR</h1>
   </div>
@@ -633,8 +678,14 @@ body::before{
   <button role="menuitem" data-rv-install style="display:none" onclick="closeLogoMenu();rvView.install()">📲 Download the RUDVENTUR app</button>
 </div>
 
+<!-- tabs that bring the top panels back once they have been hidden -->
+<div class="top-tabs">
+  <button class="sf-ptab" type="button" data-panel-toggle="header"><span class="sf-pt-icon"></span><span class="sf-pt-label" data-closed="RUDVENTUR"></span></button>
+  <button class="sf-ptab" type="button" data-panel-toggle="zones"><span class="sf-pt-icon"></span><span class="sf-pt-label" data-closed="jump to"></span></button>
+</div>
+
 <!-- INDEX NAV STRIP — jump to any tile (content that used to live in THE INDEX tile) -->
-<ul class="zone-nav">
+<ul class="zone-nav" id="zoneNav">
   <li><a data-zone="map"    onclick="focusPanel('map');return false">→ The Map</a></li>
   <li><a data-zone="bank"   onclick="focusPanel('bank');return false">→ The Bank</a></li>
   <li><a data-zone="user"   onclick="focusPanel('user');return false">→ The User</a></li>
@@ -643,6 +694,7 @@ body::before{
   <li><a data-zone="tools"  onclick="focusPanel('tools');return false">→ The Tools</a></li>
   <li><a data-zone="chem"   onclick="focusPanel('chem');return false">→ ChemVentur</a></li>
   <li><a data-zone="repos"  onclick="focusPanel('repos');return false">→ The Repos</a></li>
+  <li class="zone-nav__toggle"><button class="sf-ptoggle" type="button" data-panel-toggle="zones"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button></li>
 </ul>
 
 <!-- 6 PANEL GRID -->
@@ -650,10 +702,12 @@ body::before{
 
   <!-- PANEL 1 — MAP ZONE (top left) -->
   <section class="panel panel--map">
-    <div class="panel__head" onclick="toggleFullscreen(this)">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
       <span class="panel__icon">🗺️</span>
-      <span class="panel__title">The Map</span>
+      <span class="panel__title sf-ptitle">The Map</span>
+      <button class="sf-ptoggle" type="button" data-panel-toggle="map"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
     </div>
+    <div class="sf-pbody">
     <ul class="tool-list">
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/" target="_blank">Map Merger Venti (ArtSpace City)</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">↳ Translator v7</a></li>
@@ -665,14 +719,17 @@ body::before{
     <div class="user-btns">
       <a class="user-btn user-btn--cheese" href="https://rudventur.github.io/map-merger-venti/snout-first.html" target="_blank">SnoutFirst</a>
     </div>
+    </div>
   </section>
 
   <!-- PANEL 2 — THE BANK (top middle) -->
   <section class="panel panel--bank">
-    <div class="panel__head" onclick="toggleFullscreen(this)">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
       <span class="panel__icon">💰</span>
-      <span class="panel__title">The Bank</span>
+      <span class="panel__title sf-ptitle">The Bank</span>
+      <button class="sf-ptoggle" type="button" data-panel-toggle="bank"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
     </div>
+    <div class="sf-pbody">
     <div class="bank-tagline">// RUDVENTUR LEDGER //</div>
     <ul class="tool-list">
       <li><a class="tool-link" href="https://rudventur.github.io/bankowe2owe/" target="_blank">▸ bankowe2owe — ledger</a></li>
@@ -681,14 +738,17 @@ body::before{
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">▸ Translator v7</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/" target="_blank">▸ Maps (Map Merger Venti)</a></li>
     </ul>
+    </div>
   </section>
 
   <!-- PANEL 3 — USER ZONE (top right) -->
   <section class="panel panel--user">
-    <div class="panel__head" onclick="toggleFullscreen(this)">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
       <span class="panel__icon">👤</span>
-      <span class="panel__title">The User</span>
+      <span class="panel__title sf-ptitle">The User</span>
+      <button class="sf-ptoggle" type="button" data-panel-toggle="user"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
     </div>
+    <div class="sf-pbody">
     <ul class="tool-list">
       <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox v2 (upgraded)</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">Translator v7</a></li>
@@ -697,14 +757,17 @@ body::before{
       <a class="user-btn user-btn--cheese" href="https://rudventur.github.io/cheese-ouiji-empire/" target="_blank">🧀 CHEESE CASINO</a>
       <button type="button" class="user-btn user-btn--app" data-rv-install onclick="rvView.install()">📲 DOWNLOAD THE APP</button>
     </div>
+    </div>
   </section>
 
   <!-- PANEL 4 — SOCIAL ZONE (bottom left) -->
   <section class="panel panel--social">
-    <div class="panel__head" onclick="toggleFullscreen(this)">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
       <span class="panel__icon">💬</span>
-      <span class="panel__title">The Social</span>
+      <span class="panel__title sf-ptitle">The Social</span>
+      <button class="sf-ptoggle" type="button" data-panel-toggle="social"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
     </div>
+    <div class="sf-pbody">
     <ul class="tool-list">
       <li><a class="tool-link" href="https://rudventur.github.io/punk-script/" target="_blank">RudVentur Social (punk-script)</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/global-chat-v5/" target="_blank">Global Chat v5 (= Prompter)</a></li>
@@ -713,28 +776,34 @@ body::before{
       <li><a class="tool-link" href="windows13/keyboard-realistic.html" target="_blank">Keyboards</a></li>
       <li><a class="tool-link" href="yesterday-today-tomorrow-weather.html" target="_blank">↳ Weather App (local live feed)</a></li>
     </ul>
+    </div>
   </section>
 
   <!-- PANEL 5 — OS ZONE (bottom middle) -->
   <section class="panel panel--os">
-    <div class="panel__head" onclick="toggleFullscreen(this)">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
       <span class="panel__icon">🖥️</span>
-      <span class="panel__title">The OS</span>
+      <span class="panel__title sf-ptitle">The OS</span>
+      <button class="sf-ptoggle" type="button" data-panel-toggle="os"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
     </div>
+    <div class="sf-pbody">
     <ul class="tool-list">
       <li><a class="tool-link" href="https://rudventur.github.io/windows13/" target="_blank">Windows 13</a></li>
       <li><a class="tool-link" href="LuxWin13/notch-menu-final.html" target="_blank">↳ LuxWin13 notch</a></li>
       <li><a class="tool-link" href="windows13/taskbar-window-system.html" target="_blank">Taskbar &amp; Windows System</a></li>
       <li><a class="tool-link" href="windows13/WINDOWS13-MASTER.html" target="_blank">WINDOWS13 Master</a></li>
     </ul>
+    </div>
   </section>
 
   <!-- PANEL 6 — TOOLS ZONE (bottom right) -->
   <section class="panel panel--tools">
-    <div class="panel__head" onclick="toggleFullscreen(this)">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
       <span class="panel__icon">🔧</span>
-      <span class="panel__title">The Tools</span>
+      <span class="panel__title sf-ptitle">The Tools</span>
+      <button class="sf-ptoggle" type="button" data-panel-toggle="tools"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
     </div>
+    <div class="sf-pbody">
     <ul class="tool-list">
       <li><a class="tool-link" href="https://rudventur.github.io/Intellectual-PROTOCOL/" target="_blank">Intellectual PROTOCOL</a></li>
       <li><a class="tool-link" href="bottom-right-popcorn-complete.html" target="_blank">Popcorn Hub (full)</a></li>
@@ -751,14 +820,17 @@ body::before{
       <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">DESCRIBER — 3D Cam Scanner</a></li> -->
       <li><a class="tool-link soon">DESCRIBER — 3D Cam Scanner</a></li>
     </ul>
+    </div>
   </section>
 
   <!-- PANEL 7 — CHEMVENTUR (full width row) -->
   <section class="panel panel--chem">
-    <div class="panel__head" onclick="toggleFullscreen(this)">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
       <span class="panel__icon">🧪</span>
-      <span class="panel__title">ChemVentur</span>
+      <span class="panel__title sf-ptitle">ChemVentur</span>
+      <button class="sf-ptoggle" type="button" data-panel-toggle="chem"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
     </div>
+    <div class="sf-pbody">
     <div class="chem-grid">
       <a class="chem-btn" href="https://rudventur.github.io/ChemVentur-Multi-v118/" target="_blank"><span class="chem-icon">⚗️</span>ChemVentur Multi v118</a>
       <a class="chem-btn" href="https://rudventur.github.io/v120-ChemVentur/" target="_blank"><span class="chem-icon">🧪</span>ChemVentur v120</a>
@@ -769,16 +841,20 @@ body::before{
       <a class="chem-btn" href="https://zoo.dev" target="_blank" rel="noopener"><span class="chem-icon">🦓</span>Zoo.dev</a>
       <a class="chem-btn" href="https://www.soldat.pl" target="_blank" rel="noopener"><span class="chem-icon">🎮</span>Soldat.pl</a>
     </div>
+    </div>
   </section>
 
   <!-- PANEL 8 — REPOS (full width row) -->
   <section class="panel panel--repos">
-    <div class="panel__head" onclick="toggleFullscreen(this)">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
       <span class="panel__icon">📦</span>
-      <span class="panel__title">The Repos</span>
+      <span class="panel__title sf-ptitle">The Repos</span>
+      <button class="sf-ptoggle" type="button" data-panel-toggle="repos"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
     </div>
+    <div class="sf-pbody">
     <div id="repos-container" class="repos-grid">
       <div class="repos-loading">fetching repos from github.com/rudventur...</div>
+    </div>
     </div>
   </section>
 
@@ -877,8 +953,19 @@ function setView(mode) {
   }
 }
 
-// Toggle fullscreen on panel head click
-function toggleFullscreen(headEl) {
+// the tile's panel id (map, bank, user, …) for embed/panel-toggle.js
+function panelId(panel) {
+  const m = /panel--(\w+)/.exec(panel.className);
+  return m ? m[1] : '';
+}
+// a folded-up tile opens again when it is brought to full screen
+function openTile(panel) {
+  if (window.sfPanels && !sfPanels.isOpen(panelId(panel))) sfPanels.set(panelId(panel), true);
+}
+
+// Toggle fullscreen on panel head click (the hide / show button has its own job)
+function toggleFullscreen(headEl, ev) {
+  if (ev && ev.target.closest && ev.target.closest('[data-panel-toggle]')) return;
   const panel = headEl.closest('.panel');
   if (panel.classList.contains('fullscreen')) {
     panel.classList.remove('fullscreen');
@@ -886,6 +973,7 @@ function toggleFullscreen(headEl) {
   } else {
     // close any other fullscreen panel first
     document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
+    openTile(panel);
     panel.classList.add('fullscreen');
     document.body.style.overflow = 'hidden';
   }
@@ -899,6 +987,7 @@ function focusPanel(name) {
   document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
   document.body.style.overflow = '';
   // fullscreen the target
+  openTile(panel);
   panel.classList.add('fullscreen');
   document.body.style.overflow = 'hidden';
 }
