@@ -384,7 +384,8 @@
     }
     b.addEventListener('click', function () {
       // PB1 (bottom-right 🍿): open the Popcorn Hub. Inside the hub, PB2 opens
-      // the bunker for secret movie making; the PIX tab is the pix describer.
+      // the bunker for secret movie making; the PIX PANEL tab is the pix describer
+      // (emoji bandits + green scenery indicators on the camera feed).
       if (id === 'popcorn') pb1Burst(b);
       var w = wins[id];
       if (w && isFront(w)) minimise(w); else open(id);
