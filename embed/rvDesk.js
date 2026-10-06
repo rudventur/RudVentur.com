@@ -8,8 +8,8 @@
                    view modes, Ko-fi)
      top-right     the R circle + useRbox (embed/useRbox.js; not built here)
      bottom-left   ⌨️ Keyboards, 💬 Global Chat
-     bottom-right  🍿 popcorn window (embed/popcornWindow.js) — its own 🍿 opens
-                   the Popcorn Hub; without popcornWindow.js it opens the Popcorn Hub
+     bottom-right  🍿 PB1 opens the Popcorn Hub (PB2 + pix describer inside);
+                   PB2 in the hub opens the bunker (embed/popcornWindow.js)
      bottom-middle taskbar: 🎃 start button, one button per open window, clock
 
    Services open in floating windows (drag the title bar, resize from the
@@ -29,7 +29,7 @@
   var APPS = {
     keyboard:   { icon: '⌨️', title: 'World Keyboards', src: 'windows13/keyboard-realistic.html', w: 860, h: 560 },
     chat:       { icon: '💬', title: 'Global Chat', src: 'global-chat-v5/index.html', w: 480, h: 620 },
-    popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html', w: 560, h: 700 },
+    popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html', w: 600, h: 760 },
     mapmerger:  { icon: '🗺️', title: 'Map Merger Venti', src: 'https://rudventur.github.io/map-merger-venti/', w: 1000, h: 680 },
     translator: { icon: '🌐', title: 'Translator v7', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
     snout:      { icon: '🐾', title: 'Snout First', src: 'https://rudventur.github.io/map-merger-venti/snout-first.html', w: 900, h: 680 },
@@ -344,9 +344,8 @@
     b.type = 'button';
     b.title = a.title;
     b.addEventListener('click', function () {
-      // 🍿 opens the popcorn window (embed/popcornWindow.js) when the page has it;
-      // the Popcorn Hub is then the popcorn window's own 🍿
-      if (id === 'popcorn' && window.rvPopcorn) { rvPopcorn.toggle(); return; }
+      // PB1 (bottom-right 🍿): open the Popcorn Hub. Inside the hub, PB2 opens
+      // the bunker for secret movie making; the PIX tab is the pix describer.
       var w = wins[id];
       if (w && isFront(w)) minimise(w); else open(id);
     });

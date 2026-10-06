@@ -77,6 +77,8 @@
     { path: /\/voice-of-god\.html$|\/(ChemVentur[^\/]*|chem\.ventur\.112|another-ChemVentur-77)\//i, allow: ['microphone'] },
     // punk-script Wi-Fi mapper with camera
     { path: /\/wifi-mapper-v2-cam\.html$/i, allow: ['camera'] },
+    // Popcorn Hub pix describer (live camera + picture challenges)
+    { path: /\/bottom-right-popcorn-complete\.html$/i, allow: ['camera', 'microphone'] },
     // punk-script room mapper reads the phone's tilt
     { path: /\/wifi-room-mapper\.html$/i, allow: ['accelerometer', 'gyroscope'] }
   ];
