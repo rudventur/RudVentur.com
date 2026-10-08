@@ -323,6 +323,9 @@
       '    </div>' +
       '    <div id="gpsList"></div>' +
       '  </div>' +
+      /* the app download button init() wires up (lost in a merge, which made init()
+         stop at q('#rbGetApp') and left everything after it unwired) */
+      '  <button type="button" class="btn" id="rbGetApp" style="width:100%;margin-top:14px;padding:10px;">📲 DOWNLOAD THE RUDVENTUR APP</button>' +
       '  <label class="toggle"><input type="checkbox" id="saveMessages" checked><span>Save my messages</span></label>' +
       '  <button id="saveUser">💾 SAVE PROFILE</button>' +
       '</div>';
