@@ -53,13 +53,18 @@
      rvView.layerAllowed(url)   true when url may open in the layer
      rvView.permissionsFor(url) what a page opened in the layer may use
      rvView.KEY ('rvViewMode'), rvView.MODES, rvView.version
+     rvView.addMenuItem({ id, label, onClick })   (added 2026-10-09) puts an extra
+                             choice in this page's logo menu, right under Normal —
+                             the Popcorn Hub adds its full screen choices this way.
+                             Same id again replaces it. rvView.removeMenuItem(id).
+                             Pages without extras get exactly the menu they had.
 */
 (function () {
   if (window.rvView) return;
   var KEY = 'rvViewMode';
   var ALIASES = { 'panoramic-locked': 'horizontal', 'panoramic-default': 'panoramic' };
   var MODES = { horizontal: 1, panoramic: 1, vertical: 1, normal: 1 };
-  var VERSION = '2026-09-27';
+  var VERSION = '2026-10-09';
 
   // Only these addresses may open inside the full-screen layer. Everything else
   // opens as a normal new tab, so outside sites never run inside RUDVENTUR.
@@ -418,6 +423,9 @@
     'border-radius:8px;padding:.4rem;box-shadow:0 12px 40px rgba(0,0,0,.7);display:none;' +
     "font-family:'DM Mono',ui-monospace,monospace;text-align:left}" +
     '.rv-menu.open{display:block}' +
+    // short screens (panoramic, phones on their side): the menu scrolls instead of running off
+    '.rv-menu{max-height:calc(100vh - 16px);overflow-y:auto;overscroll-behavior:contain}' +
+    '@media (max-height:500px){.rv-menu button{padding:7px 10px}}' +
     '.rv-menu button{display:block;width:100%;text-align:left;background:none;border:none;color:#ccc;' +
     'font-family:inherit;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:10px 11px;' +
     'cursor:pointer;border-radius:4px;margin:0}' +
@@ -442,6 +450,35 @@
     ['vertical', '↳ Full Screen Vertical']
   ];
   var menu, sub, subBtn, goBtn, goHref = '';
+  // extra choices a page adds (rvView.addMenuItem), shown under Normal
+  var EXTRAS = [], extrasBox = null;
+  function renderExtras() {
+    if (!extrasBox) return;
+    extrasBox.textContent = '';
+    extrasBox.style.display = EXTRAS.length ? '' : 'none';
+    if (!EXTRAS.length) return;
+    extrasBox.appendChild(Object.assign(document.createElement('div'), { className: 'rv-sep' }));
+    EXTRAS.forEach(function (it) {
+      var b = btn(extrasBox, it.label, function (e) {
+        e.stopPropagation(); closeMenu();
+        try { it.onClick(e); } catch (err) {}
+      });
+      if (it.title) b.title = it.title;
+    });
+  }
+  function addMenuItem(item) {
+    if (!item || !item.label || typeof item.onClick !== 'function') return;
+    var entry = { id: item.id ? String(item.id) : '', label: String(item.label), title: item.title || '', onClick: item.onClick };
+    for (var i = 0; i < EXTRAS.length; i++) {
+      if (entry.id && EXTRAS[i].id === entry.id) { EXTRAS[i] = entry; renderExtras(); return; }
+    }
+    EXTRAS.push(entry);
+    renderExtras();
+  }
+  function removeMenuItem(id) {
+    EXTRAS = EXTRAS.filter(function (it) { return it.id !== String(id); });
+    renderExtras();
+  }
 
   function btn(parent, label, onClick) {
     var b = document.createElement('button');
@@ -468,6 +505,10 @@
     // a logo that is also a link keeps its link as the first menu item
     goBtn = btn(menu, '', function (e) { e.stopPropagation(); closeMenu(); location.href = goHref; });
     ITEMS.forEach(function (it) { btn(menu, it[1], pick(it[0])); });
+    extrasBox = document.createElement('div');
+    extrasBox.className = 'rv-extras';
+    menu.appendChild(extrasBox);
+    renderExtras();
     menu.appendChild(Object.assign(document.createElement('div'), { className: 'rv-sep' }));
     subBtn = btn(menu, 'Settings One', function (e) {
       e.stopPropagation(); sub.classList.toggle('open'); subBtn.classList.toggle('open');
@@ -541,6 +582,8 @@
     installed: installed, KEY: KEY,
     // added 2026-09-27
     redirect: redirect, layerAllowed: layerAllowed, permissionsFor: permissionsFor,
-    MODES: ['horizontal', 'panoramic', 'vertical', 'normal'], version: VERSION
+    MODES: ['horizontal', 'panoramic', 'vertical', 'normal'], version: VERSION,
+    // added 2026-10-09
+    addMenuItem: addMenuItem, removeMenuItem: removeMenuItem
   };
 })();

@@ -16,6 +16,12 @@
    corner, ⛶ = full screen, _ = minimise to the taskbar, ↗ = real tab, ✕).
    On phones windows open full size. Sites that refuse to be shown inside
    another page (Ko-fi, Zoom Earth) open as a real tab instead.
+
+   Popcorn window full screen choices (also in the notch menu's VIEW group and
+   the home page logo menu): rvDesk.popcorn('max' | 'fullscreen' | 'camera' |
+   'normal'). On wide, short screens (panoramic) the popcorn window opens
+   filling the height. The Popcorn Hub inside asks for 'max' / 'normal' itself
+   with a message { type: 'rudventur-popcorn-view', mode } (same site only).
 */
 (function () {
   'use strict';
@@ -29,7 +35,7 @@
   var APPS = {
     keyboard:   { icon: '⌨️', title: 'World Keyboards', src: 'windows13/keyboard-realistic.html', w: 860, h: 560 },
     chat:       { icon: '💬', title: 'Global Chat', src: 'global-chat-v5/index.html', w: 480, h: 620 },
-    popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html', w: 600, h: 760 },
+    popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html', w: 600, h: 760, fit: true },
     mapmerger:  { icon: '🗺️', title: 'Map Merger Venti', src: 'https://rudventur.github.io/map-merger-venti/', w: 1000, h: 680 },
     translator: { icon: '🌐', title: 'Translator v7', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
     snout:      { icon: '🐾', title: 'Snout First', src: 'https://rudventur.github.io/map-merger-venti/snout-first.html', w: 900, h: 680 },
@@ -134,6 +140,9 @@
     '.rvd-win.max .rvd-grip{display:none}',
     'body.rvd-dragging iframe{pointer-events:none}',
     'body.rvd-dragging{user-select:none}',
+    /* short screens (panoramic, phones on their side): slimmer title bars */
+    '@media (max-height:520px){.rvd-bar{height:28px}.rvd-bar button{height:22px;font-size:13px}}',
+    '.rvd-win:fullscreen{border:0;border-radius:0}',
     '@media (max-width:640px){#rvd-notch{font-size:11px;padding:6px 10px}.rvd-cbtn{width:42px;height:42px;font-size:19px}',
     '#rvd-start{padding:0 8px}}'
   ].join('');
@@ -182,6 +191,61 @@
     w.el.remove(); w.task.remove();
     delete wins[w.id];
   }
+  function setMax(w, on) {
+    if (w.el.classList.contains('max') === !!on) return;
+    w.el.classList.toggle('max', !!on);
+    applyZ(w);
+  }
+  function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+  function frameCmd(w, cmd) {
+    function send() {
+      try { w.frame.contentWindow.postMessage({ type: 'rudventur-popcorn-cmd', cmd: cmd }, location.origin); } catch (e) {}
+    }
+    var ready = false;
+    try { var doc = w.frame.contentDocument; ready = !!doc && doc.readyState === 'complete' && doc.URL !== 'about:blank'; } catch (e) {}
+    if (ready) send(); else w.frame.addEventListener('load', function () { setTimeout(send, 300); }, { once: true });
+  }
+  // the popcorn window's full screen choices — only ever called from a tap or click
+  function popcornView(mode) {
+    var w = wins.popcorn;
+    if (mode === 'normal') {
+      if (!w) return;
+      if (fsEl() === w.el) {
+        var ex = document.exitFullscreen || document.webkitExitFullscreen;
+        try { if (ex) Promise.resolve(ex.call(document)).catch(function () {}); } catch (e) {}
+      }
+      if (!PHONE()) setMax(w, false);
+      frameCmd(w, 'normal');
+      return;
+    }
+    w = w ? (restore(w), w) : open('popcorn');
+    if (!w) return;
+    setMax(w, true);
+    if (mode === 'fullscreen' || mode === 'camera') {
+      var fn = w.el.requestFullscreen || w.el.webkitRequestFullscreen;
+      try { if (fn) Promise.resolve(fn.call(w.el)).catch(function () {}); } catch (e) {}
+    }
+    if (mode === 'camera') frameCmd(w, 'camera-fill');
+  }
+  // the Popcorn Hub inside its window asks for 'max' / 'normal'
+  window.addEventListener('message', function (ev) {
+    if (ev.origin !== location.origin) return;
+    var d = ev.data || {};
+    if (d.type !== 'rudventur-popcorn-view') return;
+    Object.keys(wins).forEach(function (k) {
+      var w = wins[k];
+      if (w.frame.contentWindow !== ev.source) return;
+      if (d.mode === 'max') { if (w.el.classList.contains('min')) restore(w); setMax(w, true); front(w); }
+      else if (d.mode === 'normal' && !PHONE()) {
+        if (fsEl() === w.el) {
+          var ex = document.exitFullscreen || document.webkitExitFullscreen;
+          try { if (ex) Promise.resolve(ex.call(document)).catch(function () {}); } catch (e) {}
+        }
+        setMax(w, false);
+      }
+    });
+  });
+
   function toggleMax(w, deviceFullscreen) {
     // phones: windows are always full size, so ⛶ switches device fullscreen on/off
     if (PHONE() && deviceFullscreen && window.rvView) {
@@ -209,6 +273,14 @@
     var w = Math.min(app.w || 800, vw - 40), h = Math.min(app.h || 600, vh - 40);
     var x = Math.max(10, Math.round((vw - w) / 2) + (cascade % 5) * 26 - 52);
     var y = Math.max(10, Math.round((vh - h) / 2) + (cascade % 5) * 26 - 52);
+    if (app.fit && vh < 640 && vw > vh) {
+      // wide, short screen (panoramic): fill the height and widen, so the
+      // popcorn title and PIX (camera left, SPIN right) fit without scrolling
+      h = vh - 12;
+      w = Math.min(vw - 20, Math.max(app.w || 600, Math.round(h * 2.1)));
+      x = Math.max(10, Math.round((vw - w) / 2));
+      y = 6;
+    }
     cascade++;
 
     var win = el('div', 'rvd-win');
@@ -332,6 +404,13 @@
       b.addEventListener('click', function () { closeNotch(); if (window.rvView) rvView.set(m[0]); });
       vs.appendChild(b);
     });
+    [['max', '🍿 Popcorn — Fill the Screen'], ['fullscreen', '🍿 Popcorn — True Full Screen'],
+     ['camera', '📷 Popcorn — Full Screen Camera'], ['normal', '🍿 Popcorn — Normal Size']].forEach(function (m) {
+      var b = el('button', 'rvd-mi', m[1]);
+      b.type = 'button';
+      b.addEventListener('click', function () { closeNotch(); popcornView(m[0]); });
+      vs.appendChild(b);
+    });
     v.addEventListener('click', function () { v.classList.toggle('open'); vs.classList.toggle('open'); });
     menu.appendChild(v); menu.appendChild(vs);
     menu.appendChild(el('div', 'rvd-sep'));
@@ -424,5 +503,13 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 
-  window.rvDesk = { open: open, apps: APPS };
+  // pages that use the shared logo menu get the popcorn choices there too
+  if (window.rvView && typeof rvView.addMenuItem === 'function') {
+    [['max', '🍿 Popcorn — Fill the Screen'], ['fullscreen', '🍿 Popcorn — True Full Screen'],
+     ['camera', '📷 Popcorn — Full Screen Camera'], ['normal', '🍿 Popcorn — Normal Size']].forEach(function (m) {
+      rvView.addMenuItem({ id: 'desk-popcorn-' + m[0], label: m[1], onClick: function () { popcornView(m[0]); } });
+    });
+  }
+
+  window.rvDesk = { open: open, apps: APPS, popcorn: popcornView };
 })();
