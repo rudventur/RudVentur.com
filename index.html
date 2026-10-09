@@ -270,6 +270,18 @@ body::before{
   transition:all .2s;
   letter-spacing:.5px;
 }
+button.tool-link{
+  background:transparent;
+  width:100%;
+  text-align:left;
+  font:inherit;
+  font-size:.78rem;
+  letter-spacing:.5px;
+  border:0;
+  border-left:2px solid transparent;
+  color:#888;
+}
+
 .tool-link:hover{
   color:#fff;
   background:rgba(255,255,255,.03);
@@ -646,7 +658,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="/RudVentur.com/embed/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="https://rudventur.github.io/RudVentur.com/embed/apple-touch-icon.png">
 <script src="embed/rvView.js"></script>
 <!-- one hide / show pattern for every panel (top panels, tiles, taskbar) -->
 <script src="embed/panel-toggle.js"></script>
@@ -723,7 +735,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
       <li><a class="tool-link" href="map-merger-venti/snout-first.html" target="_blank">↳ SnoutFirst</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/rudTrip20/" target="_blank">📍 rudTrip20</a></li>
       <li><a class="tool-link" href="rudtrip20/" target="_blank">↳ rudTrip20 intro (R orb → R pin)</a></li>
-      <li><a class="tool-link soon">Browser</a></li>
+      <li><button type="button" class="tool-link soon" data-rxplanation="The in-site Browser is listed, but that page is not live yet. Maps and Snout First are the working location tools.">Browser</button></li>
     </ul>
     <div class="user-btns">
       <a class="user-btn user-btn--cheese" href="https://rudventur.github.io/map-merger-venti/snout-first.html" target="_blank">SnoutFirst</a>
@@ -741,7 +753,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     <div class="sf-pbody">
     <div class="bank-tagline">// RUDVENTUR LEDGER //</div>
     <ul class="tool-list">
-      <li><a class="tool-link" href="https://rudventur.github.io/bankowe2owe/" target="_blank">▸ bankowe2owe — ledger</a></li>
+      <li><a class="tool-link" href="owe2owe1.html" target="_blank">▸ bankowe2owe — ledger</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/bank/" target="_blank">▸ Bank / Lending Ledger</a></li>
       <li><a class="tool-link" href="popcoin/" target="_blank">▸ 🍿 PopCOIN Wallet</a></li>
       <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">▸ Translator v7</a></li>
@@ -823,11 +835,11 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
       <!-- Prompter Architect === Prompter === Global Chat v5 -->
       <li><a class="tool-link" href="global-chat-v5/index.html" target="_blank">Prompter Architect</a></li>
       <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Cookies Inspector</a></li> -->
-      <li><a class="tool-link soon">Cookies Inspector</a></li>
+      <li><button type="button" class="tool-link soon" data-rxplanation="Cookies Inspector is listed on the index, but the page is not live yet.">Cookies Inspector</button></li>
       <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Popcorn File Burner</a></li> -->
-      <li><a class="tool-link soon">Popcorn File Burner</a></li>
+      <li><button type="button" class="tool-link soon" data-rxplanation="Popcorn File Burner is listed on the index, but the page is not live yet.">Popcorn File Burner</button></li>
       <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">DESCRIBER — 3D Cam Scanner</a></li> -->
-      <li><a class="tool-link soon">DESCRIBER — 3D Cam Scanner</a></li>
+      <li><button type="button" class="tool-link soon" data-rxplanation="DESCRIBER, the 3D cam scanner, is listed on the index, but the page is not live yet.">DESCRIBER — 3D Cam Scanner</button></li>
     </ul>
     </div>
   </section>
