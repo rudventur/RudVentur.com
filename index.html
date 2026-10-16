@@ -407,6 +407,15 @@ button.tool-link{
 .zone-nav a[data-zone="repos"]:hover{color:var(--repos);text-shadow:0 0 8px rgba(255,221,51,.4)}
 
 /* ─── REPOS GRID ─── */
+.repos-inside{margin-top:1rem;border-top:1px solid #3a3a0a;padding-top:.8rem}
+.repos-inside__title{color:var(--repos);font-family:'DM Mono',monospace;font-size:.8rem;margin-bottom:.6rem;letter-spacing:.05em}
+.repos-inside__group{margin-bottom:.7rem}
+.repos-inside__repo{display:inline-block;color:var(--repos);font-weight:700;font-size:.85rem;text-decoration:none;margin-bottom:.3rem}
+.repos-inside__repo:hover{text-decoration:underline}
+.repos-inside__links{display:flex;flex-wrap:wrap;gap:.4rem}
+.repos-inside__links a{background:#111;border:1px solid #1a1a1a;border-radius:4px;padding:.3rem .6rem;font-size:.75rem;color:#ccc;text-decoration:none}
+.repos-inside__links a:hover{border-color:var(--repos);color:var(--repos)}
+
 .repos-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
@@ -875,6 +884,67 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     <div class="sf-pbody">
     <div id="repos-container" class="repos-grid">
       <div class="repos-loading">fetching repos from github.com/rudventur...</div>
+    </div>
+  <!-- INSIDE THE REPOS — every page found inside the repos, linking to the live GitHub Pages site -->
+    <div class="repos-inside">
+      <div class="repos-inside__title">🔎 Inside the repos — live pages</div>
+      <div class="repos-inside__group">
+        <a class="repos-inside__repo" href="https://rudventur.github.io/map-merger-venti/" target="_blank" rel="noopener">🗺️ Art City (Map Merger)</a>
+        <div class="repos-inside__links">
+          <a href="https://rudventur.github.io/map-merger-venti/punk-script-cemetery/" target="_blank" rel="noopener">🪦 Cemetery</a>
+          <a href="https://rudventur.github.io/map-merger-venti/snout-first.html" target="_blank" rel="noopener">🐾 SnoutFirst</a>
+          <a href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank" rel="noopener">🌐 Translator v7</a>
+          <a href="https://rudventur.github.io/map-merger-venti/voice-of-god.html" target="_blank" rel="noopener">📢 Voice of God</a>
+        </div>
+      </div>
+      <div class="repos-inside__group">
+        <a class="repos-inside__repo" href="https://rudventur.github.io/rudTrip20/" target="_blank" rel="noopener">🎲 Trip20 (all inclusive)</a>
+        <div class="repos-inside__links">
+          <a href="https://rudventur.github.io/rudTrip20/globe.html" target="_blank" rel="noopener">🌍 Trip20 Globe</a>
+        </div>
+      </div>
+      <div class="repos-inside__group">
+        <a class="repos-inside__repo" href="https://rudventur.github.io/windows13/" target="_blank" rel="noopener">🪟 Windows 13</a>
+        <div class="repos-inside__links">
+          <a href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank" rel="noopener">WINDOWS13 MASTER</a>
+          <a href="https://rudventur.github.io/windows13/bottom-right-popcorn-complete.html" target="_blank" rel="noopener">Bottom right popcorn complete</a>
+          <a href="https://rudventur.github.io/windows13/keyboard-realistic.html" target="_blank" rel="noopener">Keyboard realistic</a>
+          <a href="https://rudventur.github.io/windows13/notch-menu-final.html" target="_blank" rel="noopener">Notch menu final</a>
+          <a href="https://rudventur.github.io/windows13/taskbar-window-system.html" target="_blank" rel="noopener">Taskbar window system</a>
+          <a href="https://rudventur.github.io/windows13/useRbox-v2-upgraded.html" target="_blank" rel="noopener">UseRbox v2 upgraded</a>
+          <a href="https://rudventur.github.io/windows13/userbox-v2-ultimate.html" target="_blank" rel="noopener">Userbox v2 ultimate</a>
+        </div>
+      </div>
+      <div class="repos-inside__group">
+        <a class="repos-inside__repo" href="https://rudventur.github.io/punk-script/" target="_blank" rel="noopener">✍️ punk-script</a>
+        <div class="repos-inside__links">
+          <a href="https://rudventur.github.io/punk-script/browse.html" target="_blank" rel="noopener">Browse</a>
+          <a href="https://rudventur.github.io/punk-script/invite.html" target="_blank" rel="noopener">Invite</a>
+          <a href="https://rudventur.github.io/punk-script/profile.html" target="_blank" rel="noopener">Profile</a>
+          <a href="https://rudventur.github.io/punk-script/type-game.html" target="_blank" rel="noopener">Type game</a>
+          <a href="https://rudventur.github.io/punk-script/unit_architect.html" target="_blank" rel="noopener">Unit architect</a>
+          <a href="https://rudventur.github.io/punk-script/universe-index.html" target="_blank" rel="noopener">Universe index</a>
+          <a href="https://rudventur.github.io/punk-script/universe.html" target="_blank" rel="noopener">Universe</a>
+          <a href="https://rudventur.github.io/punk-script/wifi-mapper-v2-cam.html" target="_blank" rel="noopener">Wifi mapper v2 cam</a>
+          <a href="https://rudventur.github.io/punk-script/wifi-mapper-v2.html" target="_blank" rel="noopener">Wifi mapper v2</a>
+          <a href="https://rudventur.github.io/punk-script/wifi-room-mapper.html" target="_blank" rel="noopener">Wifi room mapper</a>
+        </div>
+      </div>
+      <div class="repos-inside__group">
+        <a class="repos-inside__repo" href="https://rudventur.github.io/v120-ChemVentur/" target="_blank" rel="noopener">⚗️ ChemVentur v120</a>
+        <div class="repos-inside__links">
+          <a href="https://rudventur.github.io/v120-ChemVentur/game-v118.html" target="_blank" rel="noopener">Game v118</a>
+          <a href="https://rudventur.github.io/v120-ChemVentur/stage3-game/" target="_blank" rel="noopener">🧪 Stage 3 Game</a>
+          <a href="https://rudventur.github.io/v120-ChemVentur/stage3-test.html" target="_blank" rel="noopener">Stage3 test</a>
+        </div>
+      </div>
+      <div class="repos-inside__group">
+        <a class="repos-inside__repo" href="https://rudventur.github.io/LuxWin13/" target="_blank" rel="noopener">💡 LuxWin13</a>
+        <div class="repos-inside__links">
+          <a href="https://rudventur.github.io/LuxWin13/notch-menu-final.html" target="_blank" rel="noopener">Notch menu final</a>
+          <a href="https://rudventur.github.io/LuxWin13/userbox-v2-ultimate.html" target="_blank" rel="noopener">Userbox v2 ultimate</a>
+        </div>
+      </div>
     </div>
     </div>
   </section>
