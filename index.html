@@ -1047,8 +1047,12 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
       return;
     }
 
-    container.innerHTML = repos.map(r => `
-      <a class="repo-card" href="${r.html_url}" target="_blank" rel="noopener">
+    container.innerHTML = repos.map(r => {
+      // Live GitHub Pages site when the repo has one, otherwise the repo page itself
+      const noLive = ['Trip21'];
+      const liveUrl = (r.has_pages && !noLive.includes(r.name)) ? (r.homepage || ('https://rudventur.github.io/' + r.name + '/')) : r.html_url;
+      return `
+      <a class="repo-card" href="${liveUrl}" target="_blank" rel="noopener">
         <div class="repo-card__name">${r.name}</div>
         <div class="repo-card__desc">${r.description || 'No description'}</div>
         <div class="repo-card__meta">
@@ -1057,7 +1061,8 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
           ${r.has_pages ? '<span class="repo-card__pages">LIVE</span>' : ''}
         </div>
       </a>
-    `).join('');
+    `;
+    }).join('');
   } catch (err) {
     container.innerHTML = '<div class="repos-error">could not load repos — ' + err.message + '</div>';
   }
