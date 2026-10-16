@@ -1,10 +1,11 @@
-/* RudVentur rxplanation — right-click any button/link for a short explanation. */
+/* RudVentur rxplanation — right-click any button/link for a short explanation.
+   Ensures buttons are visible, not overlayed, links are explained, and right-click works. */
 (function () {
   if (window.__rvRxplanation) return;
   window.__rvRxplanation = true;
 
   var CSS = '' +
-    '#rxplanation-menu{position:fixed;z-index:2147483000;min-width:240px;max-width:340px;' +
+    '#rxplanation-menu{position:fixed;z-index:2147483647;min-width:240px;max-width:340px;' +
     'background:#0e0e10;border:1px solid #3a3a3a;border-radius:10px;padding:.55rem .6rem .65rem;' +
     'box-shadow:0 16px 48px rgba(0,0,0,.75);color:#eee;font-family:"DM Mono",ui-monospace,monospace;' +
     'display:none;pointer-events:auto}' +
@@ -17,12 +18,13 @@
     'border:1px solid #2a2a2a;color:#ddd;font:inherit;font-size:.65rem;letter-spacing:.4px;' +
     'padding:.45rem .55rem;border-radius:6px;cursor:pointer;margin-top:.28rem}' +
     '#rxplanation-menu button:hover{background:rgba(124,255,74,.12);border-color:#7CFF4A;color:#fff}' +
-    'button,a,[role="button"],.tool-link,.chem-btn,.user-btn,input[type="button"],input[type="submit"]{position:relative}' +
-    '.soon{opacity:.55;cursor:default}' +
-    '.tool-list{display:flex;flex-direction:column;gap:.2rem}' +
-    '.tool-list li{display:block;position:relative;z-index:1}' +
-    '.tool-link,.user-btn,.comp-link,.footer-link{position:relative;z-index:1;visibility:visible;opacity:1}' +
-    '.tool-link.soon{opacity:.7}';
+    'button,a,[role="button"],.tool-link,.chem-btn,.user-btn,.repo-card,input[type="button"],input[type="submit"]{' +
+    'position:relative !important;z-index:10 !important;visibility:visible !important;opacity:1 !important;' +
+    'pointer-events:auto !important}' +
+    '.soon{opacity:.65 !important;cursor:default !important}' +
+    '.tool-list{display:flex;flex-direction:column;gap:.25rem}' +
+    '.tool-list li{display:block;position:relative;z-index:5}' +
+    '.tool-link,.user-btn,.comp-link,.footer-link{z-index:20 !important}';
 
   var style = document.createElement('style');
   style.textContent = CSS;
@@ -111,6 +113,9 @@
       if (!tip || tip.indexOf('rxplanation') === -1) {
         el.setAttribute('title', (tip ? tip + ' — ' : '') + 'Right-click for rxplanation');
       }
+      el.style.visibility = 'visible';
+      el.style.opacity = el.classList.contains('soon') ? '0.65' : '1';
+      el.style.pointerEvents = 'auto';
     });
   }
 
@@ -148,6 +153,12 @@
   window.addEventListener('scroll', hide, true);
 
   function unstack() {
+    document.querySelectorAll('button, a, [role="button"]').forEach(function (el) {
+      if (menu.contains(el)) return;
+      var cs = window.getComputedStyle(el);
+      if (cs.display === 'none') return;
+      el.style.zIndex = '100';
+    });
     var floats = [];
     document.querySelectorAll('button, a, [role="button"]').forEach(function (el) {
       if (menu.contains(el)) return;
@@ -168,12 +179,9 @@
         var overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
         if (overlapX > 6 && overlapY > 6) {
           var el = floats[i].el;
-          var shift = Math.ceil(overlapY + 10);
-          var curTop = parseFloat(el.style.top);
-          if (!isNaN(curTop)) el.style.top = (curTop + shift) + 'px';
-          else el.style.marginTop = shift + 'px';
-          var nr = el.getBoundingClientRect();
-          floats[i].r = nr;
+          var shift = Math.ceil(overlapY + 12);
+          el.style.marginTop = (parseFloat(el.style.marginTop) || 0) + shift + 'px';
+          floats[i].r = el.getBoundingClientRect();
         }
       }
     }
@@ -181,8 +189,9 @@
 
   function boot() {
     tagControls();
-    setTimeout(unstack, 400);
-    setTimeout(unstack, 1400);
+    setTimeout(unstack, 300);
+    setTimeout(unstack, 1200);
+    setTimeout(tagControls, 2000);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
