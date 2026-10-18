@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>RR Dictionary</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230e1015%27/%3E%3Ctext x=%2716%27 y=%2723%27 font-size=%2720%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27%23ff7a45%27 font-family=%27sans-serif%27%3Err%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0e1015;--card:#171a22;--line:#262b38;--txt:#e8eaf0;--dim:#8d94a8;--acc:#ff7a45;--acc2:#6ea8ff}
+body.rv{--acc:#a67cff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:10px 10px 40px}
+h1{margin:4px 0 2px;font-size:24px;letter-spacing:.5px}
+h1 b{color:var(--acc)}
+.sub{color:var(--dim);font-size:13px;margin:0 0 8px}
+.tabs{display:flex;gap:6px;margin:6px 0}
+.tab{flex:1;padding:9px 6px;border:1px solid var(--line);background:var(--card);color:var(--dim);border-radius:10px;font-size:14px;cursor:pointer}
+.tab.on{color:var(--txt);border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.tab small{display:block;font-size:11px;opacity:.8}
+.row{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap}
+input,select,button{font:inherit;color:var(--txt);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+input[type=search]{flex:1 1 100%;font-size:16px}
+select{flex:1 1 45%;min-width:0;text-overflow:ellipsis}
+#lang{flex-basis:100%}
+button{cursor:pointer}
+button:active,.tab:active{transform:scale(.98)}
+.count{margin:8px 2px;color:var(--dim);font-size:13px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.count b{color:var(--txt)}
+#list{display:flex;flex-wrap:wrap;gap:5px}
+.w{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:14px;word-break:break-all}
+.w mark{background:none;color:var(--acc);font-weight:700}
+.w i{font-style:normal;color:var(--dim);font-size:11px;margin-left:6px}
+#more{width:100%;margin-top:10px}
+.note{color:var(--dim);font-size:12px;margin-top:18px;border-top:1px solid var(--line);padding-top:8px}
+.hide{display:none!important}
+.pop{color:var(--acc);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🔤 <b>RR</b> Dictionary</h1>
+<p class="sub">Every word we could find with a double r inside, from many languages. Pure open data, nothing invented. 🐭</p>
+<div class="tabs">
+<button class="tab on" id="tab-rr" type="button">Double R<small>words with “rr”</small></button>
+<button class="tab" id="tab-rv" type="button">⚔️ Side quest<small>words with “rv”</small></button>
+</div>
+<div class="row">
+<input type="search" id="q" placeholder="Search words…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search words">
+</div>
+<div class="row">
+<select id="lang" aria-label="Language filter"></select>
+<select id="textmode" aria-label="How the search text matches">
+<option value="contains">Text anywhere in word</option>
+<option value="starts">Word starts with text</option>
+<option value="ends">Word ends with text</option>
+</select>
+<select id="where" aria-label="Where the letter pair sits"></select>
+</div>
+<div class="count"><span id="count">Loading…</span><span><button id="rand" type="button">🎲 Random word</button> <button id="clear" type="button">Clear</button></span></div>
+<div id="status" class="count" style="margin:2px"></div>
+<div id="list"></div>
+<button id="more" type="button" class="hide">Show more</button>
+<p class="note" id="note"></p>
+</div>
+<script id="data" type="application/json">null</script>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var EMB=null;try{var t=document.getElementById('data').textContent.trim();if(t&&t!=='null')EMB=JSON.parse(t)}catch(e){}
+var DATA_DIR='rr-dictionary-data/';
+var PAGE=300;
+var state={key:'rr',shown:PAGE,lang:'English'};
+var INDEX=null;            /* {rr:[{n:name,c:count,f:file}], rv:[...]} */
+var LOADED={};             /* key+'|'+name -> array of words */
+var results=[],resLang=[],timer=0,seq=0;
+function fmt(n){return n.toLocaleString('en-GB')}
+function esc(x){return x.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function status(t){$('status').textContent=t||''}
+function getIndex(){
+  if(INDEX)return Promise.resolve(INDEX);
+  if(EMB){INDEX={};['rr','rv'].forEach(function(k){INDEX[k]=Object.keys(EMB[k]).map(function(n){return {n:n,c:EMB[k][n].n}}).sort(function(a,b){return b.c-a.c||(a.n<b.n?-1:1)})});return Promise.resolve(INDEX)}
+  return fetch(DATA_DIR+'index.json').then(function(r){if(!r.ok)throw new Error('index '+r.status);return r.json()}).then(function(j){INDEX=j;return j});
+}
+function getLang(key,e){
+  var id=key+'|'+e.n;
+  if(LOADED[id])return Promise.resolve(LOADED[id]);
+  if(EMB){LOADED[id]=EMB[key][e.n].w.split(' ');return Promise.resolve(LOADED[id])}
+  return fetch(DATA_DIR+key+'/'+e.f).then(function(r){if(!r.ok)throw new Error(e.n+' '+r.status);return r.json()}).then(function(j){LOADED[id]=j.w.split(' ');return LOADED[id]});
+}
+function total(key){return INDEX[key].reduce(function(a,e){return a+e.c},0)}
+function fillSelects(){
+  var L=INDEX[state.key],p=state.key,sel=state.lang;
+  var s='<option value="*">All '+L.length+' languages ('+fmt(total(state.key))+' words)</option>';
+  L.forEach(function(e){s+='<option value="'+esc(e.n).replace(/"/g,'&quot;')+'">'+esc(e.n)+' ('+fmt(e.c)+')</option>'});
+  $('lang').innerHTML=s;
+  var ok=sel==='*'||L.some(function(e){return e.n===sel});
+  state.lang=ok?sel:'*';$('lang').value=state.lang;
+  var w=$('where').value||'any';
+  $('where').innerHTML='<option value="any">“'+p+'” anywhere</option><option value="start">“'+p+'” at the start</option><option value="end">“'+p+'” at the end</option><option value="middle">“'+p+'” in the middle</option>';
+  $('where').value=w;
+}
+function matchWhere(w,p,mode){
+  if(mode==='any')return true;
+  var n=p.length;
+  if(mode==='start')return w.lastIndexOf(p,0)===0;
+  if(mode==='end')return w.length>=n&&w.indexOf(p,w.length-n)===w.length-n;
+  var i=w.indexOf(p,1);
+  while(i!==-1){if(i+n<w.length)return true;i=w.indexOf(p,i+1)}
+  return false;
+}
+function run(){
+  var my=++seq,key=state.key,p=key;
+  var q=$('q').value.trim().toLowerCase(),tm=$('textmode').value,wh=$('where').value;
+  var L=INDEX[key],pick=state.lang==='*'?L:L.filter(function(e){return e.n===state.lang});
+  var need=pick.filter(function(e){return !LOADED[key+'|'+e.n]});
+  if(need.length)status('Loading '+need.length+' language'+(need.length>1?'s':'')+'…');
+  var done=0;
+  Promise.all(pick.map(function(e){return getLang(key,e).then(function(x){done++;if(need.length>1&&my===seq)status('Loading… '+done+' of '+pick.length+' languages');return x})})).then(function(){
+    if(my!==seq)return;
+    status('');
+    var out=[],ol=[];
+    pick.forEach(function(e){
+      var W=LOADED[key+'|'+e.n];
+      for(var i=0;i<W.length;i++){
+        var w=W[i];
+        if(q){
+          if(tm==='contains'){if(w.indexOf(q)===-1)continue}
+          else if(tm==='starts'){if(w.lastIndexOf(q,0)!==0)continue}
+          else if(w.length<q.length||w.indexOf(q,w.length-q.length)!==w.length-q.length)continue;
+        }
+        if(!matchWhere(w,p,wh))continue;
+        out.push(w);ol.push(e.n);
+      }
+    });
+    results=out;resLang=ol;state.shown=PAGE;render();
+  }).catch(function(err){status('Could not load the word files: '+err.message)});
+}
+function render(){
+  var p=state.key,all=state.lang==='*';
+  var n=Math.min(state.shown,results.length),frag=document.createDocumentFragment();
+  for(var k=0;k<n;k++){
+    var w=results[k],el=document.createElement('span');el.className='w';
+    var pos=0,at;
+    while((at=w.indexOf(p,pos))!==-1){
+      if(at>pos)el.appendChild(document.createTextNode(w.slice(pos,at)));
+      var m=document.createElement('mark');m.textContent=p;el.appendChild(m);pos=at+p.length;
+    }
+    if(pos<w.length)el.appendChild(document.createTextNode(w.slice(pos)));
+    if(all){var s=document.createElement('i');s.textContent=resLang[k];el.appendChild(s)}
+    frag.appendChild(el);
+  }
+  var l=$('list');l.textContent='';l.appendChild(frag);
+  $('count').innerHTML='Showing <b>'+fmt(n)+'</b> of <b>'+fmt(results.length)+'</b> matching words'+(results.length===0?' — nothing here, try fewer letters':'');
+  var more=$('more');more.classList.toggle('hide',n>=results.length);
+  more.textContent='Show '+fmt(Math.min(PAGE,results.length-n))+' more words';
+}
+function later(){clearTimeout(timer);timer=setTimeout(run,150)}
+function setKey(k){
+  state.key=k;document.body.classList.toggle('rv',k==='rv');
+  $('tab-rr').classList.toggle('on',k==='rr');$('tab-rv').classList.toggle('on',k==='rv');
+  try{localStorage.setItem('rrdict-tab',k)}catch(e){}
+  fillSelects();run();
+}
+$('tab-rr').onclick=function(){setKey('rr')};
+$('tab-rv').onclick=function(){setKey('rv')};
+$('q').addEventListener('input',later);
+$('lang').onchange=function(){state.lang=$('lang').value;run()};
+$('textmode').onchange=run;$('where').onchange=run;
+$('more').onclick=function(){state.shown+=PAGE;render()};
+$('clear').onclick=function(){$('q').value='';state.lang='English';$('lang').value='English';$('textmode').value='contains';$('where').value='any';run()};
+$('rand').onclick=function(){
+  if(!results.length)return;
+  var i=Math.floor(Math.random()*results.length);
+  results=[results[i]];resLang=[resLang[i]];state.shown=1;render();
+};
+$('note').textContent='Words come from open Wiktionary extracts, spell-checker dictionaries and subtitle frequency lists, so a few odd names or typos can sneak in. Spanish, Catalan, Basque and Albanian treat “rr” as one sound or letter. Word files load on demand, one language at a time.';
+var tab0='rr';try{tab0=localStorage.getItem('rrdict-tab')||'rr'}catch(e){}
+getIndex().then(function(){setKey(tab0==='rv'?'rv':'rr')}).catch(function(err){status('Could not load the language list: '+err.message)});
+})();
+</script>
+</body>
+</html>

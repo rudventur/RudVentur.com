@@ -1511,6 +1511,7 @@ html.embedded #topRightUser { display: none !important; }
 .pl-icon.pl-soldat { --pl-c: #ff6b4a; }
 .pl-icon.pl-golden { --pl-c: #ffd700; }
 .pl-icon.pl-fire { --pl-c: #ff4d2e; }
+.pl-icon.pl-dict { --pl-c: #5cc8ff; }
 /* wide: six columns, each icon two wide, so the second row of two icons sits centred under the first row of three */
 @media (min-width: 461px) {
   .pl-grid { grid-template-columns: repeat(6, 1fr); }
@@ -1518,6 +1519,7 @@ html.embedded #topRightUser { display: none !important; }
   .pl-icon.pl-soldat { grid-column: 1 / span 2; }
   .pl-icon.pl-golden { grid-column: 3 / span 2; }
   .pl-icon.pl-fire { grid-column: 5 / span 2; }
+  .pl-icon.pl-dict { grid-column: 2 / span 2; }
 }
 .pl-emoji { font-size: 3.1rem; line-height: 1; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--pl-c) 70%, transparent)); }
 .pl-icon:hover .pl-emoji, .pl-icon:focus-visible .pl-emoji { animation: plWiggle 0.6s var(--ease); }
@@ -1596,6 +1598,7 @@ html.embedded #topRightUser { display: none !important; }
 .pc-wallet-frame { flex: 1; min-height: 420px; width: 100%; border: 0; display: block; background: #050607; }
 
 /* 🏆 Golden Five view: the cartridge shelf page (golden-five.html in the RudVentur.com repository), inside the popcorn window */
+#view-dict.gf-view { padding: 0 !important; display: flex; flex-direction: column; }
 #view-fireroom.gf-view { padding: 0 !important; display: flex; flex-direction: column; }
 #view-golden.gf-view { padding: 0 !important; display: flex; flex-direction: column; }
 .gf-frame { flex: 1; min-height: 420px; width: 100%; border: 0; display: block; background: #050607; }
@@ -2122,6 +2125,10 @@ html.pp-max #popcorn-trigger { display: none !important; }
           <span class="pl-emoji" aria-hidden="true">🧯</span>
           <span class="pl-text"><span class="pl-name">Fire Room</span><span class="pl-desc">Fire safety inspections with room maps</span></span>
         </button>
+        <button type="button" class="pl-icon pl-dict" data-view="dict" onclick="openView('dict')">
+          <span class="pl-emoji" aria-hidden="true">📖</span>
+          <span class="pl-text"><span class="pl-name">RR Dictionary</span><span class="pl-desc">Every double R word, plus the RV side quest</span></span>
+        </button>
       </div>
       <div class="pl-more-label">MORE POPCORN</div>
       <div class="pl-more">
@@ -2184,6 +2191,11 @@ html.pp-max #popcorn-trigger { display: none !important; }
     <!-- 🧯 FIRE ROOM: fire safety inspection with room maps (fireroom/index.html) -->
     <div class="tab-view gf-view" id="view-fireroom">
       <iframe class="gf-frame" id="fr-frame" title="Fire Room, fire safety inspections" allow="fullscreen" allowfullscreen></iframe>
+    </div>
+
+    <!-- 📖 RR DICTIONARY: every word with a double R in all languages, plus the RV side quest (rr-dictionary/) -->
+    <div class="tab-view gf-view" id="view-dict">
+      <iframe class="gf-frame" id="dict-frame" title="RR Dictionary" allow="fullscreen" allowfullscreen></iframe>
     </div>
 
     <!-- POPCORN MAKER TAB -->
@@ -2595,6 +2607,7 @@ const VIEW_TITLES = {
   soldat: '🔫 Soldat Android · progress',
   golden: '🏆 Golden Five · the cartridge shelf',
   fireroom: '🧯 Fire Room · fire safety inspections',
+  dict: '📖 RR Dictionary · double R words and the RV side quest',
   maker: '✍️ Describer',
   cookies: '🍪 Cookies',
   launch: '🚀 Tools'
@@ -2628,6 +2641,7 @@ function switchToTab(tabName) {
   if (tabName === 'soldat') soldatLoad();
   if (tabName === 'golden') goldenLoad();
   if (tabName === 'fireroom') fireroomLoad();
+  if (tabName === 'dict') dictLoad();
   view.scrollTop = 0;
 }
 function openView(name) {
@@ -2696,6 +2710,13 @@ function soldatRender(data) {
 }
 
 // 🏆 Golden Five: the shelf page loads the first time its view opens (from the same site as the shared files)
+function dictLoad() {
+  const fr = document.getElementById('dict-frame');
+  if (!fr || fr.getAttribute('src')) return;
+  let src = 'https://rudventur.github.io/RudVentur.com/rr-dictionary/index.html?v=20261018-2';
+  try { src = new URL('../rr-dictionary/index.html?v=20261018-2', rvEmbedBase()).href; } catch (e) {}
+  fr.src = src;
+}
 function fireroomLoad() {
   const fr = document.getElementById('fr-frame');
   if (!fr || fr.getAttribute('src')) return;
