@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fire Room — fire safety inspection</title>
+<style>
+:root{--bg:#0b0f14;--panel:#121923;--line:#26323f;--txt:#e8eef4;--mut:#8da0b3;--fire:#ff6b4a;--gold:#ffc83d;--ok:#35d07f;--bad:#ff4d4d;--med:#ffb020}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:14px/1.4 system-ui,Segoe UI,Roboto,sans-serif;overflow:hidden}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer}
+button:active{transform:scale(.97)}
+#app{display:flex;flex-direction:column;height:100%}
+#top{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#0e141c;border-bottom:1px solid var(--line);flex-wrap:wrap}
+#top .logo{font-size:20px}
+#mapSel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px;max-width:42vw}
+#tabs{display:flex;gap:4px;margin-left:auto}
+.tab{padding:6px 9px;border-radius:10px}
+.tab.on{background:var(--fire);color:#160600;border-color:var(--fire);font-weight:700}
+main{flex:1;min-height:0;position:relative}
+.view{position:absolute;inset:0;display:none;overflow:auto;padding:12px}
+.view.on{display:block}
+#v-map{padding:0;overflow:hidden}
+#stage{position:absolute;inset:0;touch-action:none}
+#cv{width:100%;height:100%;display:block;touch-action:none}
+.float{position:absolute;background:#0c121add;border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(4px)}
+#ovl{top:8px;left:8px;padding:4px;max-width:calc(100% - 70px)}
+.orow{display:flex;gap:4px;flex-wrap:wrap}
+#ovl button{padding:4px 8px;font-size:12px}
+#ovl button.on{background:var(--gold);color:#201500;border-color:var(--gold);font-weight:700}
+#zoom{top:8px;right:8px;display:flex;flex-direction:column;gap:4px;padding:4px}
+#zoom button{padding:4px 10px;font-size:16px}
+#legend{padding:4px 2px 0;font-size:11px;color:var(--mut)}
+#pal{left:8px;right:8px;bottom:30px;padding:6px;display:flex;flex-direction:column;gap:6px}
+.row{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px}
+.row::-webkit-scrollbar{height:4px}
+.gl{flex:none;font-size:10px;color:var(--mut);align-self:center;writing-mode:vertical-rl;transform:rotate(180deg)}
+.tb{flex:none;width:56px;padding:3px 2px;font-size:9px;line-height:1.1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1px}
+.tb i{font-style:normal;font-size:20px}
+.tb.on{background:#3a1a10;border-color:var(--fire);box-shadow:0 0 0 1px var(--fire) inset}
+.tb.haz{border-color:#5a2a2a}
+#palT{left:50%;transform:translateX(-50%);bottom:4px;padding:2px 22px;font-size:12px;border-radius:12px}
+#hint{bottom:calc(100% + 0px);display:none}
+h2{margin:0 0 8px;font-size:17px}h3{margin:14px 0 6px;font-size:14px;color:var(--gold)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+.q{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-bottom:1px solid var(--line)}
+.q:last-child{border-bottom:0}
+.ans{display:flex;gap:4px;flex-wrap:wrap}
+.ans button{padding:4px 10px;font-size:13px}
+.ans button.on.y{background:#124d2b;border-color:var(--ok)}
+.ans button.on.n{background:#561616;border-color:var(--bad)}
+.ans button.on.x{background:#2a3340;border-color:var(--mut)}
+.qn{width:100%;background:#0c121a;border:1px solid var(--line);border-radius:8px;padding:5px}
+.badge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;margin-right:6px;color:#111}
+.b-high{background:var(--bad)}.b-med{background:var(--med)}.b-low{background:var(--gold)}.b-ok{background:var(--ok)}
+.fd{padding:7px 0;border-bottom:1px solid var(--line);display:flex;gap:6px;align-items:flex-start}
+.fd.click{cursor:pointer}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{flex:1;min-width:90px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
+.stat b{display:block;font-size:22px}
+label{display:block;font-size:12px;color:var(--mut);margin:8px 0 2px}
+input[type=text],input[type=date],select.f,textarea{width:100%;background:#0c121a;border:1px solid var(--line);border-radius:8px;padding:7px}
+textarea{min-height:60px}
+dialog{background:var(--panel);color:var(--txt);border:1px solid var(--fire);border-radius:14px;padding:14px;width:min(420px,92vw)}
+dialog::backdrop{background:#000a}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.risk{padding:6px 10px;border-radius:8px;margin-top:8px;font-weight:700;text-align:center}
+.small{font-size:12px;color:var(--mut)}
+.rep img{max-width:100%;border-radius:8px;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:12px}
+td,th{border:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+@media print{
+ html,body{overflow:visible;height:auto;background:#fff;color:#000}
+ #top,#v-map,#v-check,#v-find{display:none!important}
+ #app,main{display:block;height:auto}
+ .view{position:static;display:none;overflow:visible;padding:0}
+ #v-rep{display:block!important}
+ .card,.stat{background:#fff;border-color:#999;color:#000}
+ .no-print{display:none!important}
+ td,th{border-color:#999}
+ .small,label{color:#333}
+}
+</style>
+</head>
+<body>
+<div id="app">
+ <div id="top">
+  <span class="logo">🔥</span>
+  <select id="mapSel" aria-label="Choose a room map"></select>
+  <button id="bNew" title="New room map">＋</button>
+  <button id="bRen" title="Rename this map">✏️</button>
+  <button id="bDel" title="Delete this map">🗑️</button>
+  <div id="tabs">
+   <button class="tab on" data-v="map">🗺️ Map</button>
+   <button class="tab" data-v="check">✅ Checklist</button>
+   <button class="tab" data-v="find">⚠️ Findings</button>
+   <button class="tab" data-v="rep">📄 Report</button>
+  </div>
+ </div>
+ <main>
+  <section id="v-map" class="view on">
+   <div id="stage"><canvas id="cv"></canvas></div>
+   <div id="ovl" class="float">
+    <div class="orow"><button data-o="" class="on">Plain</button>
+    <button data-o="exit">Distance to exit</button>
+    <button data-o="ext">Extinguisher reach</button>
+    <button data-o="alarm">Alarm reach</button></div>
+    <div id="legend" hidden></div>
+   </div>
+   <div id="zoom" class="float"><button id="zIn">＋</button><button id="zOut">－</button><button id="zFit" title="Fit the map">⌖</button></div>
+   <div id="pal" class="float"></div>
+   <button id="palT" class="float">▼ Hide tools</button>
+  </section>
+  <section id="v-check" class="view"></section>
+  <section id="v-find" class="view"></section>
+  <section id="v-rep" class="view rep"></section>
+ </main>
+</div>
+
+<dialog id="dlg">
+ <h2 id="dT"></h2>
+ <div id="dRisk"></div>
+ <label>What is it, where exactly, and what should be done?</label>
+ <textarea id="dNote"></textarea>
+ <div class="two">
+  <div><label>Who looks after it</label><input type="text" id="dOwner"></div>
+  <div><label id="dDateL">Date</label><input type="date" id="dDate"></div>
+ </div>
+ <div id="dHaz" class="two">
+  <div><label>How likely (1 rare, 5 almost certain)</label><select class="f" id="dL"></select></div>
+  <div><label>How bad (1 minor, 5 deadly)</label><select class="f" id="dS"></select></div>
+ </div>
+ <label><input type="checkbox" id="dDone"> Done or fixed</label>
+ <div style="display:flex;gap:8px;margin-top:12px;justify-content:space-between">
+  <button id="dDel" style="border-color:var(--bad)">🗑️ Remove</button>
+  <span><button id="dCancel">Close</button> <button id="dSave" style="background:var(--fire);color:#160600;font-weight:700">Save</button></span>
+ </div>
+</dialog>
+
+<script>
+(function(){
+'use strict';
+var KEY='rvFireRoom1', PALKEY='rvFireRoomPalHidden';
+var COLS=36, ROWS=24;
+var TILE={EMPTY:0,FLOOR:1,WALL:2,DOOR:3,WIN:4};
+var ITEMS={
+ exit:{i:'🏃',n:'Fire exit',g:'s'}, ext:{i:'🧯',n:'Extinguisher',g:'s'}, alarm:{i:'🔔',n:'Smoke alarm',g:'s'},
+ call:{i:'🔴',n:'Call point',g:'s'}, sign:{i:'🟩',n:'Exit sign',g:'s'}, light:{i:'💡',n:'Emergency light',g:'s'},
+ fdoor:{i:'🛡️',n:'Fire door',g:'s'}, spr:{i:'💧',n:'Sprinkler',g:'s'}, blank:{i:'🧣',n:'Fire blanket',g:'s'},
+ sock:{i:'⚡',n:'Overloaded socket',g:'h'}, flam:{i:'🛢️',n:'Flammable store',g:'h'}, cook:{i:'🍳',n:'Cooking',g:'h'},
+ heat:{i:'🔥',n:'Heater',g:'h'}, clut:{i:'📦',n:'Clutter on route',g:'h'}, wire:{i:'🔌',n:'Faulty wiring',g:'h'},
+ bexit:{i:'🚧',n:'Blocked exit',g:'h'}, lexit:{i:'🔒',n:'Locked exit',g:'h'}, smoke:{i:'🚬',n:'Smoking',g:'h'}
+};
+var TOOLS=[['move','✋','Move or open'],['floor','▫️','Floor'],['wall','🧱','Wall'],['door','🚪','Door'],['win','🪟','Window'],['erase','🧽','Erase'],['undo','↩️','Undo']];
+var QUESTIONS=[
+ ['Escape routes',[
+  ['r1','Escape routes are clear of boxes, furniture and rubbish'],
+  ['r2','Exit doors open easily from the inside without a key'],
+  ['r3','Exit signs are in place and easy to see'],
+  ['r4','Emergency lights come on when the power is off'],
+  ['r5','Fire doors close fully and are never wedged open']]],
+ ['Spotting and warning',[
+  ['d1','Smoke alarms are tested on a regular schedule and the tests are written down'],
+  ['d2','Call points are easy to reach and not blocked'],
+  ['d3','The alarm can be heard in every room, even with doors closed']]],
+ ['Fighting a small fire',[
+  ['f1','Extinguishers are in place, the right type and checked by a competent person this year'],
+  ['f2','People who work here know how to use the extinguishers and when to leave instead']]],
+ ['Electrics and heat',[
+  ['e1','Sockets and extension leads are not overloaded'],
+  ['e2','Cables and plugs are undamaged'],
+  ['e3','Electrical equipment is checked on a regular schedule'],
+  ['e4','Heaters are guarded and kept away from things that burn']]],
+ ['Storage and rubbish',[
+  ['s1','Flammable liquids and gas are stored safely and in small amounts'],
+  ['s2','Rubbish is kept away from walls and exits and emptied often'],
+  ['s3','Things that burn easily are stored tidily and away from heat']]],
+ ['People and paperwork',[
+  ['p1','A fire risk assessment is written down and has been reviewed lately'],
+  ['p2','A practice evacuation has happened recently'],
+  ['p3','Staff have had fire safety training'],
+  ['p4','The emergency plan is on display, with a meeting point outside'],
+  ['p5','Anyone who needs help to get out has a personal plan']]]
+];
+var LIM={exit:18,ext:30,alarm:7.5};
+
+/* ---------- state ---------- */
+var S=load();
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY));if(s&&s.maps&&s.maps.length)return s;}catch(e){}
+ var m=sample();return {maps:[m],cur:m.id,inspector:''};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function uid(){return Math.random().toString(36).slice(2,9);}
+function blank(name){var t=[];for(var i=0;i<COLS*ROWS;i++)t.push(0);return {id:uid(),name:name,cell:1,t:t,items:[],checks:{},lim:{exit:LIM.exit,ext:LIM.ext,alarm:LIM.alarm}};}
+function M(){for(var i=0;i<S.maps.length;i++)if(S.maps[i].id===S.cur)return S.maps[i];return S.maps[0];}
+function ix(x,y){return y*COLS+x;}
+function room(m,x0,y0,x1,y1){for(var y=y0;y<=y1;y++)for(var x=x0;x<=x1;x++){var e=(x===x0||x===x1||y===y0||y===y1);var k=ix(x,y);if(e){if(m.t[k]!==TILE.FLOOR||true)m.t[k]=TILE.WALL;}else m.t[k]=TILE.FLOOR;}}
+function sample(){
+ var m=blank('Example office (draw your own!)');
+ room(m,2,2,16,12);room(m,16,2,33,12);room(m,2,12,33,17);room(m,22,17,33,22);
+ [[8,12],[24,12],[16,7],[27,17],[2,15]].forEach(function(d){m.t[ix(d[0],d[1])]=TILE.DOOR;});
+ [[6,2],[11,2],[22,2],[28,2],[33,5],[33,9],[2,6]].forEach(function(d){m.t[ix(d[0],d[1])]=TILE.WIN;});
+ function it(t,x,y,note,l,s){m.items.push({id:uid(),t:t,x:x,y:y,note:note||'',l:l||3,s:s||3,owner:'',date:'',done:false});}
+ it('exit',2,15,'Only way out on this floor');it('sign',3,14);it('ext',6,14,'Water extinguisher');it('alarm',9,5);it('alarm',24,5);it('call',3,16);
+ it('sock',5,4,'Four heaters and a kettle on one extension lead',4,4);it('heat',28,5,'Portable heater close to paper',3,4);
+ it('clut',12,14,'Boxes stacked along the corridor',4,3);it('cook',24,20,'Fryer with no fire blanket nearby',3,4);it('flam',31,20,'Cleaning spray cans next to the cooker',3,3);
+ return m;}
+
+/* ---------- geometry and analysis ---------- */
+var walk=function(m,x,y){if(x<0||y<0||x>=COLS||y>=ROWS)return false;var v=m.t[ix(x,y)];return v===TILE.FLOOR||v===TILE.DOOR;};
+function dist(m,sources,maxM){
+ var D=new Float32Array(COLS*ROWS).fill(Infinity),q=[],qi=0;
+ sources.forEach(function(s){var k=ix(s.x,s.y);if(k>=0&&k<D.length){D[k]=0;q.push(k);}});
+ var dirs=[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.4142],[1,-1,1.4142],[-1,1,1.4142],[-1,-1,1.4142]];
+ while(qi<q.length){var k=q[qi++],x=k%COLS,y=(k/COLS)|0,d=D[k];
+  for(var i=0;i<8;i++){var dx=dirs[i][0],dy=dirs[i][1],nx=x+dx,ny=y+dy;if(!walk(m,nx,ny))continue;
+   if(dx&&dy&&(!walk(m,x+dx,y)||!walk(m,x,y+dy)))continue;
+   var nd=d+dirs[i][2]*m.cell;if(maxM&&nd>maxM*3)continue;var nk=ix(nx,ny);
+   if(nd<D[nk]-1e-6){D[nk]=nd;q.push(nk);}}}
+ return D;}
+function usableExits(m){return m.items.filter(function(a){return a.t==='exit'&&!m.items.some(function(b){return !b.done&&(b.t==='bexit'||b.t==='lexit')&&Math.abs(b.x-a.x)<=1&&Math.abs(b.y-a.y)<=1;});});}
+function of(m,t){return m.items.filter(function(a){return a.t===t;});}
+var cache=null;
+function maps(m){var key=JSON.stringify([m.id,m.t,m.items.map(function(a){return [a.t,a.x,a.y,a.done];}),m.cell,m.lim]);
+ if(cache&&cache.key===key)return cache;
+ cache={key:key,exit:dist(m,usableExits(m)),ext:dist(m,of(m,'ext')),alarm:dist(m,of(m,'alarm'))};return cache;}
+function score(a){return (a.l||3)*(a.s||3);}
+function level(sc){return sc>=15?'high':sc>=8?'med':'low';}
+function analyse(m){
+ var F=[],c=maps(m),floor=[],i;
+ for(i=0;i<m.t.length;i++)if(m.t[i]===TILE.FLOOR)floor.push(i);
+ var st={floor:floor.length,area:Math.round(floor.length*m.cell*m.cell)};
+ if(!floor.length){F.push({lv:'low',tx:'Draw some floor first (the ▫️ tool), then walls and doors, and this list will fill up.'});return {F:F,st:st};}
+ var ex=usableExits(m);
+ if(!of(m,'exit').length)F.push({lv:'high',tx:'There is no fire exit on this map. Place the 🏃 fire exit where people leave the building.'});
+ else if(!ex.length)F.push({lv:'high',tx:'Every fire exit is blocked or locked. Fix that first.'});
+ else if(ex.length===1)F.push({lv:'med',tx:'Only one usable fire exit. If a fire is near it, people are trapped. A second way out is usually advised.'});
+ function cover(D,lim,name,tool,hi){
+  var cnt=0,far=0;floor.forEach(function(k){if(D[k]===Infinity)cnt++;else if(D[k]>lim)far++;});
+  var bad=cnt+far;if(!bad)return;
+  var pc=Math.round(bad*100/floor.length);
+  F.push({lv:hi&&pc>25?'high':'med',tx:pc+'% of the floor is out of '+name+' ('+lim+' metres). Turn on the “'+tool+'” view to see the red areas.'+(cnt?' '+cnt+' floor squares have no walkable way at all (closed walls or missing doors).':'')});}
+ if(ex.length)cover(c.exit,m.lim.exit,'safe reach of a fire exit','Distance to exit',true);
+ if(!of(m,'ext').length)F.push({lv:'high',tx:'No fire extinguisher on this map.'});else cover(c.ext,m.lim.ext,'reach of an extinguisher','Extinguisher reach');
+ if(!of(m,'alarm').length)F.push({lv:'high',tx:'No smoke alarm on this map.'});else cover(c.alarm,m.lim.alarm,'reach of a smoke alarm','Alarm reach',true);
+ if(!of(m,'call').length)F.push({lv:'med',tx:'No call point (the red button you press to sound the alarm).'});
+ if(of(m,'sign').length<Math.max(1,of(m,'exit').length))F.push({lv:'low',tx:'Fewer exit signs than fire exits. Every exit and turn on the route needs a sign.'});
+ if(!of(m,'light').length)F.push({lv:'low',tx:'No emergency lights marked. Escape routes need light when the power fails.'});
+ m.items.filter(function(a){return ITEMS[a.t].g==='h';}).sort(function(a,b){return score(b)-score(a);}).forEach(function(a){
+  if(a.done)return;var sc=score(a);F.push({lv:level(sc),tx:ITEMS[a.t].i+' '+ITEMS[a.t].n+(a.note?': '+a.note:'')+' (risk '+sc+' of 25)',item:a});});
+ var no=0,un=0;QUESTIONS.forEach(function(g){g[1].forEach(function(q){var ck=m.checks[q[0]];if(!ck||!ck.a)un++;else if(ck.a==='n'){no++;F.push({lv:'med',tx:'Checklist, answered no: '+q[1]+(ck.n?' — '+ck.n:'')});}});});
+ if(un)F.push({lv:'low',tx:un+' checklist questions not answered yet.'});
+ st.no=no;st.un=un;
+ if(F.every(function(f){return f.lv==='low';}))F.unshift({lv:'ok',tx:'Nothing urgent found. Keep checking regularly.'});
+ return {F:F,st:st};}
+
+/* ---------- map drawing ---------- */
+var cv=document.getElementById('cv'),cx=cv.getContext('2d');
+var cam={ox:0,oy:0,z:20},tool='move',ovl='',sel=null,undo=[];
+function resize(){var r=cv.parentNode.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;cx.setTransform(d,0,0,d,0,0);draw();}
+function fit(){var r=cv.parentNode.getBoundingClientRect();cam.z=Math.max(6,Math.min(r.width/COLS,(r.height-100)/ROWS));cam.ox=(r.width-COLS*cam.z)/2;cam.oy=84;draw();}
+function draw(){
+ var r=cv.parentNode.getBoundingClientRect(),m=M(),z=cam.z;
+ cx.clearRect(0,0,r.width,r.height);cx.fillStyle='#0b0f14';cx.fillRect(0,0,r.width,r.height);
+ var c=ovl?maps(m):null,lim=ovl?m.lim[ovl]:0,D=ovl?c[ovl]:null;
+ cx.save();cx.translate(cam.ox,cam.oy);
+ for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){
+  var v=m.t[ix(x,y)],px=x*z,py=y*z;
+  cx.strokeStyle='#161f2a';cx.lineWidth=1;cx.strokeRect(px,py,z,z);
+  if(!v)continue;
+  if(v===TILE.FLOOR||v===TILE.DOOR){
+   cx.fillStyle=v===TILE.DOOR?'#6b4a22':'#1e2a38';cx.fillRect(px,py,z,z);
+   if(D){var d=D[ix(x,y)];cx.fillStyle=d<=lim?'rgba(53,208,127,.38)':'rgba(255,77,77,.5)';cx.fillRect(px,py,z,z);}
+  }else if(v===TILE.WALL){cx.fillStyle='#cfd8dc';cx.fillRect(px,py,z,z);}
+  else if(v===TILE.WIN){cx.fillStyle='#2a6f8f';cx.fillRect(px,py,z,z);cx.fillStyle='#9fe3ff';cx.fillRect(px+z*.1,py+z*.4,z*.8,z*.2);}
+ }
+ m.items.forEach(function(a){var def=ITEMS[a.t],px=a.x*z,py=a.y*z;
+  if(def.g==='h'){cx.fillStyle=a.done?'rgba(120,130,140,.4)':'rgba(255,60,60,.45)';cx.beginPath();cx.arc(px+z/2,py+z/2,z*.62,0,6.3);cx.fill();}
+  else{cx.fillStyle='rgba(0,0,0,.55)';cx.beginPath();cx.arc(px+z/2,py+z/2,z*.5,0,6.3);cx.fill();}
+  cx.font=Math.max(10,z*.8)+'px system-ui,"Apple Color Emoji","Segoe UI Emoji"';cx.textAlign='center';cx.textBaseline='middle';
+  cx.globalAlpha=a.done?.45:1;cx.fillText(def.i,px+z/2,py+z/2+z*.04);cx.globalAlpha=1;
+  if(sel===a.id){cx.strokeStyle=ITEMS[a.t].g==='h'?'#ff4d4d':'#ffc83d';cx.lineWidth=2;cx.strokeRect(px-1,py-1,z+2,z+2);}});
+ cx.restore();
+ var lg=document.getElementById('legend');
+ if(ovl){lg.hidden=false;lg.textContent='Green: inside '+lim+' metres. Red: too far or cut off. Each square is '+m.cell+' metre'+(m.cell===1?'':'s')+'.';}else lg.hidden=true;
+}
+function cell(e){var r=cv.getBoundingClientRect();return {x:Math.floor((e.clientX-r.left-cam.ox)/cam.z),y:Math.floor((e.clientY-r.top-cam.oy)/cam.z)};}
+function itemAt(x,y){var m=M();for(var i=m.items.length-1;i>=0;i--)if(m.items[i].x===x&&m.items[i].y===y)return m.items[i];return null;}
+function snap(){var m=M();undo.push(JSON.stringify({id:m.id,t:m.t,items:m.items}));if(undo.length>40)undo.shift();}
+function doUndo(){var s=undo.pop();if(!s)return;s=JSON.parse(s);var m=M();if(s.id!==m.id)return;m.t=s.t;m.items=s.items;save();draw();}
+var drag=null,last=null,painted=false;
+var PAINT={floor:1,wall:2,door:3,win:4,erase:0};
+function paintAt(x,y){if(x<0||y<0||x>=COLS||y>=ROWS)return;var m=M(),k=ix(x,y),v=PAINT[tool];
+ if(m.t[k]!==v){m.t[k]=v;painted=true;}
+ if(tool==='erase'){var it=itemAt(x,y);if(it){m.items.splice(m.items.indexOf(it),1);painted=true;}}}
+function line(a,b){var dx=Math.abs(b.x-a.x),dy=Math.abs(b.y-a.y),sx=a.x<b.x?1:-1,sy=a.y<b.y?1:-1,e=dx-dy,x=a.x,y=a.y;
+ for(var n=0;n<200;n++){paintAt(x,y);if(x===b.x&&y===b.y)break;var e2=2*e;if(e2>-dy){e-=dy;x+=sx;}if(e2<dx){e+=dx;y+=sy;}}}
+var pts={};
+cv.addEventListener('pointerdown',function(e){cv.setPointerCapture(e.pointerId);pts[e.pointerId]={x:e.clientX,y:e.clientY};
+ if(Object.keys(pts).length===2){drag={mode:'pinch',d:pd(),z:cam.z,ox:cam.ox,oy:cam.oy,c:pc()};return;}
+ var c=cell(e);
+ if(PAINT.hasOwnProperty(tool)){snap();painted=false;drag={mode:'paint'};last=c;line(c,c);draw();}
+ else if(ITEMS[tool]){drag={mode:'item',c:c,sx:e.clientX,sy:e.clientY};}
+ else drag={mode:'pan',sx:e.clientX,sy:e.clientY,ox:cam.ox,oy:cam.oy,c:c,moved:false};});
+function pd(){var k=Object.keys(pts),a=pts[k[0]],b=pts[k[1]];return Math.hypot(a.x-b.x,a.y-b.y)||1;}
+function pc(){var k=Object.keys(pts),a=pts[k[0]],b=pts[k[1]],r=cv.getBoundingClientRect();return {x:(a.x+b.x)/2-r.left,y:(a.y+b.y)/2-r.top};}
+cv.addEventListener('pointermove',function(e){if(!pts[e.pointerId])return;pts[e.pointerId]={x:e.clientX,y:e.clientY};if(!drag)return;
+ if(drag.mode==='pinch'&&Object.keys(pts).length>=2){var nz=Math.max(6,Math.min(80,drag.z*pd()/drag.d)),c=drag.c;cam.ox=c.x-(c.x-drag.ox)*nz/drag.z;cam.oy=c.y-(c.y-drag.oy)*nz/drag.z;cam.z=nz;draw();return;}
+ if(drag.mode==='paint'){var c2=cell(e);if(c2.x!==last.x||c2.y!==last.y){line(last,c2);last=c2;draw();}}
+ else if(drag.mode==='pan'){var dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(Math.abs(dx)+Math.abs(dy)>6)drag.moved=true;if(drag.moved){cam.ox=drag.ox+dx;cam.oy=drag.oy+dy;draw();}}});
+function up(e){delete pts[e.pointerId];if(!drag)return;var d=drag;
+ if(Object.keys(pts).length===0){drag=null;
+  if(d.mode==='paint'){if(painted){save();}else undo.pop();draw();}
+  else if(d.mode==='pan'&&!d.moved){var it=itemAt(d.c.x,d.c.y);if(it)openEd(it);else{sel=null;draw();}}
+  else if(d.mode==='item'&&Math.abs(e.clientX-d.sx)+Math.abs(e.clientY-d.sy)<10){placeItem(d.c);}}
+ else if(d.mode==='pinch')drag={mode:'none'};}
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('wheel',function(e){e.preventDefault();var r=cv.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top,nz=Math.max(6,Math.min(80,cam.z*(e.deltaY<0?1.12:.9)));cam.ox=px-(px-cam.ox)*nz/cam.z;cam.oy=py-(py-cam.oy)*nz/cam.z;cam.z=nz;draw();},{passive:false});
+function zoomBy(f){var r=cv.getBoundingClientRect(),px=r.width/2,py=r.height/2,nz=Math.max(6,Math.min(80,cam.z*f));cam.ox=px-(px-cam.ox)*nz/cam.z;cam.oy=py-(py-cam.oy)*nz/cam.z;cam.z=nz;draw();}
+function placeItem(c){if(c.x<0||c.y<0||c.x>=COLS||c.y>=ROWS)return;var m=M(),ex=itemAt(c.x,c.y);
+ if(ex&&ex.t===tool){openEd(ex);return;}
+ snap();var a={id:uid(),t:tool,x:c.x,y:c.y,note:'',l:3,s:3,owner:'',date:'',done:false};m.items.push(a);save();draw();
+ if(ITEMS[tool].g==='h')openEd(a);}
+
+/* ---------- item editor ---------- */
+var dlg=document.getElementById('dlg'),cur=null;
+['dL','dS'].forEach(function(id){var s=document.getElementById(id);for(var i=1;i<=5;i++){var o=document.createElement('option');o.value=i;o.textContent=i;s.appendChild(o);}});
+function riskBox(){var l=+document.getElementById('dL').value,s=+document.getElementById('dS').value,sc=l*s,lv=level(sc);
+ var box=document.getElementById('dRisk');box.innerHTML='<div class="risk b-'+lv+'">Risk '+sc+' of 25: '+(lv==='high'?'act now':lv==='med'?'fix soon':'keep an eye on it')+'</div>';}
+function openEd(a){cur=a;sel=a.id;draw();var def=ITEMS[a.t],h=def.g==='h';
+ document.getElementById('dT').textContent=def.i+' '+def.n;
+ document.getElementById('dNote').value=a.note||'';document.getElementById('dOwner').value=a.owner||'';document.getElementById('dDate').value=a.date||'';
+ document.getElementById('dDateL').textContent=h?'Fix by':'Next check or test due';
+ document.getElementById('dHaz').style.display=h?'grid':'none';document.getElementById('dRisk').style.display=h?'block':'none';
+ document.getElementById('dL').value=a.l||3;document.getElementById('dS').value=a.s||3;document.getElementById('dDone').checked=!!a.done;
+ if(h)riskBox();dlg.showModal();}
+document.getElementById('dL').onchange=riskBox;document.getElementById('dS').onchange=riskBox;
+document.getElementById('dSave').onclick=function(){if(!cur)return;cur.note=document.getElementById('dNote').value;cur.owner=document.getElementById('dOwner').value;cur.date=document.getElementById('dDate').value;
+ cur.l=+document.getElementById('dL').value;cur.s=+document.getElementById('dS').value;cur.done=document.getElementById('dDone').checked;save();dlg.close();draw();renderAll();};
+document.getElementById('dCancel').onclick=function(){dlg.close();};
+document.getElementById('dDel').onclick=function(){if(!cur)return;snap();var m=M();m.items.splice(m.items.indexOf(cur),1);sel=null;save();dlg.close();draw();renderAll();};
+dlg.addEventListener('close',function(){sel=null;draw();});
+
+/* ---------- palette ---------- */
+var pal=document.getElementById('pal');
+function buildPal(){pal.innerHTML='';
+ function row(label,list,haz){var r=document.createElement('div');r.className='row';var g=document.createElement('span');g.className='gl';g.textContent=label;r.appendChild(g);
+  list.forEach(function(t){var b=document.createElement('button');b.className='tb'+(haz?' haz':'');b.dataset.t=t[0];b.innerHTML='<i>'+t[1]+'</i>'+t[2];b.title=t[2];b.onclick=function(){pickTool(t[0]);};r.appendChild(b);});pal.appendChild(r);}
+ row('Draw',TOOLS.map(function(t){return t;}));
+ row('Safety',Object.keys(ITEMS).filter(function(k){return ITEMS[k].g==='s';}).map(function(k){return [k,ITEMS[k].i,ITEMS[k].n];}));
+ row('Hazards',Object.keys(ITEMS).filter(function(k){return ITEMS[k].g==='h';}).map(function(k){return [k,ITEMS[k].i,ITEMS[k].n];}),true);
+ markTool();}
+function pickTool(t){if(t==='undo'){doUndo();return;}tool=t;markTool();}
+function markTool(){pal.querySelectorAll('.tb').forEach(function(b){b.classList.toggle('on',b.dataset.t===tool);});}
+var palT=document.getElementById('palT');
+function palHide(h){pal.style.display=h?'none':'flex';palT.textContent=h?'▲ Show tools':'▼ Hide tools';try{localStorage.setItem(PALKEY,h?'1':'0');}catch(e){}}
+palT.onclick=function(){palHide(pal.style.display!=='none');};
+try{palHide(localStorage.getItem(PALKEY)==='1');}catch(e){palHide(false);}
+document.getElementById('ovl').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;ovl=b.dataset.o;this.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);});draw();});
+document.getElementById('zIn').onclick=function(){zoomBy(1.25);};document.getElementById('zOut').onclick=function(){zoomBy(.8);};document.getElementById('zFit').onclick=fit;
+
+/* ---------- maps selector ---------- */
+var sel_=document.getElementById('mapSel');
+function fillSel(){sel_.innerHTML='';S.maps.forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.name;if(m.id===S.cur)o.selected=true;sel_.appendChild(o);});}
+sel_.onchange=function(){S.cur=sel_.value;undo=[];save();renderAll();draw();};
+document.getElementById('bNew').onclick=function(){var n=prompt('Name of the new room map (for example "Ground floor kitchen"):');if(!n)return;var m=blank(n.trim().slice(0,60));S.maps.push(m);S.cur=m.id;undo=[];save();fillSel();renderAll();fit();};
+document.getElementById('bRen').onclick=function(){var m=M(),n=prompt('New name for this map:',m.name);if(!n)return;m.name=n.trim().slice(0,60);save();fillSel();renderAll();};
+document.getElementById('bDel').onclick=function(){var m=M();if(!confirm('Delete “'+m.name+'” for good?'))return;S.maps=S.maps.filter(function(x){return x!==m;});if(!S.maps.length)S.maps.push(blank('My first room map'));S.cur=S.maps[0].id;save();fillSel();renderAll();draw();};
+
+/* ---------- tabs and views ---------- */
+function showView(v){document.querySelectorAll('.view').forEach(function(x){x.classList.toggle('on',x.id==='v-'+v);});document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.v===v);});if(v==='map')setTimeout(function(){resize();},0);renderAll();}
+document.getElementById('tabs').addEventListener('click',function(e){var b=e.target.closest('.tab');if(b)showView(b.dataset.v);});
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function renderCheck(){var m=M(),h='<h2>✅ Walk-round checklist</h2><div class="small">'+esc(m.name)+'. Walk the room and answer each question with what you really see.</div>';
+ QUESTIONS.forEach(function(g){h+='<h3>'+g[0]+'</h3><div class="card">';g[1].forEach(function(q){var ck=m.checks[q[0]]||{};
+  h+='<div class="q" data-q="'+q[0]+'"><div>'+esc(q[1])+'</div><div class="ans">'+
+   [['y','✅ Yes'],['n','❌ No'],['x','➖ Not here']].map(function(a){return '<button class="'+a[0]+(ck.a===a[0]?' on':'')+'" data-a="'+a[0]+'">'+a[1]+'</button>';}).join('')+'</div>'+
+   (ck.a==='n'?'<input class="qn" placeholder="What is wrong, and what will be done?" value="'+esc(ck.n||'')+'">':'')+'</div>';});h+='</div>';});
+ var el=document.getElementById('v-check');el.innerHTML=h;
+ el.querySelectorAll('.q').forEach(function(q){var id=q.dataset.q;
+  q.querySelectorAll('.ans button').forEach(function(b){b.onclick=function(){var c=m.checks[id]||(m.checks[id]={});c.a=c.a===b.dataset.a?'':b.dataset.a;save();var sc=el.scrollTop;renderCheck();el.scrollTop=sc;};});
+  var n=q.querySelector('.qn');if(n)n.oninput=function(){(m.checks[id]||(m.checks[id]={})).n=n.value;save();};});}
+
+function findHTML(an){var h='';an.F.forEach(function(f,i){h+='<div class="fd'+(f.item?' click':'')+'" data-i="'+i+'"><span class="badge b-'+f.lv+'">'+({high:'ACT NOW',med:'FIX SOON',low:'NOTE',ok:'GOOD'}[f.lv])+'</span><span>'+esc(f.tx)+'</span></div>';});return h;}
+function renderFind(){var m=M(),an=analyse(m),st=an.st;
+ var hi=an.F.filter(function(f){return f.lv==='high';}).length,md=an.F.filter(function(f){return f.lv==='med';}).length;
+ var h='<h2>⚠️ What the map found</h2><div class="stats"><div class="stat"><b style="color:var(--bad)">'+hi+'</b>act now</div><div class="stat"><b style="color:var(--med)">'+md+'</b>fix soon</div><div class="stat"><b>'+(st.area||0)+'</b>square metres</div></div>';
+ h+='<h3>Limits you can change</h3><div class="card"><div class="two"><div><label>Furthest walk to a fire exit (metres)</label><input type="text" inputmode="decimal" id="lE" value="'+m.lim.exit+'"></div><div><label>Furthest walk to an extinguisher (metres)</label><input type="text" inputmode="decimal" id="lX" value="'+m.lim.ext+'"></div></div>'+
+  '<div class="two"><div><label>Smoke alarm reach (metres)</label><input type="text" inputmode="decimal" id="lA" value="'+m.lim.alarm+'"></div><div><label>Metres per map square</label><input type="text" inputmode="decimal" id="lC" value="'+m.cell+'"></div></div>'+
+  '<div class="small" style="margin-top:6px">These are starting points. The rules for your building can differ, so check them.</div></div><h3>Findings</h3><div class="card" id="fl">'+findHTML(an)+'</div>';
+ var el=document.getElementById('v-find');el.innerHTML=h;
+ [['lE','exit'],['lX','ext'],['lA','alarm']].forEach(function(p){document.getElementById(p[0]).onchange=function(){var v=parseFloat(this.value.replace(',','.'));if(v>0)m.lim[p[1]]=v;save();renderFind();draw();};});
+ document.getElementById('lC').onchange=function(){var v=parseFloat(this.value.replace(',','.'));if(v>0)m.cell=v;save();renderFind();draw();};
+ el.querySelectorAll('.fd.click').forEach(function(d){d.onclick=function(){openEd(an.F[+d.dataset.i].item);};});}
+
+function renderRep(){var m=M(),an=analyse(m),now=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),img='';
+ try{var old=ovl,oc=cam.ox;draw();img=cv.toDataURL('image/png');}catch(e){}
+ var hz=m.items.filter(function(a){return ITEMS[a.t].g==='h';}).sort(function(a,b){return score(b)-score(a);});
+ var h='<div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button id="rPrint">🖨️ Print or save as a page</button><button id="rSave">💾 Save backup file</button><button id="rLoad">📂 Load backup file</button><button id="rShare">📤 Share summary</button><input type="file" id="rFile" accept="application/json" hidden></div>'+
+  '<h2>🔥 Fire safety inspection report</h2><div class="card"><b>'+esc(m.name)+'</b><br>Date: '+now+'<label class="no-print">Inspector name</label><input type="text" class="no-print" id="rIns" value="'+esc(S.inspector||'')+'"><div>'+(S.inspector?'Inspector: '+esc(S.inspector):'')+'</div></div>'+
+  (img?'<div class="card"><img alt="Map of the room" src="'+img+'"></div>':'')+
+  '<h3>Findings</h3><div class="card">'+findHTML(an)+'</div>'+
+  '<h3>Hazard list</h3><div class="card">'+(hz.length?'<table><tr><th>Hazard</th><th>Risk</th><th>Notes</th><th>Owner</th><th>Fix by</th><th>Status</th></tr>'+hz.map(function(a){return '<tr><td>'+ITEMS[a.t].i+' '+ITEMS[a.t].n+'</td><td>'+score(a)+'</td><td>'+esc(a.note)+'</td><td>'+esc(a.owner)+'</td><td>'+esc(a.date)+'</td><td>'+(a.done?'Done':'Open')+'</td></tr>';}).join('')+'</table>':'No hazards marked.')+'</div>'+
+  '<h3>Safety equipment</h3><div class="card">'+Object.keys(ITEMS).filter(function(k){return ITEMS[k].g==='s';}).map(function(k){var n=of(m,k).length;return n?ITEMS[k].i+' '+ITEMS[k].n+': '+n:'';}).filter(Boolean).join(' &nbsp; ')+'</div>'+
+  '<h3>Checklist answers</h3><div class="card">'+QUESTIONS.map(function(g){return '<b>'+g[0]+'</b><br>'+g[1].map(function(q){var c=m.checks[q[0]]||{};return ({y:'✅',n:'❌',x:'➖'}[c.a]||'⬜')+' '+esc(q[1])+(c.a==='n'&&c.n?' — '+esc(c.n):'');}).join('<br>');}).join('<br><br>')+'</div>'+
+  '<div class="small">This report is a helper for walking round and writing things down. It does not replace a fire risk assessment by a competent, qualified person. Distances on the map are adjustable starting points, so check the rules that apply to your building.</div>';
+ var el=document.getElementById('v-rep');el.innerHTML=h;
+ document.getElementById('rIns').onchange=function(){S.inspector=this.value;save();renderRep();};
+ document.getElementById('rPrint').onclick=function(){window.print();};
+ document.getElementById('rSave').onclick=function(){var b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='fireroom-backup.json';a.click();};
+ document.getElementById('rLoad').onclick=function(){document.getElementById('rFile').click();};
+ document.getElementById('rFile').onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var s=JSON.parse(r.result);if(!s.maps||!s.maps.length)throw 0;if(!confirm('Replace everything on this device with the backup?'))return;S=s;S.cur=S.cur||S.maps[0].id;save();fillSel();renderAll();fit();}catch(e){alert('That file is not a fire room backup.');}};r.readAsText(f);};
+ document.getElementById('rShare').onclick=function(){var t='Fire safety inspection: '+m.name+' ('+now+')\n'+an.F.filter(function(f){return f.lv==='high'||f.lv==='med';}).map(function(f){return '- '+f.tx;}).join('\n');if(navigator.share)navigator.share({title:'Fire safety inspection',text:t}).catch(function(){});else if(navigator.clipboard){navigator.clipboard.writeText(t);alert('Summary copied.');}else prompt('Copy this summary:',t);};}
+
+function renderAll(){var on=document.querySelector('.view.on');if(!on)return;var id=on.id;if(id==='v-check')renderCheck();else if(id==='v-find')renderFind();else if(id==='v-rep')renderRep();}
+
+window.addEventListener('resize',function(){resize();});
+fillSel();buildPal();resize();fit();
+window.FireRoom={S:function(){return S;},analyse:function(){return analyse(M());}};
+})();
+</script>
+</body>
+</html>
