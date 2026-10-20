@@ -521,6 +521,11 @@ button.tool-link{
   font-size:3rem;
 }
 
+/* the jump strip rolls the tile it scrolls to, in place */
+.panel.panel--rolled{animation:panelExpand .35s ease-out}
+/* a full-screen tile keeps clear of the fixed corners (notch menu, R circle) and the taskbar,
+   so its ✕ and its last lines can always be reached */
+.panel.fullscreen{padding-top:4.8rem;padding-bottom:7rem}
 @keyframes panelExpand{
   from{opacity:.7;transform:scale(.95)}
   to{opacity:1;transform:scale(1)}
@@ -658,7 +663,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
   .site-header{padding:4.6rem .5rem .8rem}
   .site-header h1{letter-spacing:2px}
   .panel{padding:1.2rem 1rem}
-  .panel.fullscreen{padding:1.5rem 1rem}
+  .panel.fullscreen{padding:4.8rem 1rem 7rem}
 }
 
 </style>
@@ -817,10 +822,8 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     </div>
     <div class="sf-pbody">
     <ul class="tool-list">
-      <li><a class="tool-link" href="https://rudventur.github.io/windows13/" target="_blank">Windows 13</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/LuxWin13/notch-menu-final.html" target="_blank">↳ LuxWin13 notch</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/windows13/taskbar-window-system.html" target="_blank">Taskbar &amp; Windows System</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank">WINDOWS13 Master</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank">Windows 13</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/LuxWin13/" target="_blank">LuxWin13</a></li>
     </ul>
     </div>
   </section>
@@ -911,14 +914,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
         </div>
       </div>
       <div class="repos-inside__group">
-        <a class="repos-inside__repo" href="https://rudventur.github.io/windows13/" target="_blank" rel="noopener">🪟 Windows 13</a>
-        <div class="repos-inside__links">
-          <a href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank" rel="noopener">WINDOWS13 MASTER</a>
-          <a href="https://rudventur.github.io/windows13/bottom-right-popcorn-complete.html" target="_blank" rel="noopener">Bottom right popcorn complete</a>
-          <a href="https://rudventur.github.io/windows13/keyboard-realistic.html" target="_blank" rel="noopener">Keyboard realistic</a>
-          <a href="https://rudventur.github.io/windows13/notch-menu-final.html" target="_blank" rel="noopener">Notch menu final</a>
-          <a href="https://rudventur.github.io/windows13/taskbar-window-system.html" target="_blank" rel="noopener">Taskbar window system</a>
-        </div>
+        <a class="repos-inside__repo" href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank" rel="noopener">🪟 Windows 13</a>
       </div>
       <div class="repos-inside__group">
         <a class="repos-inside__repo" href="https://rudventur.github.io/punk-script/" target="_blank" rel="noopener">✍️ punk-script</a>
@@ -945,9 +941,6 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
       </div>
       <div class="repos-inside__group">
         <a class="repos-inside__repo" href="https://rudventur.github.io/LuxWin13/" target="_blank" rel="noopener">💡 LuxWin13</a>
-        <div class="repos-inside__links">
-          <a href="https://rudventur.github.io/LuxWin13/notch-menu-final.html" target="_blank" rel="noopener">Notch menu final</a>
-        </div>
       </div>
     </div>
     </div>
@@ -1076,17 +1069,16 @@ function toggleFullscreen(headEl, ev) {
   }
 }
 
-// Focus a panel (from index links) — scroll to it or fullscreen it
+// Jump to a panel (from the index strip): scroll to it and play its roll-in animation.
+// It no longer goes full screen, so the sections below stay visible and usable.
 function focusPanel(name) {
   const panel = document.querySelector('.panel--' + name);
   if (!panel) return;
-  // close any fullscreen first
   document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
   document.body.style.overflow = '';
-  // fullscreen the target
   openTile(panel);
-  panel.classList.add('fullscreen');
-  document.body.style.overflow = 'hidden';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  panel.classList.remove('panel--rolled'); void panel.offsetWidth; panel.classList.add('panel--rolled');
 }
 
 // ESC to close fullscreen panel / logo menu

@@ -48,8 +48,8 @@
     social:     { icon: '🎸', title: 'RudVentur Social', src: 'https://rudventur.github.io/punk-script/', w: 760, h: 680 },
     bank:       { icon: '💰', title: 'Bank / Ledger', src: 'https://rudventur.github.io/bank/', w: 900, h: 700 },
     vault:      { icon: '🍿', title: 'PopCOIN Wallet', src: 'popcoin/', w: 560, h: 760 },
-    win13:      { icon: '🪟', title: 'WINDOWS 13', src: 'https://rudventur.github.io/windows13/WINDOWS13-MASTER.html', w: 1000, h: 700 },
-    luxwin:     { icon: '🐧', title: 'LuxWin13', src: 'https://rudventur.github.io/LuxWin13/notch-menu-final.html', w: 900, h: 640 },
+    win13:      { icon: '🪟', title: 'WINDOWS 13', src: 'https://rudventur.github.io/windows13/WINDOWS13-MASTER.html', tab: true },
+    luxwin:     { icon: '🐧', title: 'LuxWin13', src: 'https://rudventur.github.io/LuxWin13/', tab: true },
     chemmulti:  { icon: '⚗️', title: 'ChemVentur Multi v118', src: 'https://rudventur.github.io/ChemVentur-Multi-v118/', w: 1100, h: 720 },
     chem:       { icon: '🧬', title: 'ChemVentur (classic)', src: 'ChemVentur/index.html', w: 1100, h: 720 },
     typegame:   { icon: '⌨️', title: 'Type Game', src: 'https://rudventur.github.io/punk-script/type-game.html', w: 1000, h: 700 },
@@ -60,7 +60,8 @@
 
   var CSS = [
     ':root{--rvd-neon:#00ff41;--rvd-yellow:#ffe600;--rvd-bg:#07090a}',
-    'body{padding-bottom:52px}',
+    // room for the taskbar and the round corner buttons above it, so the end of the page is never under them
+    'body{padding-bottom:120px}',
     /* notch (top-left) */
     '#rvd-notch{position:fixed;top:10px;left:10px;z-index:1600;padding:7px 14px;background:#000;border:1px solid var(--rvd-neon);',
     'border-radius:0 0 12px 12px;color:var(--rvd-neon);font:900 13px/1 ui-monospace,monospace;letter-spacing:2px;cursor:pointer;',
