@@ -251,6 +251,8 @@
       '<div id="useRbox" class="hidden">' +
       '  <div class="useRbox-notch" id="useRboxNotch" title="Collapse / Expand">⟨⟩</div>' +
       '  <div class="useRbox-header">' +
+      '    <div class="rb-topmenu"><button type="button" id="rbMenuBtn" title="Every service and the shop">☰</button>' +
+      '      <div id="rbMenu" class="rb-menu hidden"><button type="button" class="rb-menu-shop" id="rbMenuShop">🛒 POPCOIN SHOP</button><div id="rbMenuList"></div></div></div>' +
       '    <strong>⚡ useRbox v2.0</strong>' +
       '    <div class="useRbox-header-btns">' +
       '      <button id="togglePrivacy" title="Online / private">🌐</button>' +
@@ -259,6 +261,15 @@
       '      <button id="closeUser" title="Close">✖</button>' +
       '    </div>' +
       '  </div>' +
+      '  <div class="rb-fakepop" id="rbFakePop" title="Fake popCoins: just for fun, saved in this browser, no real money">' +
+      '    <span>🍿 <b id="rbFakePopBal">0</b> fake popCoins</span>' +
+      '    <button type="button" class="btn btn-small" id="rbFakePopClaim">🎁 DAILY</button>' +
+      '    <button type="button" class="btn btn-small" id="rbFakePopShop">🛒 SHOP</button>' +
+      '  </div>' +
+      '  <div id="rbShop" class="rb-shop hidden"><div class="rb-shop-head"><strong>🛒 POPCOIN SHOP</strong>' +
+      '    <button type="button" class="btn btn-small" id="rbShopClose" title="Close">✖</button></div>' +
+      '    <small class="rb-dev-note">Fake popCoins only: no real money. Buy a link once and it is yours on this browser.</small>' +
+      '    <div id="rbShopList"></div></div>' +
       '  <div class="rb-cols">' +
       '   <section class="rb-col rb-col-left"><div class="rb-col-title">⚙️ SERVICE OPTIONS</div>' +
       '  <div class="rb-section"><div class="social-title">🧭 SERVICES</div><div id="rbServices" class="rb-services"></div></div>' +
@@ -1299,6 +1310,81 @@
     window.rvUserbox.joinChannel = joinChannel;
     window.rvUserbox.deleteChannel = deleteChannel;
     renderMyInfo();
+
+    /* ===== fake popCoins and the shop =====
+       Just for fun: no real money, nothing leaves this browser. One wallet per player
+       name (the profile username) in localStorage 'rud_fakePopCoins_v1':
+       { players: { <name>: { balance, claimed: 'YYYY-MM-DD', bought: [itemId] } } } */
+    var FP_KEY = 'rud_fakePopCoins_v1', FP_START = 50, FP_DAILY = 10;
+    var GH = 'https://rudventur.github.io/';
+    var SHOP = SERVICES.map(function (x) { return { id: 'svc-' + x.id, name: x.name, url: x.url, price: x.id === 'hub' ? 0 : 5 }; });
+    [ ['ChemVentur', '🧪 ChemVentur multiplayer', 15], ['ChemVentur-Multi-v118', '🧪 ChemVentur multiplayer v118', 15],
+      ['chem.ventur.112', '🧪 ChemVentur v112', 10], ['LuxWin13', '🪟 LuxWin13 browser OS', 15],
+      ['map-merger-v5', '🗺️ Map merger v5', 10], ['global-chat-v5', '💬 Global chat v5', 10],
+      ['cheese-ouiji-empire', '🧀 Cheese Ouiji Empire', 15], ['bank', '🏦 Bank (owe2owe ledger)', 10],
+      ['Intellectual-PROTOCOL', '📜 Intellectual protocol', 10], ['Trip21', '🧳 Trip 21', 10],
+      ['rudTrip20', '🧳 RUDE tRIP 20', 10], ['trip-randomiser', '🎲 Trip randomiser', 10],
+      ['rud-weather', '🌦️ Rud Weather app', 10], ['locksmith', '🔐 Locksmith', 5]
+    ].forEach(function (r) { SHOP.push({ id: 'page-' + r[0], name: r[1], url: GH + r[0] + '/', price: r[2] }); });
+    [ ['ChemGame-MultiPLAYER', 'ChemGame multiplayer'], ['ChemVentur.v114', 'ChemVentur v114'],
+      ['another-ChemVentur-77', 'another ChemVentur 77'], ['soldat-android', 'Soldat for Android'], ['RudVentur.com', 'RudVentur.com']
+    ].forEach(function (r) { SHOP.push({ id: 'repo-' + r[0], name: '📦 ' + r[1] + ' (code)', url: 'https://github.com/rudventur/' + r[0], price: 3 }); });
+
+    function fpPlayer() { var n = str(getProfile().username).trim(); return n && !isPlaceholderName(n) ? n.toLowerCase() : 'guest'; }
+    function fpRead() {
+      var all = parse(lsGet(FP_KEY)); if (!all || typeof all !== 'object' || !all.players) all = { players: {} };
+      var me = fpPlayer(), w = all.players[me];
+      if (!w) w = all.players[me] = { balance: FP_START, claimed: '', bought: [] };
+      if (!Array.isArray(w.bought)) w.bought = [];
+      w.balance = Math.max(0, Math.floor(+w.balance || 0));
+      return { all: all, w: w };
+    }
+    function fpWrite(d) { lsSet(FP_KEY, JSON.stringify(d.all)); fpRender(); }
+    function today() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+    function owns(w, it) { return it.price === 0 || w.bought.indexOf(it.id) !== -1; }
+    function fpRender() {
+      var d = fpRead(), w = d.w;
+      q('#rbFakePopBal').textContent = w.balance;
+      var claim = q('#rbFakePopClaim'); claim.disabled = w.claimed === today();
+      claim.title = claim.disabled ? 'Come back tomorrow' : 'Claim ' + FP_DAILY + ' fake popCoins';
+      var list = q('#rbShopList'); list.innerHTML = '';
+      SHOP.forEach(function (it) {
+        var row = document.createElement('div'); row.className = 'rb-shop-item';
+        var mine = owns(w, it);
+        row.innerHTML = '<span>' + escapeHtml(it.name) + '</span>';
+        var b = document.createElement(mine ? 'a' : 'button');
+        b.className = 'btn btn-small';
+        if (mine) { b.href = it.url; b.target = '_blank'; b.rel = 'noopener'; b.textContent = '↗ OPEN'; }
+        else { b.type = 'button'; b.textContent = '🍿 ' + it.price; b.disabled = w.balance < it.price;
+          b.title = b.disabled ? 'Not enough fake popCoins' : 'Buy for ' + it.price + ' fake popCoins';
+          b.onclick = function () { fpBuy(it.id); }; }
+        row.appendChild(b); list.appendChild(row);
+      });
+    }
+    function fpBuy(id) {
+      var it = SHOP.filter(function (x) { return x.id === id; })[0], d = fpRead();
+      if (!it || owns(d.w, it) || d.w.balance < it.price) return false;
+      d.w.balance -= it.price; d.w.bought.push(it.id); fpWrite(d); return true;
+    }
+    function fpClaim() {
+      var d = fpRead(); if (d.w.claimed === today()) return false;
+      d.w.balance += FP_DAILY; d.w.claimed = today(); fpWrite(d); return true;
+    }
+    function openShop(show) { q('#rbShop').classList.toggle('hidden', show === false); q('#rbMenu').classList.add('hidden'); fpRender(); }
+    q('#rbFakePopClaim').onclick = fpClaim;
+    q('#rbFakePopShop').onclick = function () { openShop(q('#rbShop').classList.contains('hidden')); };
+    q('#rbShopClose').onclick = function () { openShop(false); };
+    q('#rbMenuShop').onclick = function () { openShop(true); };
+    q('#rbMenuBtn').onclick = function () { q('#rbMenu').classList.toggle('hidden'); };
+    SHOP.forEach(function (it) {
+      var a = document.createElement('a'); a.className = 'rb-service'; a.href = it.url; a.textContent = it.name;
+      a.target = '_blank'; a.rel = 'noopener'; q('#rbMenuList').appendChild(a);
+    });
+    window.addEventListener('storage', function (e) { if (e.key === FP_KEY || e.key === KEY) fpRender(); });
+    q('#saveUser').addEventListener('click', function () { setTimeout(fpRender, 0); });
+    fpRender();
+    window.rvUserbox.fakePop = { KEY: FP_KEY, items: SHOP, wallet: function () { return JSON.parse(JSON.stringify(fpRead().w)); },
+      buy: fpBuy, claim: fpClaim, player: fpPlayer, openShop: openShop };
 
     console.log('👤 useRbox loaded (shared embed, profile key ' + KEY + ')');
   }

@@ -629,3 +629,18 @@
 .rb-channel { border: 1px solid rgba(0,255,65,.35); border-radius: 6px; padding: 6px; margin: 5px 0; }
 .rb-ch-name { font-weight: bold; color: #d8ffe0; } .rb-ch-desc { font-size: 11px; opacity: .8; margin: 2px 0 4px; }
 .rb-invite { border: 1px solid var(--yellow); border-radius: 6px; padding: 6px; margin-bottom: 8px; display: flex; gap: 6px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+
+/* ===== fake popCoins, shop and the top left menu ===== */
+#useRbox .rb-topmenu { position: relative; display: inline-block; margin-right: 8px; }
+#useRbox .rb-menu { position: absolute; left: 0; top: 100%; z-index: 10; min-width: 240px; max-height: 60vh; overflow-y: auto;
+  background: var(--panel-bg); border: 2px solid var(--neon); padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+#useRbox .rb-menu.hidden, #useRbox .rb-shop.hidden { display: none; }
+#useRbox .rb-menu-shop { color: var(--yellow); }
+#useRbox .rb-fakepop { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 6px 0; padding: 6px 8px;
+  border: 1px dashed var(--yellow); color: var(--yellow); }
+#useRbox .rb-fakepop span { flex: 1; }
+#useRbox .rb-shop { border: 2px solid var(--yellow); padding: 8px; margin-bottom: 8px; max-height: 50vh; overflow-y: auto; }
+#useRbox .rb-shop-head { display: flex; justify-content: space-between; align-items: center; color: var(--yellow); }
+#useRbox .rb-shop-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.2); }
+#useRbox .rb-shop-item a.btn { text-decoration: none; }
