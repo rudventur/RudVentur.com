@@ -171,6 +171,20 @@ current view mode. To point it somewhere else, put this **before** the
 
 ---
 
+## The fake popCoin shop — `popcoin-shop-items.json`
+
+The useRbox has a fake popCoin balance (no real money, saved in this browser under `rud_fakePopCoins_v1`, one wallet per player name) and a shop. Everything for sale and its price is in `embed/popcoin-shop-items.json`. To change it, edit that file and push:
+
+- `id`: unique, never change it once players may have bought the item
+- `name`: what the shop and the top left menu show
+- `price`: whole fake popCoins, `0` means free
+- `type`: `service`, `site` or `repository`
+- `service` (an id from the `SERVICES` list in `useRbox.js`) for service items, or `url` for the others
+
+If the file cannot be loaded, the shop still works with the built-in services at 5 fake popCoins each (the hub free).
+
+---
+
 ## Checklist: switching the other apps over
 
 Every app below already loads `rvView.js`. The work is removing the old copies

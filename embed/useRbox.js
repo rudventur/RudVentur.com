@@ -1317,18 +1317,33 @@
        { players: { <name>: { balance, claimed: 'YYYY-MM-DD', bought: [itemId] } } } */
     var FP_KEY = 'rud_fakePopCoins_v1', FP_START = 50, FP_DAILY = 10;
     var GH = 'https://rudventur.github.io/';
-    var SHOP = SERVICES.map(function (x) { return { id: 'svc-' + x.id, name: x.name, url: x.url, price: x.id === 'hub' ? 0 : 5 }; });
-    [ ['ChemVentur', '🧪 ChemVentur multiplayer', 15], ['ChemVentur-Multi-v118', '🧪 ChemVentur multiplayer v118', 15],
-      ['chem.ventur.112', '🧪 ChemVentur v112', 10], ['LuxWin13', '🪟 LuxWin13 browser OS', 15],
-      ['map-merger-v5', '🗺️ Map merger v5', 10], ['global-chat-v5', '💬 Global chat v5', 10],
-      ['cheese-ouiji-empire', '🧀 Cheese Ouiji Empire', 15], ['bank', '🏦 Bank (owe2owe ledger)', 10],
-      ['Intellectual-PROTOCOL', '📜 Intellectual protocol', 10], ['Trip21', '🧳 Trip 21', 10],
-      ['rudTrip20', '🧳 RUDE tRIP 20', 10], ['trip-randomiser', '🎲 Trip randomiser', 10],
-      ['rud-weather', '🌦️ Rud Weather app', 10], ['locksmith', '🔐 Locksmith', 5]
-    ].forEach(function (r) { SHOP.push({ id: 'page-' + r[0], name: r[1], url: GH + r[0] + '/', price: r[2] }); });
-    [ ['ChemGame-MultiPLAYER', 'ChemGame multiplayer'], ['ChemVentur.v114', 'ChemVentur v114'],
-      ['another-ChemVentur-77', 'another ChemVentur 77'], ['soldat-android', 'Soldat for Android'], ['RudVentur.com', 'RudVentur.com']
-    ].forEach(function (r) { SHOP.push({ id: 'repo-' + r[0], name: '📦 ' + r[1] + ' (code)', url: 'https://github.com/rudventur/' + r[0], price: 3 }); });
+    /* The items and their prices live in embed/popcoin-shop-items.json (next to this file):
+       { id, name, price, type: service | site | repository, and service (an id from SERVICES) or url }.
+       If that file cannot be loaded, the shop falls back to the services above at 5 fake popCoins each (the hub free). */
+    function shopItem(x) {
+      var svc = x && x.service ? serviceById(x.service) : null, url = svc ? svc.url : str(x && x.url);
+      if (!x || !x.id || !url) return null;
+      return { id: str(x.id), name: str(x.name || (svc && svc.name) || x.id), url: url,
+        type: str(x.type || (svc ? 'service' : 'site')), price: Math.max(0, Math.floor(+x.price || 0)) };
+    }
+    var SHOP = SERVICES.map(function (x) { return shopItem({ id: 'svc-' + x.id, service: x.id, price: x.id === 'hub' ? 0 : 5 }); });
+    function renderMenu() {
+      var box = q('#rbMenuList'); box.innerHTML = '';
+      SHOP.forEach(function (it) {
+        var a = document.createElement('a'); a.className = 'rb-service'; a.href = it.url; a.textContent = it.name;
+        a.target = '_blank'; a.rel = 'noopener'; box.appendChild(a);
+      });
+    }
+    var shopLoaded = new Promise(function (done) { setTimeout(function () {
+      var src; try { src = new URL('popcoin-shop-items.json', new URL(baseUrl, location.href)).href; } catch (e) { return done(false); }
+      if (!window.fetch) return done(false);
+      fetch(src, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (d) {
+          var list = (d && Array.isArray(d.items) ? d.items : []).map(shopItem).filter(Boolean);
+          if (!list.length) return done(false);
+          SHOP = list; window.rvUserbox.fakePop.items = SHOP; renderMenu(); fpRender(); done(true);
+        }).catch(function (e) { console.warn('useRbox: shop items not loaded, using the built-in list', e); done(false); });
+    }, 0); });
 
     function fpPlayer() { var n = str(getProfile().username).trim(); return n && !isPlaceholderName(n) ? n.toLowerCase() : 'guest'; }
     function fpRead() {
@@ -1376,15 +1391,12 @@
     q('#rbShopClose').onclick = function () { openShop(false); };
     q('#rbMenuShop').onclick = function () { openShop(true); };
     q('#rbMenuBtn').onclick = function () { q('#rbMenu').classList.toggle('hidden'); };
-    SHOP.forEach(function (it) {
-      var a = document.createElement('a'); a.className = 'rb-service'; a.href = it.url; a.textContent = it.name;
-      a.target = '_blank'; a.rel = 'noopener'; q('#rbMenuList').appendChild(a);
-    });
+    renderMenu();
     window.addEventListener('storage', function (e) { if (e.key === FP_KEY || e.key === KEY) fpRender(); });
     q('#saveUser').addEventListener('click', function () { setTimeout(fpRender, 0); });
     fpRender();
     window.rvUserbox.fakePop = { KEY: FP_KEY, items: SHOP, wallet: function () { return JSON.parse(JSON.stringify(fpRead().w)); },
-      buy: fpBuy, claim: fpClaim, player: fpPlayer, openShop: openShop };
+      buy: fpBuy, claim: fpClaim, player: fpPlayer, openShop: openShop, loaded: shopLoaded };
 
     console.log('👤 useRbox loaded (shared embed, profile key ' + KEY + ')');
   }
