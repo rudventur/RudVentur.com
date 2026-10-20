@@ -564,3 +564,18 @@
 .rb-person:hover { background: var(--neon); color: #000; }
 .rb-empty { opacity: 0.7; font-style: italic; padding: 8px 0; }
 .rb-col-right > .rb-fold:first-child { margin-top: 0; }
+
+/* ===== services, read-only info, restaurant ===== */
+.rb-services { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.rb-service {
+  display: block; padding: 7px 10px; border: 1px solid rgba(0,255,65,0.45); border-radius: 6px;
+  color: var(--neon); text-decoration: none; background: #000; font-size: 13px; transition: all 0.2s;
+}
+.rb-service:hover { background: var(--neon); color: #000; box-shadow: 0 0 12px rgba(0,255,65,0.5); }
+.rb-info-row { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px dashed rgba(0,255,65,0.2); }
+.rb-info-row span { opacity: 0.75; white-space: nowrap; }
+.rb-info-row b { text-align: right; word-break: break-word; font-weight: normal; color: #eaffea; }
+.rb-subtitle { margin: 16px 0 6px; font-weight: bold; letter-spacing: 1px; color: var(--yellow); font-size: 12px; }
+.rb-tables { border: 2px solid var(--yellow); border-radius: 8px; padding: 10px 12px; margin-top: 10px; background: rgba(255,230,0,0.05); }
+.rb-tables .rb-service { margin-top: 6px; }
+#rbRestSettings .toggle { display: flex; }

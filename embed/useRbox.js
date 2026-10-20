@@ -261,6 +261,7 @@
       '  </div>' +
       '  <div class="rb-cols">' +
       '   <section class="rb-col rb-col-left"><div class="rb-col-title">⚙️ SERVICE OPTIONS</div>' +
+      '  <div class="rb-section"><div class="social-title">🧭 SERVICES</div><div id="rbServices" class="rb-services"></div></div>' +
       '  <div id="liveClock">--:--:--</div>' +
       '  <div class="rb-section">' +
       '    <div class="social-title">🗣 MY LANGUAGE</div>' +
@@ -297,7 +298,7 @@
       '    <div class="rv-nag-msg" id="rvNagMsg">☕ Support the universe — it\'s only £10 per year</div>' +
       '    <button type="button" id="rvNagOk" class="rv-nag-ok">OK</button>' +
       '  </div>' +
-      '  <details class="rb-fold" id="rbMyProfile" open><summary>👤 MY PROFILE</summary><div class="rb-fold-body">' +
+      '  <details class="rb-fold" id="rbMyProfile" open><summary>👤 MY INFO</summary><div class="rb-fold-body">' +
       '  <div class="rb-incognito">' +
       '    <div class="rb-incognito-mask">🕶</div>' +
       '    <strong>INCOGNITO — PRIVATE MODE</strong>' +
@@ -309,6 +310,27 @@
       '    <div id="avatarHalftone"></div>' +
       '    <small>pure CSS halftone signature</small>' +
       '  </div>' +
+      '    <div class="rb-myinfo" id="rbMyInfo"></div>' +
+      '    <small class="rb-dev-note">Read only. Change it in ✏️ Editing on the right.</small>' +
+      '  </div></details>' +
+      '  <div class="rb-viewed hidden" id="rbViewed"><div class="rb-viewed-head"><span id="rbViewedTitle">👁 PROFILE</span><button type="button" class="btn btn-small" id="rbViewedClose" title="Close this profile">✖</button></div><div id="rbViewedBody"></div></div>' +
+      '  <details class="rb-fold rb-room" id="rbRoom" open><summary>🍽️ RESTAURANT</summary><div class="rb-fold-body">' +
+      '    <label>📡 Channel</label>' +
+      '    <div class="field-row"><input type="text" id="channel" value="main" disabled style="flex:1;"><button class="btn btn-small" id="channelInfo" title="About channels">ℹ️</button></div>' +
+      '    <label>🔁 Join another room</label>' +
+      '    <div class="field-row"><input type="text" id="rbRoomInput" placeholder="Room name..." style="flex:1;"><button type="button" class="btn btn-small" id="rbRoomJoin">JOIN</button></div>' +
+      '    <div class="rb-known-rooms" id="rbKnownRooms"></div>' +
+      '    <div class="field-row" style="margin-top:8px;"><button type="button" class="btn" id="rbRoomLeave" style="flex:1;">🚪 LEAVE (back to main)</button></div>' +
+      '    <label class="toggle"><input type="checkbox" id="rbRoomVisible"><span>Show me in the room list</span></label>' +
+      '    <small class="rb-dev-note" id="rbPresenceNote">Off by default. When on, your name and the public fields you chose are shared live with this room.</small>' +
+      '    <div class="rb-subtitle">🍽️ OPEN RESTAURANTS</div>' +
+      '    <div id="rbRestaurants"><div class="rb-empty">No restaurants open right now</div></div>' +
+      '    <div class="rb-tables hidden" id="rbTables"><div class="rb-viewed-head"><span id="rbTablesTitle"></span><button type="button" class="btn btn-small" id="rbTablesClose" title="Close">✖</button></div><div id="rbTablesList"></div></div>' +
+      '  </div></details>' +
+      '   </section>' +
+      '   <section class="rb-col rb-col-right">' +
+      '  <details class="rb-fold" id="rbEditFold" open><summary>✏️ EDITING OPTIONS</summary><div class="rb-fold-body">' +
+      '    <div class="rb-subtitle">👤 MY PROFILE</div>' +
       '  <label>👤 Username</label>' +
       '  <div class="field-row">' +
       '    <input type="text" id="username" value="Rudy" style="flex:1;">' +
@@ -335,21 +357,7 @@
       '  </div>' +
       '  <label class="toggle"><input type="checkbox" id="saveMessages" checked><span>Save my messages</span></label>' +
       '  <button id="saveUser">💾 SAVE PROFILE</button>' +
-      '  </div></details>' +
-      '  <div class="rb-viewed hidden" id="rbViewed"><div class="rb-viewed-head"><span id="rbViewedTitle">👁 PROFILE</span><button type="button" class="btn btn-small" id="rbViewedClose" title="Close this profile">✖</button></div><div id="rbViewedBody"></div></div>' +
-      '  <details class="rb-fold rb-room" id="rbRoom" open><summary>🚪 ROOM FOR useRs</summary><div class="rb-fold-body">' +
-      '    <label>📡 Channel</label>' +
-      '    <div class="field-row"><input type="text" id="channel" value="main" disabled style="flex:1;"><button class="btn btn-small" id="channelInfo" title="About channels">ℹ️</button></div>' +
-      '    <label>🔁 Join another room</label>' +
-      '    <div class="field-row"><input type="text" id="rbRoomInput" placeholder="Room name..." style="flex:1;"><button type="button" class="btn btn-small" id="rbRoomJoin">JOIN</button></div>' +
-      '    <div class="rb-known-rooms" id="rbKnownRooms"></div>' +
-      '    <div class="field-row" style="margin-top:8px;"><button type="button" class="btn" id="rbRoomLeave" style="flex:1;">🚪 LEAVE (back to main)</button></div>' +
-      '    <label class="toggle"><input type="checkbox" id="rbRoomVisible" checked><span>Show me in the room list</span></label>' +
-      '    <small class="rb-dev-note">The room is stored on this device and shared with Windows 13.</small>' +
-      '  </div></details>' +
-      '   </section>' +
-      '   <section class="rb-col rb-col-right">' +
-      '  <details class="rb-fold" id="rbEditFold" open><summary>✏️ EDITING OPTIONS</summary><div class="rb-fold-body">' +
+      '    <div class="rb-subtitle">⚰️ EXTRA</div>' +
       '  <div class="useRbox-right" id="useRboxRight">' +
       '    <div class="useRbox-right-header">👤 Profile Editor</div>' +
       '    <label>⚰️ What kind of funeral do you want?</label>' +
@@ -361,6 +369,17 @@
       '    <textarea id="publicNote"></textarea>' +
       '    <button type="button" class="btn" id="saveExtra">💾 SAVE EXTRA</button>' +
       '    <small>Stored on this device for now.</small>' +
+      '    <div class="rb-subtitle">🔓 WHAT THE ROOM MAY SEE</div>' +
+      '    <label class="toggle"><input type="checkbox" id="rbShareLoc"><span>Share my current location</span></label>' +
+      '    <label class="toggle"><input type="checkbox" id="rbShareBurial"><span>Make my burial wish public</span></label>' +
+      '    <small class="rb-dev-note">Your name, P.S. and public note are shared when you show yourself in the room list.</small>' +
+      '    <div class="rb-subtitle">🍽️ MY RESTAURANT</div>' +
+      '    <label class="toggle"><input type="checkbox" id="rbSubscriber"><span>I am a subscriber (supporter)</span></label>' +
+      '    <div id="rbRestSettings">' +
+      '      <label>Opening</label><select id="rbRestOpen"><option value="online">🟢 Open when I am online</option><option value="closed">🔴 Closed</option></select>' +
+      '      <label>Tables (the services I serve)</label><div id="rbTableChoices"></div>' +
+      '    </div>' +
+      '    <button type="button" class="btn" id="rbSavePublic" style="width:100%;margin-top:10px;">💾 SAVE SHARING AND RESTAURANT</button>' +
       '  </div>' +
       '  </div></details>' +
       '  <div class="rb-people"><div class="rb-col-title">👥 IN THIS ROOM <span id="rbPeopleRoom"></span></div>' +
@@ -786,7 +805,7 @@
     q('#rbRoomJoin').onclick = function () { setRoom(q('#rbRoomInput').value); q('#rbRoomInput').value = ''; };
     q('#rbRoomInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') q('#rbRoomJoin').click(); });
     q('#rbRoomLeave').onclick = function () { setRoom('main'); };
-    q('#rbRoomVisible').checked = lsGet('rvRoomVisible') !== '0';
+    q('#rbRoomVisible').checked = lsGet('rvRoomVisible') === '1';   // off unless the useR turns it on
     q('#rbRoomVisible').onchange = function () { lsSet('rvRoomVisible', this.checked ? '1' : '0'); };
 
     function showPerson(p) {
@@ -822,6 +841,217 @@
     };
     window.rvUserbox.showProfile = showPerson;
     renderPeople();
+
+    /* ===== services (left column) = the tables a restaurant can serve ===== */
+    var SITE = (function () { try { return new URL('../', baseUrl).href; } catch (e) { return location.origin + '/'; } })();
+    var SERVICES = [
+      { id: 'hub', name: '🏠 RudVentur hub', url: SITE },
+      { id: 'translator', name: '🌐 Translator and map', url: TRANSLATOR_URL },
+      { id: 'chemventur', name: '🧪 ChemVentur', url: 'https://rudventur.github.io/v120-ChemVentur/' },
+      { id: 'map-merger', name: '🗺️ Map merger', url: 'https://rudventur.github.io/map-merger-venti/' },
+      { id: 'windows13', name: '🪟 Windows 13', url: SITE + 'windows13/WINDOWS13-MASTER.html' },
+      { id: 'punk-script', name: '🎸 Punk script', url: SITE + 'punk-script/' },
+      { id: 'pumpkin-guy', name: '🎃 pumpKIN Guy', url: SITE + 'pumpKIN-Guy/' },
+      { id: 'popcoin', name: '🪙 PopCOIN wallet', url: SITE + 'popcoin/' },
+      { id: 'camera-background', name: '📷 Camera background', url: SITE + 'camera-background.html' },
+      { id: 'weather', name: '⛅ Weather', url: SITE + 'yesterday-today-tomorrow-weather.html' }
+    ];
+    function serviceById(id) { return SERVICES.filter(function (x) { return x.id === id; })[0]; }
+    var svcBox = q('#rbServices'), tableBox = q('#rbTableChoices');
+    SERVICES.forEach(function (x) {
+      var a = document.createElement('a');
+      a.className = 'rb-service'; a.href = x.id === 'translator' ? withLang(x.url) : x.url; a.textContent = x.name;
+      a.target = '_blank'; a.rel = 'noopener';
+      svcBox.appendChild(a);
+      var l = document.createElement('label');
+      l.className = 'toggle';
+      l.innerHTML = '<input type="checkbox" value="' + x.id + '"><span>' + escapeHtml(x.name) + '</span>';
+      tableBox.appendChild(l);
+    });
+
+    /* ===== public settings (sharing, subscriber, restaurant) — stored on this device ===== */
+    var PUB_KEY = 'rvPublicSettings';
+    function readPub() {
+      var d = {}; try { d = JSON.parse(lsGet(PUB_KEY) || '{}') || {}; } catch (e) {}
+      return { shareLoc: !!d.shareLoc, shareBurial: !!d.shareBurial, subscriber: !!d.subscriber,
+        restOpen: d.restOpen === 'closed' ? 'closed' : 'online', tables: Array.isArray(d.tables) ? d.tables : [] };
+    }
+    function loadPub() {
+      var d = readPub();
+      q('#rbShareLoc').checked = d.shareLoc; q('#rbShareBurial').checked = d.shareBurial;
+      q('#rbSubscriber').checked = d.subscriber; q('#rbRestOpen').value = d.restOpen;
+      tableBox.querySelectorAll('input').forEach(function (i) { i.checked = d.tables.indexOf(i.value) >= 0; });
+      q('#rbRestSettings').style.display = d.subscriber ? '' : 'none';
+    }
+    q('#rbSubscriber').onchange = function () { q('#rbRestSettings').style.display = this.checked ? '' : 'none'; };
+    q('#rbSavePublic').onclick = function () {
+      var tables = [];
+      tableBox.querySelectorAll('input:checked').forEach(function (i) { tables.push(i.value); });
+      lsSet(PUB_KEY, JSON.stringify({ shareLoc: q('#rbShareLoc').checked, shareBurial: q('#rbShareBurial').checked,
+        subscriber: q('#rbSubscriber').checked, restOpen: q('#rbRestOpen').value, tables: tables }));
+      var b = this, t = b.textContent; b.textContent = '✅ SAVED'; setTimeout(function () { b.textContent = t; }, 1200);
+      renderMyInfo(); presence.publish();
+    };
+    loadPub();
+
+    /* ===== middle column: this useR's info, read only ===== */
+    function extraData() { try { return JSON.parse(lsGet('rud_useRbox_extra') || '{}') || {}; } catch (e) { return {}; } }
+    function renderMyInfo() {
+      var x = extraData(), d = readPub();
+      var rows = [['👤 Name', q('#username').value], ['📝 P.S.', q('#psignature').value],
+        ['📍 Location', q('#currentLoc').value + (q('#currentLoc').value ? (d.shareLoc ? '  (shared)' : '  (private)') : '')],
+        ['✨ Public note', x.publicNote], ['⚰️ Burial wish', x.burialWish ? x.burialWish + (d.shareBurial ? '  (public)' : '  (private)') : ''],
+        ['📡 Room', lsGet('rudventur_channel') || 'main'],
+        ['🍽️ Restaurant', d.subscriber ? (d.restOpen === 'online' ? 'Open when online · ' + d.tables.length + ' tables' : 'Closed') : '']];
+      q('#rbMyInfo').innerHTML = rows.filter(function (r) { return r[1]; }).map(function (r) {
+        return '<div class="rb-info-row"><span>' + r[0] + '</span><b>' + escapeHtml(r[1]) + '</b></div>';
+      }).join('');
+    }
+    q('#saveUser').addEventListener('click', function () { renderMyInfo(); presence.publish(); });
+    if (saveExtraBtn) saveExtraBtn.addEventListener('click', function () { renderMyInfo(); presence.publish(); });
+
+    /* ===== restaurants (middle column) ===== */
+    function restaurantName(p) { return '🍽️ ' + (p.username || 'useR') + '\'s restaurant'; }
+    function renderRestaurants() {
+      var box = q('#rbRestaurants'); box.innerHTML = '';
+      var open = people.filter(function (p) { return p.restaurant && p.restaurant.open && p.restaurant.tables.length; });
+      if (!open.length) { box.innerHTML = '<div class="rb-empty">No restaurants open right now</div>'; return; }
+      open.forEach(function (p) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'rb-person';
+        b.textContent = restaurantName(p) + ' · ' + p.restaurant.tables.length + ' tables';
+        b.onclick = function () { showTables(p); };
+        box.appendChild(b);
+      });
+    }
+    function showTables(p) {
+      q('#rbTablesTitle').textContent = restaurantName(p);
+      var list = q('#rbTablesList'); list.innerHTML = '';
+      p.restaurant.tables.forEach(function (id) {
+        var x = serviceById(id); if (!x) return;
+        var a = document.createElement('a');
+        a.className = 'rb-service'; a.href = x.id === 'translator' ? withLang(x.url) : x.url;
+        a.target = '_blank'; a.rel = 'noopener'; a.textContent = '🪑 ' + x.name;
+        list.appendChild(a);
+      });
+      q('#rbTables').classList.remove('hidden');
+    }
+    q('#rbTablesClose').onclick = function () { q('#rbTables').classList.add('hidden'); };
+    var origSet = window.rvUserbox.setChannelPeople;
+    window.rvUserbox.setChannelPeople = function (list) { origSet(list); renderRestaurants(); };
+
+    /* ===== live presence: the popcoin Firebase project's Realtime Database =====
+       presence/rooms/<room>/<uid>. Only written while "Show me in the room list" is on;
+       only public fields; marked offline by the server when this tab goes away. */
+    var presence = (function () {
+      var st = { db: null, uid: null, myRef: null, room: null, listen: null, starting: null, offlineAfter: 0 };
+      var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+      function cleanRoom(r) { r = str(r).toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32); return r || 'main'; }
+      function loadScript(src) {
+        return new Promise(function (res, rej) {
+          var old = document.querySelector('script[src="' + src + '"]');
+          if (old) { if (old.dataset.loaded || window.firebase) { res(); return; } old.addEventListener('load', res); old.addEventListener('error', rej); return; }
+          var el = document.createElement('script'); el.src = src;
+          el.onload = function () { el.dataset.loaded = '1'; res(); }; el.onerror = function () { rej(new Error('could not load ' + src)); };
+          document.head.appendChild(el);
+        });
+      }
+      function config() {
+        if (window.RV_PRESENCE_FIREBASE) return Promise.resolve(window.RV_PRESENCE_FIREBASE);
+        if (window.POPCOIN_FIREBASE) return Promise.resolve(window.POPCOIN_FIREBASE);
+        return loadScript(SITE + 'popcoin/config.js').then(function () { return window.POPCOIN_FIREBASE || null; });
+      }
+      function start() {
+        if (st.starting) return st.starting;
+        st.starting = config().then(function (cfg) {
+          if (!cfg) throw new Error('no Firebase settings');
+          // never load the app library twice: that would wipe popcoin's Firebase app
+          var chain = window.firebase ? Promise.resolve() : loadScript(SDK + 'firebase-app-compat.js');
+          return chain
+            .then(function () { return firebase.auth ? null : loadScript(SDK + 'firebase-auth-compat.js'); })
+            .then(function () { return firebase.database ? null : loadScript(SDK + 'firebase-database-compat.js'); })
+            .then(function () {
+              var app = firebase.apps.filter(function (a) { return a.name === 'rvpresence'; })[0] || firebase.initializeApp(cfg, 'rvpresence');
+              var auth = app.auth(); st.db = app.database();
+              if (cfg.emulator) { auth.useEmulator('http://127.0.0.1:' + cfg.emulator.auth); st.db.useEmulator('127.0.0.1', cfg.emulator.db); }
+              return new Promise(function (resolve, reject) {
+                var off = auth.onAuthStateChanged(function (user) {
+                  off();
+                  if (user) resolve(user); else auth.signInAnonymously().then(function (c) { resolve(c.user); }, reject);
+                }, reject);
+              });
+            })
+            .then(function (user) { st.uid = user.uid; });
+        });
+        st.starting.catch(function (e) { st.starting = null; note('Live room list unavailable: ' + (e && e.message || e)); });
+        return st.starting;
+      }
+      function note(t) { var n = q('#rbPresenceNote'); if (n && t) n.textContent = t; }
+      function visible() { return q('#rbRoomVisible').checked && !isPrivate(); }
+      function myRecord() {
+        var d = readPub(), x = extraData();
+        var rec = { name: str(q('#username').value).slice(0, 32) || 'useR', online: true,
+          lastSeen: firebase.database.ServerValue.TIMESTAMP, sub: d.subscriber };
+        var ps = str(q('#psignature').value).slice(0, 200); if (ps) rec.ps = ps;
+        var nt = str(x.publicNote).slice(0, 300); if (nt) rec.note = nt;
+        if (d.shareLoc && q('#currentLoc').value) rec.loc = str(q('#currentLoc').value).slice(0, 80);
+        if (d.shareBurial && x.burialWish) rec.burial = str(x.burialWish).slice(0, 120);
+        if (d.subscriber) {
+          var tables = {};
+          d.tables.forEach(function (t) { if (serviceById(t)) tables[t] = true; });
+          rec.rest = { open: d.restOpen === 'online' };
+          if (Object.keys(tables).length) rec.rest.tables = tables;
+        }
+        return rec;
+      }
+      function withdraw() {
+        if (!st.myRef) return Promise.resolve();
+        var r = st.myRef; st.myRef = null;
+        r.onDisconnect().cancel();
+        return r.remove().catch(function () {});
+      }
+      function publish() {
+        if (!visible()) { return withdraw(); }
+        return start().then(function () {
+          var room = cleanRoom(lsGet('rudventur_channel') || 'main');
+          var ref = st.db.ref('presence/rooms/' + room + '/' + st.uid);
+          var pre = st.myRef && st.myRef.toString() !== ref.toString() ? withdraw() : Promise.resolve();
+          return pre.then(function () {
+            st.myRef = ref;
+            ref.onDisconnect().update({ online: false, lastSeen: firebase.database.ServerValue.TIMESTAMP });
+            return ref.set(myRecord());
+          }).then(function () { note('You are shown live in room "' + room + '".'); });
+        }).catch(function (e) { note('Could not share your presence: ' + (e && e.message || e)); });
+      }
+      function listen() {
+        return start().then(function () {
+          var room = cleanRoom(lsGet('rudventur_channel') || 'main');
+          if (st.listen && st.listen.room === room) return;
+          if (st.listen) st.listen.ref.off();
+          var ref = st.db.ref('presence/rooms/' + room);
+          st.listen = { room: room, ref: ref };
+          ref.on('value', function (snap) {
+            var list = [];
+            snap.forEach(function (c) {
+              var v = c.val() || {};
+              if (c.key === st.uid || !v.online) return;
+              list.push({ id: c.key, username: v.name, psignature: v.ps, currentLoc: v.loc, publicNote: v.note,
+                burialWish: v.burial, channel: lsGet('rudventur_channel') || 'main', subscriber: !!v.sub,
+                restaurant: v.sub && v.rest ? { open: !!v.rest.open, tables: Object.keys(v.rest.tables || {}) } : null });
+            });
+            window.rvUserbox.setChannelPeople(list);
+          }, function (e) { note('Live room list unavailable: ' + (e && e.message || e)); });
+        }).catch(function () {});
+      }
+      return { publish: publish, listen: listen, withdraw: withdraw, cleanRoom: cleanRoom, state: st };
+    })();
+    window.rvUserbox.presence = { publish: presence.publish, listen: presence.listen, leave: presence.withdraw };
+    q('#rbRoomVisible').addEventListener('change', function () { presence.publish(); });
+    document.addEventListener('rv:channel', function () { renderMyInfo(); presence.publish(); presence.listen(); });
+    // start reading the room only once the useR opens the box (no sign-in for every page view)
+    q('#iconUser').addEventListener('click', function () { presence.listen(); presence.publish(); });
+    if (lsGet('rvRoomVisible') === '1') presence.publish().then(presence.listen);
+    renderMyInfo();
 
     console.log('👤 useRbox loaded (shared embed, profile key ' + KEY + ')');
   }
