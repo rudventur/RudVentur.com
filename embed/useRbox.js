@@ -297,6 +297,7 @@
       '    <div class="rv-nag-msg" id="rvNagMsg">☕ Support the universe — it\'s only £10 per year</div>' +
       '    <button type="button" id="rvNagOk" class="rv-nag-ok">OK</button>' +
       '  </div>' +
+      '  <details class="rb-fold" id="rbMyProfile" open><summary>👤 MY PROFILE</summary><div class="rb-fold-body">' +
       '  <div class="rb-incognito">' +
       '    <div class="rb-incognito-mask">🕶</div>' +
       '    <strong>INCOGNITO — PRIVATE MODE</strong>' +
@@ -312,11 +313,6 @@
       '  <div class="field-row">' +
       '    <input type="text" id="username" value="Rudy" style="flex:1;">' +
       '    <button class="btn btn-small" id="refreshUser">🔄 Refresh</button>' +
-      '  </div>' +
-      '  <label>📡 Channel</label>' +
-      '  <div class="field-row">' +
-      '    <input type="text" id="channel" value="main" disabled style="flex:1;">' +
-      '    <button class="btn btn-small" id="channelInfo">ℹ️</button>' +
       '  </div>' +
       '  <label>📝 P.S. (Personal Signature)</label>' +
       '  <textarea id="psignature" placeholder="You don\'t have to have legs to Trip"></textarea>' +
@@ -339,8 +335,21 @@
       '  </div>' +
       '  <label class="toggle"><input type="checkbox" id="saveMessages" checked><span>Save my messages</span></label>' +
       '  <button id="saveUser">💾 SAVE PROFILE</button>' +
+      '  </div></details>' +
+      '  <div class="rb-viewed hidden" id="rbViewed"><div class="rb-viewed-head"><span id="rbViewedTitle">👁 PROFILE</span><button type="button" class="btn btn-small" id="rbViewedClose" title="Close this profile">✖</button></div><div id="rbViewedBody"></div></div>' +
+      '  <details class="rb-fold rb-room" id="rbRoom" open><summary>🚪 ROOM FOR useRs</summary><div class="rb-fold-body">' +
+      '    <label>📡 Channel</label>' +
+      '    <div class="field-row"><input type="text" id="channel" value="main" disabled style="flex:1;"><button class="btn btn-small" id="channelInfo" title="About channels">ℹ️</button></div>' +
+      '    <label>🔁 Join another room</label>' +
+      '    <div class="field-row"><input type="text" id="rbRoomInput" placeholder="Room name..." style="flex:1;"><button type="button" class="btn btn-small" id="rbRoomJoin">JOIN</button></div>' +
+      '    <div class="rb-known-rooms" id="rbKnownRooms"></div>' +
+      '    <div class="field-row" style="margin-top:8px;"><button type="button" class="btn" id="rbRoomLeave" style="flex:1;">🚪 LEAVE (back to main)</button></div>' +
+      '    <label class="toggle"><input type="checkbox" id="rbRoomVisible" checked><span>Show me in the room list</span></label>' +
+      '    <small class="rb-dev-note">The room is stored on this device and shared with Windows 13.</small>' +
+      '  </div></details>' +
       '   </section>' +
-      '   <section class="rb-col rb-col-right"><div class="rb-col-title">✏️ EDIT</div>' +
+      '   <section class="rb-col rb-col-right">' +
+      '  <details class="rb-fold" id="rbEditFold" open><summary>✏️ EDITING OPTIONS</summary><div class="rb-fold-body">' +
       '  <div class="useRbox-right" id="useRboxRight">' +
       '    <div class="useRbox-right-header">👤 Profile Editor</div>' +
       '    <label>⚰️ What kind of funeral do you want?</label>' +
@@ -352,6 +361,10 @@
       '    <textarea id="publicNote"></textarea>' +
       '    <button type="button" class="btn" id="saveExtra">💾 SAVE EXTRA</button>' +
       '    <small>Stored on this device for now.</small>' +
+      '  </div>' +
+      '  </div></details>' +
+      '  <div class="rb-people"><div class="rb-col-title">👥 IN THIS ROOM <span id="rbPeopleRoom"></span></div>' +
+      '    <div id="rbPeopleList"><div class="rb-empty">No one else here yet</div></div>' +
       '  </div>' +
       '   </section>' +
       '  </div>' +
@@ -705,7 +718,7 @@
     renderDevices();
 
     q('#refreshUser').onclick = loadUser;
-    q('#channelInfo').onclick = function () { alert('Channel set on login!'); };
+    q('#channelInfo').onclick = function () { alert('Your room is shared with Windows 13. Join one below, or leave to go back to main.'); };
     q('#saveUser').onclick = saveUser;
 
     function loadChannel() {
@@ -751,6 +764,64 @@
 
     loadUser();
     loadChannel();
+
+    /* ===== Room for useRs + people in the room ===== */
+    var KNOWN_ROOMS = ['main', 'prompter', 'chemventur', 'map-merger', 'global-chat'];
+    var people = [];
+    function setRoom(name) {
+      name = str(name).trim();
+      if (!name) return;
+      lsSet('rudventur_channel', name);
+      loadChannel();
+      renderPeople();
+      try { document.dispatchEvent(new CustomEvent('rv:channel', { detail: { channel: name } })); } catch (e) {}
+    }
+    var rk = q('#rbKnownRooms');
+    KNOWN_ROOMS.forEach(function (name) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn btn-small'; b.textContent = name;
+      b.onclick = function () { setRoom(name); };
+      rk.appendChild(b);
+    });
+    q('#rbRoomJoin').onclick = function () { setRoom(q('#rbRoomInput').value); q('#rbRoomInput').value = ''; };
+    q('#rbRoomInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') q('#rbRoomJoin').click(); });
+    q('#rbRoomLeave').onclick = function () { setRoom('main'); };
+    q('#rbRoomVisible').checked = lsGet('rvRoomVisible') !== '0';
+    q('#rbRoomVisible').onchange = function () { lsSet('rvRoomVisible', this.checked ? '1' : '0'); };
+
+    function showPerson(p) {
+      var box = q('#rbViewed');
+      q('#rbViewedTitle').textContent = '👁 ' + (p.username || p.name || 'useR');
+      var rows = [['📝 P.S.', p.psignature], ['📍 Location', p.currentLoc], ['✨ Public note', p.publicNote], ['⚰️ Burial wish', p.burialWish]];
+      q('#rbViewedBody').innerHTML = rows.filter(function (r) { return r[1]; }).map(function (r) {
+        return '<label>' + r[0] + '</label><div class="rb-viewed-val">' + escapeHtml(r[1]) + '</div>';
+      }).join('') || '<div class="rb-empty">This useR has not shared anything yet.</div>';
+      box.classList.remove('hidden');
+      box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    q('#rbViewedClose').onclick = function () { q('#rbViewed').classList.add('hidden'); };
+    function renderPeople() {
+      var room = lsGet('rudventur_channel') || 'main';
+      q('#rbPeopleRoom').textContent = '· ' + room;
+      var list = q('#rbPeopleList');
+      list.innerHTML = '';
+      var here = people.filter(function (p) { return !p.channel || p.channel === room; });
+      if (!here.length) { list.innerHTML = '<div class="rb-empty">No one else here yet</div>'; return; }
+      here.forEach(function (p) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'rb-person';
+        b.textContent = '👤 ' + (p.username || p.name || 'useR');
+        b.onclick = function () { showPerson(p); };
+        list.appendChild(b);
+      });
+    }
+    // hook for a future presence source (for example the Firebase database popcoin already uses)
+    window.rvUserbox.setChannelPeople = function (list) {
+      people = Array.isArray(list) ? list.filter(function (p) { return p && typeof p === 'object'; }) : [];
+      renderPeople();
+    };
+    window.rvUserbox.showProfile = showPerson;
+    renderPeople();
 
     console.log('👤 useRbox loaded (shared embed, profile key ' + KEY + ')');
   }
