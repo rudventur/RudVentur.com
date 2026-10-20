@@ -255,24 +255,22 @@
       '      <div id="rbMenu" class="rb-menu hidden"><button type="button" class="rb-menu-shop" id="rbMenuShop">🛒 POPCOIN SHOP</button><div id="rbMenuList"></div></div></div>' +
       '    <strong>⚡ useRbox v2.0</strong>' +
       '    <div class="useRbox-header-btns">' +
+      '      <button id="rbFakePopShop" title="PopCoin shop (left section)">🛒</button>' +
       '      <button id="togglePrivacy" title="Online / private">🌐</button>' +
       '      <button id="toggleTransparency" title="Toggle transparency">🌑</button>' +
       '      <button id="collapseUser" title="Collapse to notch">⤢</button>' +
       '      <button id="closeUser" title="Close">✖</button>' +
       '    </div>' +
       '  </div>' +
-      '  <div class="rb-fakepop" id="rbFakePop" title="Fake popCoins: just for fun, saved in this browser, no real money">' +
-      '    <span>🍿 <b id="rbFakePopBal">0</b> fake popCoins</span>' +
-      '    <button type="button" class="btn btn-small" id="rbFakePopClaim">🎁 DAILY</button>' +
-      '    <button type="button" class="btn btn-small" id="rbFakePopShop">🛒 SHOP</button>' +
-      '  </div>' +
-      '  <div id="rbShop" class="rb-shop hidden"><div class="rb-shop-head"><strong>🛒 POPCOIN SHOP</strong>' +
-      '    <button type="button" class="btn btn-small" id="rbShopClose" title="Close">✖</button></div>' +
-      '    <small class="rb-dev-note">Fake popCoins only: no real money. Buy a link once and it is yours on this browser.</small>' +
-      '    <div id="rbShopList"></div></div>' +
       '  <div class="rb-cols">' +
       '   <section class="rb-col rb-col-left"><div class="rb-col-title">⚙️ SERVICE OPTIONS</div>' +
-      '  <div class="rb-section"><div class="social-title">🧭 SERVICES</div><div id="rbServices" class="rb-services"></div></div>' +
+      '  <div class="rb-section rb-shop" id="rbShop"><div class="social-title">🧭 SERVICES · 🛒 POPCOIN SHOP</div>' +
+      '    <div class="rb-fakepop" id="rbFakePop" title="Fake popCoins: just for fun, saved in this browser, no real money">' +
+      '      <span>🍿 <b id="rbFakePopBal">0</b> fake popCoins</span>' +
+      '      <button type="button" class="btn btn-small" id="rbFakePopClaim">🎁 DAILY</button>' +
+      '    </div>' +
+      '    <small class="rb-dev-note">Fake popCoins only: no real money. Buy a link once and it is yours on this browser.</small>' +
+      '    <div id="rbShopList" class="rb-services"></div></div>' +
       '  <div id="liveClock">--:--:--</div>' +
       '  <div class="rb-section">' +
       '    <div class="social-title">🗣 MY LANGUAGE</div>' +
@@ -868,12 +866,9 @@
       { id: 'weather', name: '⛅ Weather', url: SITE + 'yesterday-today-tomorrow-weather.html' }
     ];
     function serviceById(id) { return SERVICES.filter(function (x) { return x.id === id; })[0]; }
-    var svcBox = q('#rbServices'), tableBox = q('#rbTableChoices');
+    var tableBox = q('#rbTableChoices');   // the service links themselves are the shop items in the left section
     SERVICES.forEach(function (x) {
       var a = document.createElement('a');
-      a.className = 'rb-service'; a.href = x.id === 'translator' ? withLang(x.url) : x.url; a.textContent = x.name;
-      a.target = '_blank'; a.rel = 'noopener';
-      svcBox.appendChild(a);
       var l = document.createElement('label');
       l.className = 'toggle';
       l.innerHTML = '<input type="checkbox" value="' + x.id + '"><span>' + escapeHtml(x.name) + '</span>';
@@ -1364,13 +1359,15 @@
       claim.title = claim.disabled ? 'Come back tomorrow' : 'Claim ' + FP_DAILY + ' fake popCoins';
       var list = q('#rbShopList'); list.innerHTML = '';
       SHOP.forEach(function (it) {
-        var row = document.createElement('div'); row.className = 'rb-shop-item';
-        var mine = owns(w, it);
-        row.innerHTML = '<span>' + escapeHtml(it.name) + '</span>';
+        var row = document.createElement('div'); row.className = 'rb-shop-item rb-shop-' + it.type;
+        var mine = owns(w, it), url = it.id === 'svc-translator' ? withLang(it.url) : it.url;
+        var label = document.createElement(mine ? 'a' : 'span'); label.className = 'rb-shop-name'; label.textContent = it.name;
+        if (mine) { label.href = url; label.target = '_blank'; label.rel = 'noopener'; }
+        row.appendChild(label);
         var b = document.createElement(mine ? 'a' : 'button');
         b.className = 'btn btn-small';
-        if (mine) { b.href = it.url; b.target = '_blank'; b.rel = 'noopener'; b.textContent = '↗ OPEN'; }
-        else { b.type = 'button'; b.textContent = '🍿 ' + it.price; b.disabled = w.balance < it.price;
+        if (mine) { b.href = url; b.target = '_blank'; b.rel = 'noopener'; b.textContent = it.price ? '↗ OPEN' : '↗ FREE'; }
+        else { b.type = 'button'; b.textContent = '🍿 ' + it.price + ' BUY'; b.disabled = w.balance < it.price;
           b.title = b.disabled ? 'Not enough fake popCoins' : 'Buy for ' + it.price + ' fake popCoins';
           b.onclick = function () { fpBuy(it.id); }; }
         row.appendChild(b); list.appendChild(row);
@@ -1385,10 +1382,14 @@
       var d = fpRead(); if (d.w.claimed === today()) return false;
       d.w.balance += FP_DAILY; d.w.claimed = today(); fpWrite(d); return true;
     }
-    function openShop(show) { q('#rbShop').classList.toggle('hidden', show === false); q('#rbMenu').classList.add('hidden'); fpRender(); }
+    function openShop() {   // the shop is the left section: show that section and scroll to it
+      q('#rbMenu').classList.add('hidden'); useRbox.classList.remove('hidden', 'collapsed'); fpRender();
+      var tab = scope.querySelector('#rbTabs button[data-col="left"]'); if (tab) tab.click();
+      var shop = q('#rbShop'); if (shop.scrollIntoView) shop.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      shop.classList.add('rb-flash'); setTimeout(function () { shop.classList.remove('rb-flash'); }, 900);
+    }
     q('#rbFakePopClaim').onclick = fpClaim;
-    q('#rbFakePopShop').onclick = function () { openShop(q('#rbShop').classList.contains('hidden')); };
-    q('#rbShopClose').onclick = function () { openShop(false); };
+    q('#rbFakePopShop').onclick = openShop;
     q('#rbMenuShop').onclick = function () { openShop(true); };
     q('#rbMenuBtn').onclick = function () { q('#rbMenu').classList.toggle('hidden'); };
     renderMenu();
