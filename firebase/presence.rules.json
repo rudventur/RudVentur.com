@@ -1,0 +1,56 @@
+{
+  "rules": {
+    "presence": {
+      "rooms": {
+        "$room": {
+          ".read": "auth != null",
+          ".validate": "$room.matches(/^[a-z0-9_-]{1,32}$/)",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.hasChildren(['name', 'online', 'lastSeen'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 32"
+            },
+            "online": {
+              ".validate": "newData.isBoolean()"
+            },
+            "lastSeen": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "ps": {
+              ".validate": "newData.isString() && newData.val().length <= 200"
+            },
+            "note": {
+              ".validate": "newData.isString() && newData.val().length <= 300"
+            },
+            "loc": {
+              ".validate": "newData.isString() && newData.val().length <= 80"
+            },
+            "burial": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "sub": {
+              ".validate": "newData.isBoolean()"
+            },
+            "rest": {
+              "open": {
+                ".validate": "newData.isBoolean()"
+              },
+              "tables": {
+                "$table": {
+                  ".validate": "$table.matches(/^[a-z0-9-]{1,24}$/) && newData.val() === true"
+                }
+              },
+              "$other": {
+                ".validate": false
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      }
+    }
+  }
+}
