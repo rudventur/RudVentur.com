@@ -1,1 +1,37 @@
-PLACEHOLDER_AGAIN
+/* useRbox v2.0 — shared site-wide widget styles
+   Loaded by useRbox.js on every page. All custom properties are scoped to
+   #topRightUser (not :root) so they never clash with a host page's own
+   CSS variables. */
+
+#topRightUser {
+  --neon: #00ff41;
+  --yellow: #ffe600;
+  --bg: #000;
+  --panel-bg: rgba(0, 15, 5, 0.96);
+
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 999999;
+  font-family: 'Courier New', monospace;
+  color: var(--neon);
+}
+
+/* ===== CAPITAL R ===== */
+#Rcircle {
+  position: relative;
+  z-index: 2;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 3px solid var(--neon);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0,255,65,0.45);
+  user-select: none;
+  transition: all 0.3s;
+}
