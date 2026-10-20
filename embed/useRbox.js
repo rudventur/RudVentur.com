@@ -15,10 +15,10 @@
  *
  * OLDER PROFILE BOXES and the keys they used — copied into rud_useRbox_v3
  * automatically, once; copying in never deletes or changes them:
- *   rud_useRbox_v2      windows13 useRbox-v2-upgraded.html and the old version of
+ *   rud_useRbox_v2      the old windows13 boxes (now deleted) and the old version of
  *                       this file ({username, channel, psignature, currentLoc,
- *                       lat, lon, saveMessages, savedLocations}); windows13
- *                       userbox-v2-ultimate.html writes the motto as "signature"
+ *                       lat, lon, saveMessages, savedLocations});
+ *                       the old Ultimate box wrote the motto as "signature"
  *   rv_username         Snout First's display name (also used by its pets,
  *                       lost-pet reports and SHOW ME)
  *   sf_owner_signature  Snout First's "Your Motto"
@@ -257,9 +257,7 @@
       '<div id="useRbox" class="hidden">' +
       '  <div class="useRbox-notch" id="useRboxNotch" title="Collapse / Expand">⟨⟩</div>' +
       '  <div class="useRbox-header">' +
-      '    <div class="rb-topmenu"><button type="button" id="rbMenuBtn" title="Every service and the shop">☰</button>' +
-      '      <div id="rbMenu" class="rb-menu hidden"><button type="button" class="rb-menu-shop" id="rbMenuShop">🛒 POPCOIN SHOP</button><div id="rbMenuList"></div></div></div>' +
-      '    <strong>⚡ useRbox v2.0</strong>' +
+      '    <strong>⚡ useRbox</strong>' +
       '    <div class="useRbox-header-btns">' +
       '      <button id="rbFakePopShop" title="PopCoin shop (left section)">🛒</button>' +
       '      <button id="togglePrivacy" title="Online / private">🌐</button>' +
@@ -754,7 +752,7 @@
     renderDevices();
 
     q('#refreshUser').onclick = loadUser;
-    // from useRbox v2 Ultimate: a random traveller name (press 💾 SAVE PROFILE to keep it)
+    // 🎲 a random traveller name (press 💾 SAVE PROFILE to keep it)
     var RAND_ADJ = ['Neon', 'Cyber', 'Quantum', 'Electric', 'Atomic', 'Cosmic', 'Digital', 'Neural', 'Plasma', 'Sonic'];
     var RAND_NOUN = ['Wanderer', 'Explorer', 'Traveler', 'Seeker', 'Nomad', 'Pioneer', 'Voyager', 'Drifter', 'Runner', 'Walker'];
     function randomName() {
@@ -1338,13 +1336,6 @@
         type: str(x.type || (svc ? 'service' : 'site')), price: Math.max(0, Math.floor(+x.price || 0)) };
     }
     var SHOP = SERVICES.map(function (x) { return shopItem({ id: 'svc-' + x.id, service: x.id, price: x.id === 'hub' ? 0 : 5 }); });
-    function renderMenu() {
-      var box = q('#rbMenuList'); box.innerHTML = '';
-      SHOP.forEach(function (it) {
-        var a = document.createElement('a'); a.className = 'rb-service'; a.href = it.url; a.textContent = it.name;
-        a.target = '_blank'; a.rel = 'noopener'; box.appendChild(a);
-      });
-    }
     var shopLoaded = new Promise(function (done) { setTimeout(function () {
       var src; try { src = new URL('popcoin-shop-items.json', new URL(baseUrl, location.href)).href; } catch (e) { return done(false); }
       if (!window.fetch) return done(false);
@@ -1352,7 +1343,7 @@
         .then(function (d) {
           var list = (d && Array.isArray(d.items) ? d.items : []).map(shopItem).filter(Boolean);
           if (!list.length) return done(false);
-          SHOP = list; window.rvUserbox.fakePop.items = SHOP; renderMenu(); fpRender(); done(true);
+          SHOP = list; window.rvUserbox.fakePop.items = SHOP; fpRender(); done(true);
         }).catch(function (e) { console.warn('useRbox: shop items not loaded, using the built-in list', e); done(false); });
     }, 0); });
 
@@ -1400,16 +1391,13 @@
       d.w.balance += FP_DAILY; d.w.claimed = today(); fpWrite(d); return true;
     }
     function openShop() {   // the shop is the left section: show that section and scroll to it
-      q('#rbMenu').classList.add('hidden'); useRbox.classList.remove('hidden', 'collapsed'); fpRender();
+      useRbox.classList.remove('hidden', 'collapsed'); fpRender();
       var tab = scope.querySelector('#rbTabs button[data-col="left"]'); if (tab) tab.click();
       var shop = q('#rbShop'); if (shop.scrollIntoView) shop.scrollIntoView({ block: 'start', behavior: 'smooth' });
       shop.classList.add('rb-flash'); setTimeout(function () { shop.classList.remove('rb-flash'); }, 900);
     }
     q('#rbFakePopClaim').onclick = fpClaim;
     q('#rbFakePopShop').onclick = openShop;
-    q('#rbMenuShop').onclick = function () { openShop(true); };
-    q('#rbMenuBtn').onclick = function () { q('#rbMenu').classList.toggle('hidden'); };
-    renderMenu();
     window.addEventListener('storage', function (e) { if (e.key === FP_KEY || e.key === KEY) fpRender(); });
     q('#saveUser').addEventListener('click', function () { setTimeout(fpRender, 0); });
     fpRender();

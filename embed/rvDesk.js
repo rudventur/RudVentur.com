@@ -4,7 +4,7 @@
      <script src="embed/rvDesk.js" defer></script>
 
    Puts the Windows 13 layout straight onto the page (no ENTER screen):
-     top-left      RUDVENTUR notch menu (maps, tools, social, bank, OS, ChemVentur,
+     top-left      RUDVENTUR notch menu (view modes and Ko-fi; services are in the useRbox shop,
                    view modes, Ko-fi)
      top-right     the R circle + useRbox (embed/useRbox.js; not built here)
      bottom-left   ⌨️ Keyboards, 💬 Global Chat
@@ -55,14 +55,8 @@
     typegame:   { icon: '⌨️', title: 'Type Game', src: 'https://rudventur.github.io/punk-script/type-game.html', w: 1000, h: 700 },
     kofi:       { icon: '☕', title: 'Ko-fi', src: 'https://ko-fi.com/rudventur', tab: true }
   };
-  var MENU = [
-    ['🗺️ MAPS', ['mapmerger', 'ventusky', 'windy', 'blitz', 'nullschool', 'zoomearth']],
-    ['🛠️ TOOLS', ['translator', 'snout', 'weather', 'keyboard']],
-    ['🎸 SOCIAL', ['social', 'chat']],
-    ['💰 BANK', ['bank', 'vault']],
-    ['🪟 OS', ['win13', 'luxwin']],
-    ['☢️ CHEMVENTUR', ['chemmulti', 'chem', 'typegame']]
-  ];
+  // No link list in the notch menu: services and items are in the shop, in the left section of the useRbox.
+  var MENU = [];
 
   var CSS = [
     ':root{--rvd-neon:#00ff41;--rvd-yellow:#ffe600;--rvd-bg:#07090a}',

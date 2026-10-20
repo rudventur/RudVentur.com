@@ -108,17 +108,9 @@ only.
 
 ---
 
-## One definitive useRbox (v2 + Upgraded + Ultimate)
+## One useRbox file
 
-There used to be three user boxes. They are merged into this one file, and every page that shows the R in the top right loads it:
-
-| Came from | Kept here |
-|---|---|
-| useRbox v2 (the box inside WINDOWS13-MASTER.html) | Name, P.S. signature, current location with GPS, live clock, room (channel), the `rud_useRbox_v2` data. Its Windows-only parts (accounts, saved sessions, useR file, social links) are the Windows 13 **left section** (`data-left`), so they stay out of other services |
-| useRbox v2 Upgraded (windows13/useRbox-v2-upgraded.html) | The R circle and icon notch, full-screen panel, transparency, halftone signature avatar, saved GPS places with delete, translator hookup — this file started as that page |
-| useRbox v2 Ultimate (windows13/userbox-v2-ultimate.html) | 🎲 random traveller name next to the username; its saved data (`signature`, `savedLocations` in `rud_useRbox_v2`) is read in automatically |
-
-The three old pages now only show this box. Do not copy the box into a page again: load `embed/useRbox.js` and put service parts in the left section.
+`embed/useRbox.js` (with `useRbox.css`) is the only useRbox. There are no other copies or versions in any RUDVENTUR repository: every page with the R in the top right loads this file, and a service puts its own part in the left section (below). Data saved by older boxes (`rud_useRbox_v2`, including its `signature` and `savedLocations`) is read in automatically. Never copy the box into a page.
 
 ## The profile box — `useRbox.js`
 
@@ -144,7 +136,7 @@ keys into `rud_useRbox_v3`:
 
 | Old key | Written by |
 |---|---|
-| `rud_useRbox_v2` | windows13 `useRbox-v2-upgraded.html`, windows13 `userbox-v2-ultimate.html` (motto saved as `signature` instead of `psignature`) and the old version of this file |
+| `rud_useRbox_v2` | the old windows13 boxes, now deleted (one saved the motto as `signature` instead of `psignature`) and the old version of this file |
 | `rv_username` | Snout First's display name |
 | `sf_owner_signature` | Snout First's "Your Motto" |
 | `sf_walk_spots` | Snout First's saved walk spots |
@@ -260,15 +252,10 @@ so there is only one of each. Do one app at a time and try it on a phone.
       Redirect use `rvView.set` / `rvView.redirect`.
 - [ ] add the `useRbox.js` line to both pages.
 
-### windows13 (and its copy LuxWin13)
-- [ ] every page already has the `rvView.js` line; add the `useRbox.js` line.
-- [ ] `useRbox-v2-upgraded.html` and `userbox-v2-ultimate.html`: load and save
-      through `rvUserbox.get()` / `rvUserbox.save({...})` instead of
-      `localStorage['rud_useRbox_v2']` — or replace both with one page that just
-      loads `useRbox.js`.
-- [ ] `WINDOWS13-MASTER.html`: read the name with `rvUserbox.get().username`
-      instead of parsing `rud_useRbox_v2`; the "useRbox" desktop window can
-      show the shared box instead of its placeholder text.
+### windows13 and LuxWin13
+- [x] every page loads `useRbox.js`; their own boxes and the old box pages are deleted
+      (windows13 pull request 19, LuxWin13 pull request 4). The hub's old copies of
+      both folders are deleted; links open the real sites.
 
 ### rudTrip20
 - [ ] already loads `rvView.js`; add the `useRbox.js` line.

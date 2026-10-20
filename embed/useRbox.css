@@ -1,4 +1,4 @@
-/* useRbox v2.0 — shared site-wide widget styles
+/* useRbox — the one shared site-wide widget styles
    Loaded by useRbox.js on every page. All custom properties are scoped to
    #topRightUser (not :root) so they never clash with a host page's own
    CSS variables. */
@@ -631,11 +631,7 @@
 .rb-invite { border: 1px solid var(--yellow); border-radius: 6px; padding: 6px; margin-bottom: 8px; display: flex; gap: 6px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 
 /* ===== fake popCoins, shop and the top left menu ===== */
-#useRbox .rb-topmenu { position: relative; display: inline-block; margin-right: 8px; }
-#useRbox .rb-menu { position: absolute; left: 0; top: 100%; z-index: 10; min-width: 240px; max-height: 60vh; overflow-y: auto;
-  background: var(--panel-bg); border: 2px solid var(--neon); padding: 6px; display: flex; flex-direction: column; gap: 4px; }
-#useRbox .rb-menu.hidden, #useRbox .rb-shop.hidden { display: none; }
-#useRbox .rb-menu-shop { color: var(--yellow); }
+#useRbox .rb-shop.hidden { display: none; }
 #useRbox .rb-fakepop { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0 4px; padding: 6px 8px;
   border: 1px dashed var(--yellow); color: var(--yellow); }
 #useRbox .rb-fakepop span { flex: 1 1 auto; min-width: 0; }
@@ -651,3 +647,5 @@
 #useRbox .rb-left-slot[hidden] { display: none; }
 #useRbox .rb-left-slot { border: 1px solid var(--yellow); padding: 6px 8px; }
 #useRbox .rb-shop-item.rb-here .rb-shop-name::after { content: ' · you are here'; color: var(--yellow); font-size: 0.8em; }
+/* the shop is the one place items appear: keep it compact (scrolls inside the left section) */
+#useRbox #rbShopList { max-height: 34vh; overflow-y: auto; }
