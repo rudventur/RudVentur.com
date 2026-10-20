@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>useRbox left section test page</title>
+<style>body { margin: 0; background: #021; color: #0f4; font-family: monospace; } main { padding: 20px; }</style>
+</head><body><main><h1>useRbox left section test page</h1>
+<p>Only for embed/tests/useRbox-left-headless.js. The panel below is moved into the left section of the box.</p>
+<div id="myPanel"><button type="button" id="myBtn">click me</button> <span id="myCount">0</span></div>
+</main>
+<script>document.getElementById('myBtn').onclick = function () { var c = document.getElementById('myCount'); c.textContent = +c.textContent + 1; };</script>
+<script src="../useRbox.js" data-service="windows13" data-left="#myPanel" data-left-title="🪟 TEST SERVICE" defer></script>
+</body></html>

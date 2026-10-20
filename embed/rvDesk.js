@@ -33,8 +33,8 @@
   function url(u) { return new URL(u, HUB).href; }
 
   var APPS = {
-    keyboard:   { icon: '⌨️', title: 'World Keyboards', src: 'windows13/keyboard-realistic.html', w: 860, h: 560 },
-    chat:       { icon: '💬', title: 'Global Chat', src: 'global-chat-v5/index.html', w: 480, h: 620 },
+    keyboard:   { icon: '⌨️', title: 'World Keyboards', src: 'https://rudventur.github.io/windows13/keyboard-realistic.html', w: 860, h: 560 },
+    chat:       { icon: '💬', title: 'Global Chat', src: 'https://rudventur.github.io/global-chat-v5/', w: 480, h: 620 },
     popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html?v=20261018-3', w: 600, h: 760, fit: true },
     mapmerger:  { icon: '🗺️', title: 'Map Merger Venti', src: 'https://rudventur.github.io/map-merger-venti/', w: 1000, h: 680 },
     translator: { icon: '🌐', title: 'Translator v7', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
@@ -45,11 +45,11 @@
     blitz:      { icon: '⚡', title: 'Blitzortung', src: 'https://map.blitzortung.org/', w: 1000, h: 680 },
     nullschool: { icon: '🌍', title: 'Nullschool Earth', src: 'https://earth.nullschool.net/', w: 1000, h: 680 },
     zoomearth:  { icon: '🛰️', title: 'Zoom Earth', src: 'https://zoom.earth/', tab: true },
-    social:     { icon: '🎸', title: 'RudVentur Social', src: 'punk-script/index.html', w: 760, h: 680 },
+    social:     { icon: '🎸', title: 'RudVentur Social', src: 'https://rudventur.github.io/punk-script/', w: 760, h: 680 },
     bank:       { icon: '💰', title: 'Bank / Ledger', src: 'https://rudventur.github.io/bank/', w: 900, h: 700 },
     vault:      { icon: '🍿', title: 'PopCOIN Wallet', src: 'popcoin/', w: 560, h: 760 },
-    win13:      { icon: '🪟', title: 'WINDOWS 13', src: 'windows13/WINDOWS13-MASTER.html', w: 1000, h: 700 },
-    luxwin:     { icon: '🐧', title: 'LuxWin13', src: 'LuxWin13/notch-menu-final.html', w: 900, h: 640 },
+    win13:      { icon: '🪟', title: 'WINDOWS 13', src: 'https://rudventur.github.io/windows13/WINDOWS13-MASTER.html', w: 1000, h: 700 },
+    luxwin:     { icon: '🐧', title: 'LuxWin13', src: 'https://rudventur.github.io/LuxWin13/notch-menu-final.html', w: 900, h: 640 },
     chemmulti:  { icon: '⚗️', title: 'ChemVentur Multi v118', src: 'https://rudventur.github.io/ChemVentur-Multi-v118/', w: 1100, h: 720 },
     chem:       { icon: '🧬', title: 'ChemVentur (classic)', src: 'ChemVentur/index.html', w: 1100, h: 720 },
     typegame:   { icon: '⌨️', title: 'Type Game', src: 'https://rudventur.github.io/punk-script/type-game.html', w: 1000, h: 700 },

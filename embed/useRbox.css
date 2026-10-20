@@ -646,3 +646,8 @@
 #useRbox a.rb-shop-name:hover { color: var(--yellow); }
 #useRbox .rb-shop-item .btn { flex: 0 0 auto; white-space: nowrap; text-decoration: none; }
 #useRbox .rb-shop-item button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== the service slot (left section, supplied by the page) ===== */
+#useRbox .rb-left-slot[hidden] { display: none; }
+#useRbox .rb-left-slot { border: 1px solid var(--yellow); padding: 6px 8px; }
+#useRbox .rb-shop-item.rb-here .rb-shop-name::after { content: ' · you are here'; color: var(--yellow); font-size: 0.8em; }

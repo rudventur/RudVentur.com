@@ -218,6 +218,57 @@
           }
         }
       }
+    },
+    "chat": {
+      "$room": {
+        ".read": "auth != null",
+        ".indexOn": [
+          "ts"
+        ],
+        "$msg": {
+          ".write": "auth != null && !data.exists() && newData.child('uid').val() === auth.uid",
+          ".validate": "$room.matches(/^[a-z0-9_-]{1,32}$/) && newData.hasChildren(['name', 'text', 'ts', 'uid'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+          },
+          "text": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 500"
+          },
+          "ts": {
+            ".validate": "newData.val() === now"
+          },
+          "uid": {
+            ".validate": "newData.val() === auth.uid"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "rudventur-social": {
+      "profiles": {
+        ".read": true,
+        ".indexOn": [
+          "updated"
+        ],
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['name', 'updated'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+          },
+          "updated": {
+            ".validate": "newData.val() === now"
+          },
+          "created": {
+            ".validate": "newData.isNumber()"
+          },
+          "$field": {
+            ".validate": "$field.matches(/^[a-zA-Z_]{1,24}$/) && newData.isString() && newData.val().length <= 2000"
+          }
+        }
+      }
     }
   }
 }

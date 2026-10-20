@@ -108,6 +108,18 @@ only.
 
 ---
 
+## One definitive useRbox (v2 + Upgraded + Ultimate)
+
+There used to be three user boxes. They are merged into this one file, and every page that shows the R in the top right loads it:
+
+| Came from | Kept here |
+|---|---|
+| useRbox v2 (the box inside WINDOWS13-MASTER.html) | Name, P.S. signature, current location with GPS, live clock, room (channel), the `rud_useRbox_v2` data. Its Windows-only parts (accounts, saved sessions, useR file, social links) are the Windows 13 **left section** (`data-left`), so they stay out of other services |
+| useRbox v2 Upgraded (windows13/useRbox-v2-upgraded.html) | The R circle and icon notch, full-screen panel, transparency, halftone signature avatar, saved GPS places with delete, translator hookup — this file started as that page |
+| useRbox v2 Ultimate (windows13/userbox-v2-ultimate.html) | 🎲 random traveller name next to the username; its saved data (`signature`, `savedLocations` in `rud_useRbox_v2`) is read in automatically |
+
+The three old pages now only show this box. Do not copy the box into a page again: load `embed/useRbox.js` and put service parts in the left section.
+
 ## The profile box — `useRbox.js`
 
 The R circle top right: username, channel, motto ("P.S."), current location,
@@ -168,6 +180,33 @@ current view mode. To point it somewhere else, put this **before** the
 ```html
 <script>window.RUDVENTUR_TRANSLATOR_URL = 'https://rudventur.github.io/…';</script>
 ```
+
+### The left section: one slot per service
+
+The middle section (profile viewer, restaurant chooser) and the right section
+(editing, saving, people in the restaurant) are the same on every page. Only
+the left section changes: the shop is always there, and a page can put its own
+part above it.
+
+```html
+<!-- move an element of the page into the slot, and mark this service in the shop -->
+<script src="https://rudventur.github.io/RudVentur.com/embed/useRbox.js"
+        data-service="map-merger" data-left="#myPanel" data-left-title="🗺️ MAP" defer></script>
+```
+
+```js
+window.rvUserboxLeft = { title: '🐾 PETS', selector: '#petPanel' }; // before the script, or later:
+rvUserbox.setLeft(nodeOrHtmlOrSelector, { title: '🐾 PETS' });
+rvUserbox.setLeft(null);                                          // back to the shop only
+document.addEventListener('rvuserbox:ready', e => e.detail.setLeft(...));
+rvUserbox.open('left');                                           // open the box (optionally on a section)
+rvUserbox.close();
+rvUserbox.place({ top: 60, right: 220 });                         // move the R off the page's own top right controls (or data-top / data-right)
+```
+
+A moved element keeps its own event handlers. Calls made before the box is built are remembered and applied once it is. `data-service` is a service id from the
+services list (for example `windows13`, `map-merger`, `punk-script`) or a
+repository name from `popcoin-shop-items.json` (for example `LuxWin13`, `bank`).
 
 ---
 

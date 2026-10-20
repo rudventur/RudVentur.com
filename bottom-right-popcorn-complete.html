@@ -3762,9 +3762,9 @@ if (/pix-advanced/.test(location.hash)) {
   switchToTab('pix');
   pixAdvToggle(true);
 }
-// #pop-bunker, #pop-wallet, #pop-pix open a view straight away (links, demos)
+// #pop-bunker, #pop-wallet, #pop-pix, #pop-cookies, #pop-miner open a view straight away (links, demos)
 (function () {
-  const m = /pop-(bunker|wallet|pix)/.exec(location.hash);
+  const m = /pop-(bunker|wallet|pix|cookies|miner)/.exec(location.hash);
   if (m && !/pix-force-|pix-example|pix-advanced/.test(location.hash)) openView(m[1] === 'wallet' ? 'popcoin' : m[1]);
 })();
 
