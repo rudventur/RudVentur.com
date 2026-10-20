@@ -35,3 +35,171 @@
   user-select: none;
   transition: all 0.3s;
 }
+
+#Rcircle:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 0 35px rgba(0,255,65,0.7);
+}
+
+/* ===== ROLLING ICONS ===== */
+#Ricons {
+  position: absolute;
+  top: 8px;
+  right: 68px;
+  z-index: 2;
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transform: translateX(24px);
+  pointer-events: none;
+  transition: all 0.35s ease;
+}
+
+#topRightUser.open #Ricons {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.Ricon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--neon);
+  color: var(--neon);
+  font-size: 20px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+}
+
+.Ricon:hover {
+  background: var(--neon);
+  color: #000;
+  transform: scale(1.1);
+}
+
+/* ===== useRbox (full-screen panel) ===== */
+#useRbox {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background: var(--panel-bg);
+  border: none;
+  border-left: 3px solid var(--neon);
+  border-radius: 0;
+  padding: 24px max(20px, calc(50% - 230px));
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  box-shadow: 0 0 60px rgba(0,255,65,0.25);
+  backdrop-filter: blur(12px);
+  z-index: 1;
+  transition: transform 0.35s ease, background-color 0.3s ease;
+}
+
+#useRbox.collapsed {
+  transform: translateX(calc(100% - 34px));
+}
+
+/* ===== NOTCH ===== */
+.useRbox-notch {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 84px;
+  background: var(--bg);
+  border: 2px solid var(--neon);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  display: grid;
+  place-items: center;
+  color: var(--neon);
+  font-size: 18px;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: -4px 0 16px rgba(0,255,65,0.25);
+}
+
+.hidden { display: none !important; }
+
+/* ===== INSIDE HEADER (nag) ===== */
+.rv-inside-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(0, 20, 0, 0.95);
+  border-bottom: 2px solid #ffe600;
+  margin: -24px -20px 16px -20px;
+  font-size: 13px;
+}
+.rv-inside-header.rv-nag-done {
+  display: none;
+}
+.rv-nag-msg {
+  flex: 1;
+  color: #ffe600;
+  font-weight: bold;
+}
+.rv-nag-ok {
+  background: #ffe600;
+  color: #000;
+  border: none;
+  padding: 6px 16px;
+  font-family: inherit;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.rv-nag-kofi {
+  display: inline-block;
+  background: #ffe600;
+  color: #000;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* ===== LAYOUT ===== */
+.useRbox-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+.useRbox-left {
+  flex: 1;
+  min-width: 0;
+}
+.useRbox-right {
+  width: 280px;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0,255,65,0.3);
+  border-radius: 8px;
+  padding: 14px;
+  position: sticky;
+  top: 60px;
+}
+.useRbox-right-header {
+  font-weight: bold;
+  color: #ffe600;
+  margin-bottom: 12px;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+@media (max-width: 800px) {
+  .useRbox-layout { flex-direction: column; }
+  .useRbox-right { width: 100%; position: static; }
+}
