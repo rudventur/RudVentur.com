@@ -250,10 +250,6 @@
       '</div>' +
       '<div id="useRbox" class="hidden">' +
       '  <div class="useRbox-notch" id="useRboxNotch" title="Collapse / Expand">⟨⟩</div>' +
-      '  <div id="rvInsideHeader" class="rv-inside-header">' +
-      '    <div class="rv-nag-msg" id="rvNagMsg">☕ Support the universe — it\'s only £10 per year</div>' +
-      '    <button type="button" id="rvNagOk" class="rv-nag-ok">OK</button>' +
-      '  </div>' +
       '  <div class="useRbox-header">' +
       '    <strong>⚡ useRbox v2.0</strong>' +
       '    <div class="useRbox-header-btns">' +
@@ -263,17 +259,13 @@
       '      <button id="closeUser" title="Close">✖</button>' +
       '    </div>' +
       '  </div>' +
+      '  <div class="rb-cols">' +
+      '   <section class="rb-col rb-col-left"><div class="rb-col-title">⚙️ SERVICE OPTIONS</div>' +
       '  <div id="liveClock">--:--:--</div>' +
-      '  <div class="rb-incognito">' +
-      '    <div class="rb-incognito-mask">🕶</div>' +
-      '    <strong>INCOGNITO — PRIVATE MODE</strong>' +
-      '    <p>No login, no profile, nothing saved about you. Camera and microphone are off. ' +
-      'You can still use every public tool.</p>' +
-      '    <button class="btn" id="goOnline">🌐 GO ONLINE (only your name is shown)</button>' +
-      '  </div>' +
-      '  <div class="avatar-wrap">' +
-      '    <div id="avatarHalftone"></div>' +
-      '    <small>pure CSS halftone signature</small>' +
+      '  <div class="rb-section">' +
+      '    <div class="social-title">🗣 MY LANGUAGE</div>' +
+      '    <select id="rbLang" title="Your language, remembered on this device and passed to the translator"><option value="af">Afrikaans</option><option value="ak">Akan (Twi)</option><option value="sq">Albanian</option><option value="am">Amharic</option><option value="ar">Arabic</option><option value="an">Aragonese</option><option value="hy">Armenian</option><option value="rup">Aromanian</option><option value="ast">Asturian</option><option value="ay">Aymara</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="bar">Bavarian</option><option value="be">Belarusian</option><option value="bn">Bengali</option><option value="ber">Berber (Tamazight)</option><option value="bs">Bosnian</option><option value="br">Breton</option><option value="bg">Bulgarian</option><option value="my">Burmese</option><option value="yue">Cantonese</option><option value="ca">Catalan</option><option value="chr">Cherokee</option><option value="ny">Chichewa (Nyanja)</option><option value="kw">Cornish</option><option value="co">Corsican</option><option value="cr">Cree</option><option value="hr">Croatian</option><option value="cs">Czech</option><option value="da">Danish</option><option value="nl">Dutch</option><option value="en">English</option><option value="et">Estonian</option><option value="fo">Faroese</option><option value="fj">Fijian</option><option value="fi">Finnish</option><option value="fr">French</option><option value="fy">Frisian</option><option value="fur">Friulian</option><option value="ff">Fula (Fulfulde)</option><option value="gl">Galician</option><option value="ka">Georgian</option><option value="de">German</option><option value="el">Greek</option><option value="gn">Guarani</option><option value="gu">Gujarati</option><option value="ht">Haitian Creole</option><option value="ha">Hausa</option><option value="haw">Hawaiian</option><option value="he">Hebrew</option><option value="hi">Hindi</option><option value="hu">Hungarian</option><option value="is">Icelandic</option><option value="ig">Igbo</option><option value="id">Indonesian</option><option value="iu">Inuktitut</option><option value="ga">Irish</option><option value="it">Italian</option><option value="ja">Japanese</option><option value="kn">Kannada</option><option value="krl">Karelian</option><option value="csb">Kashubian</option><option value="kk">Kazakh</option><option value="km">Khmer</option><option value="kg">Kikongo</option><option value="rw">Kinyarwanda</option><option value="ko">Korean</option><option value="ku">Kurdish</option><option value="ksh">Kölsch</option><option value="lkt">Lakota</option><option value="lo">Lao</option><option value="lv">Latvian</option><option value="lij">Ligurian</option><option value="li">Limburgish</option><option value="ln">Lingala</option><option value="lt">Lithuanian</option><option value="liv">Livonian</option><option value="lmo">Lombard</option><option value="nds">Low German</option><option value="dsb">Lower Sorbian</option><option value="lb">Luxembourgish</option><option value="mk">Macedonian</option><option value="mg">Malagasy</option><option value="ms">Malay</option><option value="ml">Malayalam</option><option value="mt">Maltese</option><option value="zh-CN">Mandarin</option><option value="gv">Manx</option><option value="mi">Maori</option><option value="arn">Mapudungun</option><option value="mr">Marathi</option><option value="mn">Mongolian</option><option value="cnr">Montenegrin</option><option value="nah">Nahuatl</option><option value="nv">Navajo (Diné)</option><option value="nap">Neapolitan</option><option value="ne">Nepali</option><option value="frr">North Frisian</option><option value="no">Norwegian</option><option value="oc">Occitan</option><option value="oj">Ojibwe (Anishinaabemowin)</option><option value="om">Oromo</option><option value="pfl">Palatinate German</option><option value="ps">Pashto</option><option value="fa">Persian</option><option value="pms">Piedmontese</option><option value="pl">Polish</option><option value="pt">Portuguese</option><option value="pa">Punjabi</option><option value="qu">Quechua</option><option value="ro">Romanian</option><option value="rm">Romansh</option><option value="ru">Russian</option><option value="rue">Rusyn</option><option value="smj">Sami (Lule)</option><option value="se">Sami (Northern)</option><option value="sma">Sami (Southern)</option><option value="sm">Samoan</option><option value="sc">Sardinian</option><option value="stq">Saterland Frisian</option><option value="sco">Scots</option><option value="gd">Scots Gaelic</option><option value="sr">Serbian</option><option value="st">Sesotho</option><option value="sn">Shona</option><option value="scn">Sicilian</option><option value="szl">Silesian</option><option value="sli">Silesian German</option><option value="si">Sinhala</option><option value="sk">Slovak</option><option value="sl">Slovenian</option><option value="so">Somali</option><option value="wen">Sorbian</option><option value="es">Spanish</option><option value="swg">Swabian</option><option value="sw">Swahili</option><option value="sv">Swedish</option><option value="tl">Tagalog</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="th">Thai</option><option value="bo">Tibetan</option><option value="ti">Tigrinya</option><option value="tpi">Tok Pisin</option><option value="to">Tongan</option><option value="tr">Turkish</option><option value="uk">Ukrainian</option><option value="hsb">Upper Sorbian</option><option value="ur">Urdu</option><option value="uz">Uzbek</option><option value="vec">Venetian</option><option value="vi">Vietnamese</option><option value="vro">Võro</option><option value="wa">Walloon</option><option value="guc">Wayuunaiki</option><option value="cy">Welsh</option><option value="vls">West Flemish</option><option value="wo">Wolof</option><option value="xh">Xhosa</option><option value="yo">Yoruba</option><option value="zu">Zulu</option></select>' +
+      '    <small class="rb-dev-note">The translator opens in this language.</small>' +
       '  </div>' +
       '  <div class="rb-devices">' +
       '    <div class="social-title">📷 🎤 CAMERA &amp; MIC</div>' +
@@ -297,6 +289,24 @@
       '    </div>' +
       '    <small class="rb-dev-note">Camera and mic only ever run inside the 🍿 popcorn window, which is sealed off from the internet. ' +
       'Recordings and 🎬 movie maker are in there.</small>' +
+      '  </div>' +
+      '  <button type="button" class="btn" id="rbGetApp" style="width:100%;margin-top:14px;padding:10px;">📲 DOWNLOAD THE RUDVENTUR APP</button>' +
+      '   </section>' +
+      '   <section class="rb-col rb-col-mid"><div class="rb-col-title">👤 useR</div>' +
+      '  <div id="rvInsideHeader" class="rv-inside-header">' +
+      '    <div class="rv-nag-msg" id="rvNagMsg">☕ Support the universe — it\'s only £10 per year</div>' +
+      '    <button type="button" id="rvNagOk" class="rv-nag-ok">OK</button>' +
+      '  </div>' +
+      '  <div class="rb-incognito">' +
+      '    <div class="rb-incognito-mask">🕶</div>' +
+      '    <strong>INCOGNITO — PRIVATE MODE</strong>' +
+      '    <p>No login, no profile, nothing saved about you. Camera and microphone are off. ' +
+      'You can still use every public tool.</p>' +
+      '    <button class="btn" id="goOnline">🌐 GO ONLINE (only your name is shown)</button>' +
+      '  </div>' +
+      '  <div class="avatar-wrap">' +
+      '    <div id="avatarHalftone"></div>' +
+      '    <small>pure CSS halftone signature</small>' +
       '  </div>' +
       '  <label>👤 Username</label>' +
       '  <div class="field-row">' +
@@ -327,11 +337,15 @@
       '    </div>' +
       '    <div id="gpsList"></div>' +
       '  </div>' +
-      /* the app download button init() wires up (lost in a merge, which made init()
-         stop at q('#rbGetApp') and left everything after it unwired) */
-      '  <button type="button" class="btn" id="rbGetApp" style="width:100%;margin-top:14px;padding:10px;">📲 DOWNLOAD THE RUDVENTUR APP</button>' +
+      '  <label class="toggle"><input type="checkbox" id="saveMessages" checked><span>Save my messages</span></label>' +
+      '  <button id="saveUser">💾 SAVE PROFILE</button>' +
+      '   </section>' +
+      '   <section class="rb-col rb-col-right"><div class="rb-col-title">✏️ EDIT</div>' +
       '  <div class="useRbox-right" id="useRboxRight">' +
       '    <div class="useRbox-right-header">👤 Profile Editor</div>' +
+      '    <label>⚰️ What kind of funeral do you want?</label>' +
+      '    <select id="funeralKind"><option value="">— choose —</option><option value="burial">🪦 Burial</option><option value="cremation">🔥 Cremation</option><option value="space">🚀 Shoot me into space</option><option value="sea">🌊 At sea</option><option value="tree">🌳 Become a tree</option><option value="party">🎉 A party, not a funeral</option><option value="none">🤫 No funeral, no fuss</option></select>' +
+      '    <textarea id="funeralNote" placeholder="Music, place, who to invite, what to do with the ashes..."></textarea>' +
       '    <label>⚰️ The way you want to be buried</label>' +
       '    <input type="text" id="burialWish" placeholder="shoot in the space">' +
       '    <label>✨ Other public note</label>' +
@@ -339,8 +353,8 @@
       '    <button type="button" class="btn" id="saveExtra">💾 SAVE EXTRA</button>' +
       '    <small>Stored on this device for now.</small>' +
       '  </div>' +
-      '  <label class="toggle"><input type="checkbox" id="saveMessages" checked><span>Save my messages</span></label>' +
-      '  <button id="saveUser">💾 SAVE PROFILE</button>' +
+      '   </section>' +
+      '  </div>' +
       '</div>';
     document.body.appendChild(root);
     return root;
@@ -713,11 +727,27 @@
       try {
         var u = new URL(url, location.href);
         if (mode && mode !== 'normal') u.searchParams.set('view', mode);
+        var lang = lsGet('rvUserLang');
+        if (lang) u.searchParams.set('lang', lang);
         target = u.href;
       } catch (e) {}
       window.open(target, '_blank', 'noopener');
     }
-    q('#iconTranslator').onclick = function () { goTo(TRANSLATOR_URL); };
+    // the useR's language, shared with the translator (?lang=) and stored on this device
+    var langSel = q('#rbLang');
+    var navLang = (navigator.language || 'en').toLowerCase();
+    var savedLang = lsGet('rvUserLang') || navLang;
+    if (!langSel.querySelector('option[value="' + savedLang + '"]')) savedLang = savedLang.split('-')[0];
+    if (!langSel.querySelector('option[value="' + savedLang + '"]')) savedLang = 'en';
+    langSel.value = savedLang;
+    langSel.onchange = function () { lsSet('rvUserLang', this.value); };
+    function withLang(url) {
+      try { var u = new URL(url, location.href); var l = lsGet('rvUserLang') || langSel.value; if (l) u.searchParams.set('lang', l); return u.href; } catch (e) { return url; }
+    }
+    q('#iconTranslator').onclick = function () {
+      if (!lsGet('rvUserLang')) lsSet('rvUserLang', langSel.value);
+      goTo(withLang(TRANSLATOR_URL));
+    };
 
     loadUser();
     loadChannel();

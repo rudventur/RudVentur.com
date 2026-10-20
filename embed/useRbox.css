@@ -505,7 +505,38 @@
   .useRbox-right { width: 100%; position: static; }
 }
 
-/* fit the full-screen box: editor sits in the column, nag leaves room for the R */
-#useRbox .rv-inside-header { margin: 0 0 16px; padding-right: 80px; }
-#useRbox .useRbox-right { width: auto; position: static; margin-top: 16px; }
-#useRbox .useRbox-right input, #useRbox .useRbox-right textarea { width: 100%; box-sizing: border-box; }
+/* ===== THREE COLUMNS: service options | useR profile (nag on top) | editing ===== */
+#useRbox { padding: 24px max(16px, calc(50% - 640px)) calc(80px + env(safe-area-inset-bottom)); }
+#useRbox .useRbox-header { padding-right: 190px; }   /* never under the R or its rolling icons */
+.rb-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.rb-col {
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 255, 65, 0.35);
+  border-radius: 10px;
+  padding: 14px 16px 18px;
+  box-shadow: 0 0 18px rgba(0, 255, 65, 0.12), inset 0 0 22px rgba(0, 255, 65, 0.04);
+}
+.rb-col-mid { border-color: var(--neon); box-shadow: 0 0 26px rgba(0, 255, 65, 0.25); }
+.rb-col-title {
+  font-weight: bold; letter-spacing: 2px; font-size: 13px; color: var(--yellow);
+  border-bottom: 1px dashed rgba(0, 255, 65, 0.4); padding-bottom: 8px; margin-bottom: 12px;
+  text-shadow: 0 0 8px rgba(255, 230, 0, 0.5);
+}
+.rb-col input, .rb-col textarea, .rb-col select { width: 100%; box-sizing: border-box; }
+.rb-col .field-row input { width: auto; }
+.rb-section { margin: 12px 0; }
+#useRbox .rv-inside-header { position: static; margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--yellow); border-radius: 8px; flex-wrap: wrap; }
+#useRbox .useRbox-right { width: auto; position: static; margin: 0; padding: 0; background: none; border: none; }
+#useRbox .useRbox-right-header { display: none; }
+@media (max-width: 900px) {
+  #useRbox { padding: 84px 12px calc(80px + env(safe-area-inset-bottom)); }
+  #useRbox .useRbox-header { padding-right: 0; }
+  .rb-cols { grid-template-columns: 1fr; }
+  .rb-col-mid { order: -1; }   /* phone: the useR profile first, then options, then editing */
+}
