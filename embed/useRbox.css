@@ -535,10 +535,19 @@
 #useRbox .useRbox-right { width: auto; position: static; margin: 0; padding: 0; background: none; border: none; }
 #useRbox .useRbox-right-header { display: none; }
 @media (max-width: 900px) {
-  #useRbox { padding: 84px 12px calc(80px + env(safe-area-inset-bottom)); }
+  /* phone and tablet: still three sections side by side (no stacking), compact, each scrolls on its own */
+  #useRbox { padding: 78px 6px calc(10px + env(safe-area-inset-bottom)); }   /* the header sits below the R and its icons */
+  #useRbox .useRbox-header { margin-bottom: 6px; }
+  #useRbox .rv-inside-header { flex-direction: column; align-items: stretch; gap: 6px; padding: 6px; }
+  #useRbox .rv-inside-header .rv-nag-msg { font-size: 11px; }
   #useRbox .useRbox-header { padding-right: 0; }
-  .rb-cols { grid-template-columns: 1fr; }
-  .rb-col-mid { order: -1; }   /* phone: the useR profile first, then options, then editing */
+  .rb-cols { gap: 5px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr); }
+  .rb-col { padding: 7px 6px; font-size: 11.5px; line-height: 1.35; overflow-wrap: anywhere; }
+  .rb-col-title { font-size: 11px; letter-spacing: 1px; margin-bottom: 6px; padding-bottom: 5px; }
+  .rb-col label, .rb-col summary, .rb-col .btn, .rb-col button { font-size: 11px; }
+  .rb-col input, .rb-col textarea, .rb-col select { font-size: 12px; padding: 5px; }
+  .rb-col .field-row { flex-wrap: wrap; }
+  .rb-col .field-row input { width: 100%; }
 }
 
 /* ===== roll / unroll menus, viewed profile, room, people ===== */
@@ -579,3 +588,44 @@
 .rb-tables { border: 2px solid var(--yellow); border-radius: 8px; padding: 10px 12px; margin-top: 10px; background: rgba(255,230,0,0.05); }
 .rb-tables .rb-service { margin-top: 6px; }
 #rbRestSettings .toggle { display: flex; }
+
+
+/* ===== view modes (▥ 3 sections · ◧ half screen · ⛶ full screen), remembered as rvUseRboxView ===== */
+#useRbox .useRbox-header { position: sticky; top: -24px; z-index: 3; background: var(--panel-bg); }
+#rbViewMode { min-width: 34px; }
+.rb-tabs { display: none; gap: 4px; margin: 0 0 8px; }
+.rb-tabs button { flex: 1; padding: 6px 4px; border: 1px solid rgba(0,255,65,.5); border-radius: 6px; background: #000; color: var(--neon); font: inherit; font-size: 12px; cursor: pointer; }
+.rb-tabs button.active { background: var(--neon); color: #000; }
+/* 3 sections: the columns fill the window height and scroll on their own */
+#useRbox[data-view="three"] { overflow: hidden; display: flex; flex-direction: column; }
+#useRbox[data-view="three"] .rb-cols { flex: 1; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+#useRbox[data-view="three"] .rb-col { overflow-y: auto; min-height: 0; max-height: 100%; align-self: stretch; overscroll-behavior: contain; }
+/* half screen: one section at a time on the right half (bottom half in portrait), tabs or swipe to switch */
+#useRbox[data-view="half"] { left: 50%; width: 50%; padding: 64px 10px 12px; overflow: hidden; display: flex; flex-direction: column; }
+#useRbox[data-view="half"] .rb-tabs { display: flex; }
+#useRbox[data-view="half"] .rb-cols { display: block; flex: 1; min-height: 0; }
+#useRbox[data-view="half"] .rb-col { display: none; height: 100%; overflow-y: auto; box-sizing: border-box; }
+#useRbox[data-view="half"] .rb-cols[data-tab="left"] .rb-col-left,
+#useRbox[data-view="half"] .rb-cols[data-tab="mid"] .rb-col-mid,
+#useRbox[data-view="half"] .rb-cols[data-tab="right"] .rb-col-right { display: block; }
+@media (orientation: portrait) and (max-width: 900px) {
+  #useRbox[data-view="half"] { left: 0; width: 100%; top: 50%; height: 50%; padding-top: 10px; }
+  #useRbox[data-view="half"] .useRbox-header { position: static; }
+}
+/* full screen: edge to edge, every section and every menu open, the whole page scrolls */
+#useRbox[data-view="full"] { padding-left: 10px; padding-right: 10px; overflow-y: auto; display: block; }
+#useRbox[data-view="full"] .rb-col { overflow: visible; }
+
+/* ===== profile builder and channels ===== */
+.rb-steps { display: flex; gap: 4px; margin: 2px 0 8px; }
+.rb-steps span { flex: 1; height: 5px; border-radius: 3px; background: rgba(0,255,65,.2); }
+.rb-steps span.done { background: rgba(0,255,65,.6); } .rb-steps span.now { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+.rb-step.hidden, .rb-invite.hidden { display: none; }
+.rb-avatars { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 4px; margin-top: 6px; }
+.rb-avatars button { font-size: 20px; padding: 3px; background: #000; border: 1px solid rgba(0,255,65,.4); border-radius: 6px; cursor: pointer; }
+.rb-avatars button.active { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.rb-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.rb-chip { padding: 2px 7px; border-radius: 12px; border: 1px solid var(--neon); background: rgba(0,255,65,.12); color: var(--neon); font: inherit; font-size: 11px; cursor: pointer; }
+.rb-channel { border: 1px solid rgba(0,255,65,.35); border-radius: 6px; padding: 6px; margin: 5px 0; }
+.rb-ch-name { font-weight: bold; color: #d8ffe0; } .rb-ch-desc { font-size: 11px; opacity: .8; margin: 2px 0 4px; }
+.rb-invite { border: 1px solid var(--yellow); border-radius: 6px; padding: 6px; margin-bottom: 8px; display: flex; gap: 6px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
