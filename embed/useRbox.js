@@ -251,8 +251,11 @@
       '<div id="useRbox" class="hidden">' +
       '  <div class="useRbox-notch" id="useRboxNotch" title="Collapse / Expand">⟨⟩</div>' +
       '  <div class="useRbox-header">' +
+      '    <div class="rb-topmenu"><button type="button" id="rbMenuBtn" title="Every service and the shop">☰</button>' +
+      '      <div id="rbMenu" class="rb-menu hidden"><button type="button" class="rb-menu-shop" id="rbMenuShop">🛒 POPCOIN SHOP</button><div id="rbMenuList"></div></div></div>' +
       '    <strong>⚡ useRbox v2.0</strong>' +
       '    <div class="useRbox-header-btns">' +
+      '      <button id="rbFakePopShop" title="PopCoin shop (left section)">🛒</button>' +
       '      <button id="togglePrivacy" title="Online / private">🌐</button>' +
       '      <button id="toggleTransparency" title="Toggle transparency">🌑</button>' +
       '      <button id="collapseUser" title="Collapse to notch">⤢</button>' +
@@ -261,7 +264,13 @@
       '  </div>' +
       '  <div class="rb-cols">' +
       '   <section class="rb-col rb-col-left"><div class="rb-col-title">⚙️ SERVICE OPTIONS</div>' +
-      '  <div class="rb-section"><div class="social-title">🧭 SERVICES</div><div id="rbServices" class="rb-services"></div></div>' +
+      '  <div class="rb-section rb-shop" id="rbShop"><div class="social-title">🧭 SERVICES · 🛒 POPCOIN SHOP</div>' +
+      '    <div class="rb-fakepop" id="rbFakePop" title="Fake popCoins: just for fun, saved in this browser, no real money">' +
+      '      <span>🍿 <b id="rbFakePopBal">0</b> fake popCoins</span>' +
+      '      <button type="button" class="btn btn-small" id="rbFakePopClaim">🎁 DAILY</button>' +
+      '    </div>' +
+      '    <small class="rb-dev-note">Fake popCoins only: no real money. Buy a link once and it is yours on this browser.</small>' +
+      '    <div id="rbShopList" class="rb-services"></div></div>' +
       '  <div id="liveClock">--:--:--</div>' +
       '  <div class="rb-section">' +
       '    <div class="social-title">🗣 MY LANGUAGE</div>' +
@@ -857,12 +866,9 @@
       { id: 'weather', name: '⛅ Weather', url: SITE + 'yesterday-today-tomorrow-weather.html' }
     ];
     function serviceById(id) { return SERVICES.filter(function (x) { return x.id === id; })[0]; }
-    var svcBox = q('#rbServices'), tableBox = q('#rbTableChoices');
+    var tableBox = q('#rbTableChoices');   // the service links themselves are the shop items in the left section
     SERVICES.forEach(function (x) {
       var a = document.createElement('a');
-      a.className = 'rb-service'; a.href = x.id === 'translator' ? withLang(x.url) : x.url; a.textContent = x.name;
-      a.target = '_blank'; a.rel = 'noopener';
-      svcBox.appendChild(a);
       var l = document.createElement('label');
       l.className = 'toggle';
       l.innerHTML = '<input type="checkbox" value="' + x.id + '"><span>' + escapeHtml(x.name) + '</span>';
@@ -1299,6 +1305,99 @@
     window.rvUserbox.joinChannel = joinChannel;
     window.rvUserbox.deleteChannel = deleteChannel;
     renderMyInfo();
+
+    /* ===== fake popCoins and the shop =====
+       Just for fun: no real money, nothing leaves this browser. One wallet per player
+       name (the profile username) in localStorage 'rud_fakePopCoins_v1':
+       { players: { <name>: { balance, claimed: 'YYYY-MM-DD', bought: [itemId] } } } */
+    var FP_KEY = 'rud_fakePopCoins_v1', FP_START = 50, FP_DAILY = 10;
+    var GH = 'https://rudventur.github.io/';
+    /* The items and their prices live in embed/popcoin-shop-items.json (next to this file):
+       { id, name, price, type: service | site | repository, and service (an id from SERVICES) or url }.
+       If that file cannot be loaded, the shop falls back to the services above at 5 fake popCoins each (the hub free). */
+    function shopItem(x) {
+      var svc = x && x.service ? serviceById(x.service) : null, url = svc ? svc.url : str(x && x.url);
+      if (!x || !x.id || !url) return null;
+      return { id: str(x.id), name: str(x.name || (svc && svc.name) || x.id), url: url,
+        type: str(x.type || (svc ? 'service' : 'site')), price: Math.max(0, Math.floor(+x.price || 0)) };
+    }
+    var SHOP = SERVICES.map(function (x) { return shopItem({ id: 'svc-' + x.id, service: x.id, price: x.id === 'hub' ? 0 : 5 }); });
+    function renderMenu() {
+      var box = q('#rbMenuList'); box.innerHTML = '';
+      SHOP.forEach(function (it) {
+        var a = document.createElement('a'); a.className = 'rb-service'; a.href = it.url; a.textContent = it.name;
+        a.target = '_blank'; a.rel = 'noopener'; box.appendChild(a);
+      });
+    }
+    var shopLoaded = new Promise(function (done) { setTimeout(function () {
+      var src; try { src = new URL('popcoin-shop-items.json', new URL(baseUrl, location.href)).href; } catch (e) { return done(false); }
+      if (!window.fetch) return done(false);
+      fetch(src, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (d) {
+          var list = (d && Array.isArray(d.items) ? d.items : []).map(shopItem).filter(Boolean);
+          if (!list.length) return done(false);
+          SHOP = list; window.rvUserbox.fakePop.items = SHOP; renderMenu(); fpRender(); done(true);
+        }).catch(function (e) { console.warn('useRbox: shop items not loaded, using the built-in list', e); done(false); });
+    }, 0); });
+
+    function fpPlayer() { var n = str(getProfile().username).trim(); return n && !isPlaceholderName(n) ? n.toLowerCase() : 'guest'; }
+    function fpRead() {
+      var all = parse(lsGet(FP_KEY)); if (!all || typeof all !== 'object' || !all.players) all = { players: {} };
+      var me = fpPlayer(), w = all.players[me];
+      if (!w) w = all.players[me] = { balance: FP_START, claimed: '', bought: [] };
+      if (!Array.isArray(w.bought)) w.bought = [];
+      w.balance = Math.max(0, Math.floor(+w.balance || 0));
+      return { all: all, w: w };
+    }
+    function fpWrite(d) { lsSet(FP_KEY, JSON.stringify(d.all)); fpRender(); }
+    function today() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+    function owns(w, it) { return it.price === 0 || w.bought.indexOf(it.id) !== -1; }
+    function fpRender() {
+      var d = fpRead(), w = d.w;
+      q('#rbFakePopBal').textContent = w.balance;
+      var claim = q('#rbFakePopClaim'); claim.disabled = w.claimed === today();
+      claim.title = claim.disabled ? 'Come back tomorrow' : 'Claim ' + FP_DAILY + ' fake popCoins';
+      var list = q('#rbShopList'); list.innerHTML = '';
+      SHOP.forEach(function (it) {
+        var row = document.createElement('div'); row.className = 'rb-shop-item rb-shop-' + it.type;
+        var mine = owns(w, it), url = it.id === 'svc-translator' ? withLang(it.url) : it.url;
+        var label = document.createElement(mine ? 'a' : 'span'); label.className = 'rb-shop-name'; label.textContent = it.name;
+        if (mine) { label.href = url; label.target = '_blank'; label.rel = 'noopener'; }
+        row.appendChild(label);
+        var b = document.createElement(mine ? 'a' : 'button');
+        b.className = 'btn btn-small';
+        if (mine) { b.href = url; b.target = '_blank'; b.rel = 'noopener'; b.textContent = it.price ? '↗ OPEN' : '↗ FREE'; }
+        else { b.type = 'button'; b.textContent = '🍿 ' + it.price + ' BUY'; b.disabled = w.balance < it.price;
+          b.title = b.disabled ? 'Not enough fake popCoins' : 'Buy for ' + it.price + ' fake popCoins';
+          b.onclick = function () { fpBuy(it.id); }; }
+        row.appendChild(b); list.appendChild(row);
+      });
+    }
+    function fpBuy(id) {
+      var it = SHOP.filter(function (x) { return x.id === id; })[0], d = fpRead();
+      if (!it || owns(d.w, it) || d.w.balance < it.price) return false;
+      d.w.balance -= it.price; d.w.bought.push(it.id); fpWrite(d); return true;
+    }
+    function fpClaim() {
+      var d = fpRead(); if (d.w.claimed === today()) return false;
+      d.w.balance += FP_DAILY; d.w.claimed = today(); fpWrite(d); return true;
+    }
+    function openShop() {   // the shop is the left section: show that section and scroll to it
+      q('#rbMenu').classList.add('hidden'); useRbox.classList.remove('hidden', 'collapsed'); fpRender();
+      var tab = scope.querySelector('#rbTabs button[data-col="left"]'); if (tab) tab.click();
+      var shop = q('#rbShop'); if (shop.scrollIntoView) shop.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      shop.classList.add('rb-flash'); setTimeout(function () { shop.classList.remove('rb-flash'); }, 900);
+    }
+    q('#rbFakePopClaim').onclick = fpClaim;
+    q('#rbFakePopShop').onclick = openShop;
+    q('#rbMenuShop').onclick = function () { openShop(true); };
+    q('#rbMenuBtn').onclick = function () { q('#rbMenu').classList.toggle('hidden'); };
+    renderMenu();
+    window.addEventListener('storage', function (e) { if (e.key === FP_KEY || e.key === KEY) fpRender(); });
+    q('#saveUser').addEventListener('click', function () { setTimeout(fpRender, 0); });
+    fpRender();
+    window.rvUserbox.fakePop = { KEY: FP_KEY, items: SHOP, wallet: function () { return JSON.parse(JSON.stringify(fpRead().w)); },
+      buy: fpBuy, claim: fpClaim, player: fpPlayer, openShop: openShop, loaded: shopLoaded };
 
     console.log('👤 useRbox loaded (shared embed, profile key ' + KEY + ')');
   }

@@ -1,0 +1,208 @@
+{
+  "howToEdit": "Prices of the fake popCoin shop in the useRbox. Change a price, add or remove an item, save. Every item needs a unique id, a name, a price (whole fake popCoins, 0 means free) and a type: service, site or repository. A service item gives service (an id from the SERVICES list in useRbox.js) instead of url, so it follows that service's address; site and repository items give a full url. Keep an id the same once players may have bought it.",
+  "items": [
+    {
+      "id": "svc-hub",
+      "name": "🏠 RudVentur hub",
+      "service": "hub",
+      "price": 0,
+      "type": "service"
+    },
+    {
+      "id": "svc-translator",
+      "name": "🌐 Translator and map",
+      "service": "translator",
+      "price": 5,
+      "type": "service"
+    },
+    {
+      "id": "svc-chemventur",
+      "name": "🧪 ChemVentur",
+      "service": "chemventur",
+      "price": 5,
+      "type": "service"
+    },
+    {
+      "id": "svc-map-merger",
+      "name": "🗺️ Map merger",
+      "service": "map-merger",
+      "price": 5,
+      "type": "service"
+    },
+    {
+      "id": "svc-windows13",
+      "name": "🪟 Windows 13",
+      "service": "windows13",
+      "price": 5,
+      "type": "service"
+    },
+    {
+      "id": "svc-punk-script",
+      "name": "🎸 Punk script",
+      "service": "punk-script",
+      "price": 5,
+      "type": "service"
+    },
+    {
+      "id": "svc-pumpkin-guy",
+      "name": "🎃 pumpKIN Guy",
+      "service": "pumpkin-guy",
+      "price": 5,
+      "type": "service"
+    },
+    {
+      "id": "svc-popcoin",
+      "name": "🪙 PopCOIN wallet",
+      "service": "popcoin",
+      "price": 5,
+      "type": "service"
+    },
+    {
+      "id": "svc-camera-background",
+      "name": "📷 Camera background",
+      "service": "camera-background",
+      "price": 5,
+      "type": "service"
+    },
+    {
+      "id": "svc-weather",
+      "name": "⛅ Weather",
+      "service": "weather",
+      "price": 5,
+      "type": "service"
+    },
+    {
+      "id": "page-ChemVentur",
+      "name": "🧪 ChemVentur multiplayer",
+      "url": "https://rudventur.github.io/ChemVentur/",
+      "price": 15,
+      "type": "site"
+    },
+    {
+      "id": "page-ChemVentur-Multi-v118",
+      "name": "🧪 ChemVentur multiplayer v118",
+      "url": "https://rudventur.github.io/ChemVentur-Multi-v118/",
+      "price": 15,
+      "type": "site"
+    },
+    {
+      "id": "page-chem.ventur.112",
+      "name": "🧪 ChemVentur v112",
+      "url": "https://rudventur.github.io/chem.ventur.112/",
+      "price": 10,
+      "type": "site"
+    },
+    {
+      "id": "page-LuxWin13",
+      "name": "🪟 LuxWin13 browser OS",
+      "url": "https://rudventur.github.io/LuxWin13/",
+      "price": 15,
+      "type": "site"
+    },
+    {
+      "id": "page-map-merger-v5",
+      "name": "🗺️ Map merger v5",
+      "url": "https://rudventur.github.io/map-merger-v5/",
+      "price": 10,
+      "type": "site"
+    },
+    {
+      "id": "page-global-chat-v5",
+      "name": "💬 Global chat v5",
+      "url": "https://rudventur.github.io/global-chat-v5/",
+      "price": 10,
+      "type": "site"
+    },
+    {
+      "id": "page-cheese-ouiji-empire",
+      "name": "🧀 Cheese Ouiji Empire",
+      "url": "https://rudventur.github.io/cheese-ouiji-empire/",
+      "price": 15,
+      "type": "site"
+    },
+    {
+      "id": "page-bank",
+      "name": "🏦 Bank (owe2owe ledger)",
+      "url": "https://rudventur.github.io/bank/",
+      "price": 10,
+      "type": "site"
+    },
+    {
+      "id": "page-Intellectual-PROTOCOL",
+      "name": "📜 Intellectual protocol",
+      "url": "https://rudventur.github.io/Intellectual-PROTOCOL/",
+      "price": 10,
+      "type": "site"
+    },
+    {
+      "id": "page-Trip21",
+      "name": "🧳 Trip 21",
+      "url": "https://rudventur.github.io/Trip21/",
+      "price": 10,
+      "type": "site"
+    },
+    {
+      "id": "page-rudTrip20",
+      "name": "🧳 RUDE tRIP 20",
+      "url": "https://rudventur.github.io/rudTrip20/",
+      "price": 10,
+      "type": "site"
+    },
+    {
+      "id": "page-trip-randomiser",
+      "name": "🎲 Trip randomiser",
+      "url": "https://rudventur.github.io/trip-randomiser/",
+      "price": 10,
+      "type": "site"
+    },
+    {
+      "id": "page-rud-weather",
+      "name": "🌦️ Rud Weather app",
+      "url": "https://rudventur.github.io/rud-weather/",
+      "price": 10,
+      "type": "site"
+    },
+    {
+      "id": "page-locksmith",
+      "name": "🔐 Locksmith",
+      "url": "https://rudventur.github.io/locksmith/",
+      "price": 5,
+      "type": "site"
+    },
+    {
+      "id": "repo-ChemGame-MultiPLAYER",
+      "name": "📦 ChemGame multiplayer (code)",
+      "url": "https://github.com/rudventur/ChemGame-MultiPLAYER",
+      "price": 3,
+      "type": "repository"
+    },
+    {
+      "id": "repo-ChemVentur.v114",
+      "name": "📦 ChemVentur v114 (code)",
+      "url": "https://github.com/rudventur/ChemVentur.v114",
+      "price": 3,
+      "type": "repository"
+    },
+    {
+      "id": "repo-another-ChemVentur-77",
+      "name": "📦 another ChemVentur 77 (code)",
+      "url": "https://github.com/rudventur/another-ChemVentur-77",
+      "price": 3,
+      "type": "repository"
+    },
+    {
+      "id": "repo-soldat-android",
+      "name": "📦 Soldat for Android (code)",
+      "url": "https://github.com/rudventur/soldat-android",
+      "price": 3,
+      "type": "repository"
+    },
+    {
+      "id": "repo-RudVentur.com",
+      "name": "📦 RudVentur.com (code)",
+      "url": "https://github.com/rudventur/RudVentur.com",
+      "price": 3,
+      "type": "repository"
+    }
+  ]
+}
