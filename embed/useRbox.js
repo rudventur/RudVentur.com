@@ -896,11 +896,15 @@
 
     /* ===== middle column: this useR's info, read only ===== */
     function extraData() { try { return JSON.parse(lsGet('rud_useRbox_extra') || '{}') || {}; } catch (e) { return {}; } }
-    function renderMyInfo() {
-      var x = extraData(), d = readPub();
-      var rows = [['👤 Name', q('#username').value], ['📝 P.S.', q('#psignature').value],
+    function renderMyInfo(live) {
+      var x = extraData(), d = readPub(), pf = getProfile();
+      var dr = window.rvUserbox.previewDraft ? window.rvUserbox.previewDraft() : { avatar: pf.avatar, languages: pf.languages };
+      if (live) { d.shareLoc = q('#rbShareLoc').checked; d.subscriber = q('#rbSubscriber').checked; d.tables = []; tableBox.querySelectorAll('input:checked').forEach(function (i) { d.tables.push(i.value); }); x.publicNote = q('#publicNote').value; }
+      var langs = Array.isArray(dr.languages) ? dr.languages : str(dr.languages).split(',').filter(Boolean);
+      var rows = [['🙂 Avatar', str(dr.avatar)], ['👤 Name', q('#username').value], ['📝 P.S.', q('#psignature').value],
         ['📍 Location', q('#currentLoc').value + (q('#currentLoc').value ? (d.shareLoc ? '  (shared)' : '  (private)') : '')],
         ['✨ Public note', x.publicNote], ['⚰️ Burial wish', x.burialWish ? x.burialWish + (d.shareBurial ? '  (public)' : '  (private)') : ''],
+        ['🗣 Languages', langs.map(function (v) { var o = q('#rbLang option[value="' + v + '"]'); return o ? o.textContent : v; }).join(', ')],
         ['📡 Room', lsGet('rudventur_channel') || 'main'],
         ['🍽️ Restaurant', d.subscriber ? (d.restOpen === 'online' ? 'Open when online · ' + d.tables.length + ' tables' : 'Closed') : '']];
       q('#rbMyInfo').innerHTML = rows.filter(function (r) { return r[1]; }).map(function (r) {
@@ -1043,7 +1047,7 @@
           }, function (e) { note('Live room list unavailable: ' + (e && e.message || e)); });
         }).catch(function () {});
       }
-      return { publish: publish, listen: listen, withdraw: withdraw, cleanRoom: cleanRoom, state: st };
+      return { publish: publish, listen: listen, withdraw: withdraw, cleanRoom: cleanRoom, state: st, start: start };
     })();
     window.rvUserbox.presence = { publish: presence.publish, listen: presence.listen, leave: presence.withdraw };
     q('#rbRoomVisible').addEventListener('change', function () { presence.publish(); });
@@ -1051,6 +1055,249 @@
     // start reading the room only once the useR opens the box (no sign-in for every page view)
     q('#iconUser').addEventListener('click', function () { presence.listen(); presence.publish(); });
     if (lsGet('rvRoomVisible') === '1') presence.publish().then(presence.listen);
+
+    /* ===== view modes: 3 sections · half screen (one section, tabs or swipe) · full screen (everything) ===== */
+    var VIEW_KEY = 'rvUseRboxView', VIEWS = ['three', 'half', 'full'];
+    var VIEW_LABEL = { three: '▥ 3 sections', half: '◧ Half screen', full: '⛶ Full screen' };
+    var viewBtn = document.createElement('button');
+    viewBtn.id = 'rbViewMode'; viewBtn.type = 'button';
+    q('#closeUser').parentNode.insertBefore(viewBtn, q('#closeUser'));
+    var tabs = document.createElement('div');
+    tabs.className = 'rb-tabs'; tabs.id = 'rbTabs';
+    tabs.innerHTML = '<button type="button" data-col="left">⚙️ Options</button><button type="button" data-col="mid">👤 useR</button><button type="button" data-col="right">✏️ Editing</button>';
+    var cols = q('.rb-cols');
+    cols.parentNode.insertBefore(tabs, cols);
+    function setTab(col) {
+      if (['left', 'mid', 'right'].indexOf(col) < 0) col = 'mid';
+      cols.setAttribute('data-tab', col); rbLsSet('rvUseRboxTab', col);
+      tabs.querySelectorAll('button').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-col') === col); });
+    }
+    tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setTab(b.getAttribute('data-col')); });
+    (function () {   // swipe left / right switches the section in half-screen view
+      var x0 = null, y0 = 0;
+      cols.addEventListener('touchstart', function (e) { if (useRbox.getAttribute('data-view') !== 'half') return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+      cols.addEventListener('touchend', function (e) {
+        if (x0 === null) return;
+        var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+        if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
+        var order = ['left', 'mid', 'right'], i = order.indexOf(cols.getAttribute('data-tab'));
+        setTab(order[Math.max(0, Math.min(2, i + (dx < 0 ? 1 : -1)))]);
+      });
+    })();
+    function setView(v) {
+      if (VIEWS.indexOf(v) < 0) v = 'three';
+      useRbox.setAttribute('data-view', v); rbLsSet(VIEW_KEY, v);
+      var next = VIEWS[(VIEWS.indexOf(v) + 1) % VIEWS.length];
+      viewBtn.textContent = VIEW_LABEL[v].split(' ')[0];
+      viewBtn.title = 'View: ' + VIEW_LABEL[v].slice(2) + ' (tap for ' + VIEW_LABEL[next].slice(2).toLowerCase() + ')';
+      if (v === 'full') useRbox.querySelectorAll('details.rb-fold').forEach(function (d) { d.open = true; });
+    }
+    viewBtn.onclick = function () { setView(VIEWS[(VIEWS.indexOf(useRbox.getAttribute('data-view')) + 1) % VIEWS.length]); };
+    setTab(rbLsGet('rvUseRboxTab') || 'mid');
+    setView(rbLsGet(VIEW_KEY) || 'three');
+
+    /* ===== profile builder (Editing column): one step at a time, live preview in 👤 MY INFO ===== */
+    var AVATARS = ['🙂', '😎', '🦊', '🐱', '🐸', '🦉', '🐙', '🌵', '🍄', '🚀', '🎸', '🧪', '🎃', '🌍', '👽', '🤖'];
+    var LANGS = Array.prototype.map.call(q('#rbLang').options, function (o) { return { v: o.value, t: o.textContent }; });
+    function langName(v) { var l = LANGS.filter(function (x) { return x.v === v; })[0]; return l ? l.t : v; }
+    var draft = { avatar: '', languages: [] };
+    function loadDraft() { var p = getProfile(); draft.avatar = str(p.avatar); draft.languages = str(p.languages).split(',').filter(Boolean).slice(0, 8); }   // stored as "pl,en" (profile fields are strings)
+    var STEPS = [
+      { t: '1 · Your name', h: 'What should people call you?', f: '<input type="text" data-b="username" maxlength="32" placeholder="Your name">' },
+      { t: '2 · Signature', h: 'A short line under your name (your P.S.)', f: '<textarea data-b="psignature" maxlength="200" placeholder="You don\'t have to have legs to Trip"></textarea>' },
+      { t: '3 · Avatar', h: 'Pick an emoji', f: '<div class="rb-avatars">' + AVATARS.map(function (a) { return '<button type="button" data-av="' + a + '">' + a + '</button>'; }).join('') + '</div>' },
+      { t: '4 · Languages', h: 'The languages you speak (up to 8)', f: '<div class="field-row"><select data-b="langpick" style="flex:1;">' + LANGS.map(function (l) { return '<option value="' + l.v + '">' + escapeHtml(l.t) + '</option>'; }).join('') + '</select><button type="button" class="btn btn-small" data-b="langadd">＋ ADD</button></div><div class="rb-chips" data-b="langlist"></div>' },
+      { t: '5 · Public note', h: 'Something anyone in your room may read', f: '<textarea data-b="publicNote" maxlength="300"></textarea>' },
+      { t: '6 · Location', h: 'Should the room see your current location?', f: '<label class="toggle"><input type="radio" name="rbBLoc" value="private"><span>🔒 Keep it private</span></label><label class="toggle"><input type="radio" name="rbBLoc" value="share"><span>📍 Share my current location</span></label>' },
+      { t: '7 · Restaurant tables', h: 'Supporters get a restaurant; the tables are the services you serve', f: '<label class="toggle"><input type="checkbox" data-b="sub"><span>I am a subscriber (supporter)</span></label><div data-b="tables"></div>' },
+      { t: '8 · Done', h: 'Check the preview in 👤 MY INFO, then save', f: '<div class="rb-dev-note">Saving keeps everything on this device. Only what you chose to share goes to the room, and only while "Show me in the room list" is on.</div>' }
+    ];
+    var builder = document.createElement('details');
+    builder.className = 'rb-fold'; builder.id = 'rbBuilder'; builder.open = true;
+    builder.innerHTML = '<summary>🧭 PROFILE BUILDER</summary><div class="rb-fold-body">' +
+      '<div class="rb-steps" id="rbSteps">' + STEPS.map(function (s, i) { return '<span data-i="' + i + '"></span>'; }).join('') + '</div>' +
+      STEPS.map(function (s, i) { return '<div class="rb-step hidden" data-step="' + i + '"><div class="rb-subtitle">' + s.t + '</div><small class="rb-dev-note">' + s.h + '</small>' + s.f + '</div>'; }).join('') +
+      '<div class="field-row" style="margin-top:10px;"><button type="button" class="btn btn-small" id="rbBack">⬅ BACK</button><span style="flex:1"></span><button type="button" class="btn btn-small" id="rbNext">NEXT ➡</button></div></div>';
+    var rightCol = q('.rb-col-right');
+    rightCol.insertBefore(builder, rightCol.firstChild);
+    var bq = function (k) { return builder.querySelector('[data-b="' + k + '"]'); };
+    var bTables = bq('tables');
+    SERVICES.forEach(function (x) { var l = document.createElement('label'); l.className = 'toggle'; l.innerHTML = '<input type="checkbox" value="' + x.id + '"><span>' + escapeHtml(x.name) + '</span>'; bTables.appendChild(l); });
+    var step = 0;
+    function renderLangs() {
+      bq('langlist').innerHTML = draft.languages.map(function (v) { return '<button type="button" class="rb-chip" data-lang="' + escapeHtml(v) + '">' + escapeHtml(langName(v)) + ' ✖</button>'; }).join('') || '<span class="rb-empty">None yet</span>';
+    }
+    function fillBuilder() {
+      loadDraft(); var d = readPub();
+      bq('username').value = q('#username').value; bq('psignature').value = q('#psignature').value;
+      bq('publicNote').value = q('#publicNote').value || extraData().publicNote || '';
+      builder.querySelectorAll('input[name="rbBLoc"]').forEach(function (r) { r.checked = r.value === (d.shareLoc ? 'share' : 'private'); });
+      bq('sub').checked = d.subscriber;
+      bTables.querySelectorAll('input').forEach(function (i) { i.checked = d.tables.indexOf(i.value) >= 0; });
+      bq('langpick').value = q('#rbLang').value;
+      renderLangs(); showStep(step);
+    }
+    function showStep(i) {
+      step = Math.max(0, Math.min(STEPS.length - 1, i));
+      builder.querySelectorAll('.rb-step').forEach(function (el) { el.classList.toggle('hidden', +el.getAttribute('data-step') !== step); });
+      builder.querySelectorAll('#rbSteps span').forEach(function (el) { var n = +el.getAttribute('data-i'); el.className = n < step ? 'done' : n === step ? 'now' : ''; });
+      builder.querySelectorAll('[data-av]').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-av') === draft.avatar); });
+      q('#rbBack').disabled = step === 0;
+      q('#rbNext').textContent = step === STEPS.length - 1 ? '💾 SAVE PROFILE' : 'NEXT ➡';
+      bTables.style.display = bq('sub').checked ? '' : 'none';
+    }
+    // every change goes straight into the editing fields, so 👤 MY INFO previews it at once
+    function preview() {
+      q('#username').value = bq('username').value; q('#psignature').value = bq('psignature').value;
+      q('#publicNote').value = bq('publicNote').value;
+      var shareLoc = builder.querySelector('input[name="rbBLoc"]:checked');
+      q('#rbShareLoc').checked = !!shareLoc && shareLoc.value === 'share';
+      q('#rbSubscriber').checked = bq('sub').checked; q('#rbRestSettings').style.display = bq('sub').checked ? '' : 'none';
+      var on = []; bTables.querySelectorAll('input:checked').forEach(function (i) { on.push(i.value); });
+      tableBox.querySelectorAll('input').forEach(function (i) { i.checked = on.indexOf(i.value) >= 0; });
+      renderMyInfo(true);
+    }
+    builder.addEventListener('input', function () { preview(); showStep(step); });
+    builder.addEventListener('change', function () { preview(); showStep(step); });
+    builder.addEventListener('click', function (e) {
+      var av = e.target.closest('[data-av]'), chip = e.target.closest('[data-lang]');
+      if (av) { draft.avatar = av.getAttribute('data-av'); preview(); showStep(step); }
+      if (chip) { var v = chip.getAttribute('data-lang'); draft.languages = draft.languages.filter(function (x) { return x !== v; }); renderLangs(); preview(); }
+      if (e.target === bq('langadd')) { var v2 = bq('langpick').value; if (v2 && draft.languages.indexOf(v2) < 0 && draft.languages.length < 8) draft.languages.push(v2); renderLangs(); preview(); }
+    });
+    q('#rbBack').onclick = function () { showStep(step - 1); };
+    q('#rbNext').onclick = function () {
+      if (step < STEPS.length - 1) { showStep(step + 1); return; }
+      preview();
+      saveProfile({ avatar: draft.avatar, languages: draft.languages.slice(0, 8).join(','), username: q('#username').value, psignature: q('#psignature').value });   // shared profile (rvUserbox.get)
+      q('#saveUser').click(); q('#saveExtra').click(); q('#rbSavePublic').click();
+      var b = q('#rbNext'); b.textContent = '✅ SAVED'; setTimeout(function () { showStep(step); }, 1200);
+    };
+    builder.addEventListener('toggle', function () { if (builder.open) fillBuilder(); });
+    q('#iconUser').addEventListener('click', fillBuilder);
+    window.rvUserbox.previewDraft = function () { return { avatar: draft.avatar, languages: draft.languages.slice() }; };
+
+    /* ===== channels: make your own room (popcoin Realtime Database, channels/...) ===== */
+    var chBox = document.createElement('details');
+    chBox.className = 'rb-fold'; chBox.id = 'rbChannels'; chBox.open = true;
+    chBox.innerHTML = '<summary>📡 CHANNELS</summary><div class="rb-fold-body">' +
+      '<div class="rb-invite hidden" id="rbInvite"></div>' +
+      '<div class="rb-subtitle">⭐ MY CHANNELS</div><div id="rbMyChannels"><div class="rb-empty">Open the box to load</div></div>' +
+      '<div class="rb-subtitle">🌍 PUBLIC CHANNELS</div><div id="rbPublicChannels"><div class="rb-empty">Open the box to load</div></div>' +
+      '<small class="rb-dev-note" id="rbChannelNote"></small></div>';
+    var roomFold = q('#rbRoom');
+    roomFold.parentNode.insertBefore(chBox, roomFold.nextSibling);
+    var mk = document.createElement('details');
+    mk.className = 'rb-fold'; mk.id = 'rbMakeChannel';
+    mk.innerHTML = '<summary>➕ MAKE A CHANNEL</summary><div class="rb-fold-body">' +
+      '<label>Name</label><input type="text" id="rbChName" maxlength="40" placeholder="Night owls">' +
+      '<label>Description (optional)</label><textarea id="rbChDesc" maxlength="200" placeholder="What is this channel about?"></textarea>' +
+      '<label class="toggle"><input type="radio" name="rbChVis" value="public" checked><span>🌍 Public: listed for everyone</span></label>' +
+      '<label class="toggle"><input type="radio" name="rbChVis" value="private"><span>🔒 Private: only people with the link</span></label>' +
+      '<button type="button" class="btn" id="rbChCreate" style="width:100%;margin-top:8px;">📡 CREATE CHANNEL</button>' +
+      '<small class="rb-dev-note" id="rbChMsg">You are the owner. Only you can change or delete it.</small></div>';
+    rightCol.insertBefore(mk, builder.nextSibling);
+
+    function chNote(t) { q('#rbChannelNote').textContent = t || ''; }
+    function slug(name) { return str(name).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24) || 'channel'; }
+    function shareLink(id) { var u = new URL(location.href); u.searchParams.set('rvroom', id); u.hash = ''; return u.href; }
+    function joinChannel(id) {
+      lsSet('rudventur_channel', id); loadChannel();
+      document.dispatchEvent(new CustomEvent('rv:channel', { detail: { channel: id, from: 'useRbox' } }));
+      renderMyInfo(); chNote('You joined "' + id + '".');
+    }
+    function chRow(c, mine) {
+      var row = document.createElement('div'); row.className = 'rb-channel';
+      row.innerHTML = '<div class="rb-ch-name">' + (c.public ? '🌍 ' : '🔒 ') + escapeHtml(c.name) + '</div>' + (c.desc ? '<div class="rb-ch-desc">' + escapeHtml(c.desc) + '</div>' : '') +
+        '<div class="field-row"><button type="button" class="btn btn-small" data-a="join">🚪 JOIN</button><button type="button" class="btn btn-small" data-a="share">🔗 SHARE</button>' + (mine ? '<button type="button" class="btn btn-small" data-a="del" title="Delete this channel">🗑</button>' : '') + '</div>';
+      row.querySelector('[data-a="join"]').onclick = function () { joinChannel(c.id); };
+      row.querySelector('[data-a="share"]').onclick = function () {
+        var link = shareLink(c.id), done = function () { chNote('Link copied: ' + link); };
+        if (navigator.share) navigator.share({ title: c.name, url: link }).catch(function () {});
+        else if (navigator.clipboard) navigator.clipboard.writeText(link).then(done, function () { chNote(link); });
+        else chNote(link);
+      };
+      if (mine) row.querySelector('[data-a="del"]').onclick = function () { if (confirm('Delete channel "' + c.name + '"?')) deleteChannel(c.id).then(listChannels); };
+      return row;
+    }
+    function fill(box, list, mine, empty) {
+      box.innerHTML = '';
+      if (!list.length) { box.innerHTML = '<div class="rb-empty">' + empty + '</div>'; return; }
+      list.forEach(function (c) { box.appendChild(chRow(c, mine)); });
+    }
+    function read(snap, id, isPublic) { var v = snap.val(); return v ? { id: id, name: str(v.name), desc: str(v.desc), owner: str(v.owner), public: isPublic, created: v.created } : null; }
+    function getChannel(id) {
+      return presence.start().then(function () {
+        var db = presence.state.db;
+        return db.ref('channels/public/' + id).once('value').then(function (s) {
+          if (s.exists()) return read(s, id, true);
+          return db.ref('channels/private/' + id).once('value').then(function (p) { return read(p, id, false); });
+        });
+      });
+    }
+    function createChannel(opts) {
+      opts = opts || {};
+      var name = str(opts.name).trim().slice(0, 40), desc = str(opts.description || opts.desc).trim().slice(0, 200), isPublic = opts.public !== false;
+      if (!name) return Promise.reject(new Error('A channel needs a name'));
+      return presence.start().then(function () {
+        var st = presence.state, id = slug(name) + '-' + Math.random().toString(36).slice(2, 7);
+        var rec = { name: name, owner: st.uid, created: firebase.database.ServerValue.TIMESTAMP };
+        if (desc) rec.desc = desc;
+        var upd = {}; upd['channels/' + (isPublic ? 'public' : 'private') + '/' + id] = rec; upd['channels/mine/' + st.uid + '/' + id] = isPublic ? 'public' : 'private';
+        return st.db.ref().update(upd).then(function () { return { id: id, name: name, desc: desc, public: isPublic, owner: st.uid, link: shareLink(id) }; });
+      });
+    }
+    function deleteChannel(id) {
+      return presence.start().then(function () {
+        var st = presence.state;
+        return st.db.ref('channels/mine/' + st.uid + '/' + id).once('value').then(function (s) {
+          if (!s.exists()) throw new Error('Not your channel');
+          var upd = {}; upd['channels/' + s.val() + '/' + id] = null; upd['channels/mine/' + st.uid + '/' + id] = null;
+          return st.db.ref().update(upd);
+        });
+      });
+    }
+    function listChannels() {
+      return presence.start().then(function () {
+        var st = presence.state;
+        var pub = st.db.ref('channels/public').orderByChild('created').limitToLast(50).once('value').then(function (s) {
+          var out = []; s.forEach(function (c) { var r = read(c, c.key, true); if (r) out.push(r); }); return out.reverse();
+        });
+        var mine = st.db.ref('channels/mine/' + st.uid).once('value').then(function (s) {
+          var ids = []; s.forEach(function (c) { ids.push(c.key); });
+          return Promise.all(ids.map(getChannel)).then(function (l) { return l.filter(Boolean); });
+        });
+        return Promise.all([mine, pub]).then(function (r) {
+          fill(q('#rbMyChannels'), r[0], true, 'You have not made a channel yet');
+          fill(q('#rbPublicChannels'), r[1], false, 'No public channels yet');
+          return { mine: r[0], public: r[1] };
+        });
+      }).catch(function (e) { chNote('Channels unavailable: ' + (e && e.message || e)); return { mine: [], public: [], error: String(e && e.message || e) }; });
+    }
+    q('#rbChCreate').onclick = function () {
+      var vis = mk.querySelector('input[name="rbChVis"]:checked');
+      var btn = this; btn.disabled = true;
+      createChannel({ name: q('#rbChName').value, description: q('#rbChDesc').value, public: !vis || vis.value === 'public' }).then(function (c) {
+        q('#rbChMsg').textContent = '✅ Made "' + c.name + '". Share: ' + c.link;
+        q('#rbChName').value = ''; q('#rbChDesc').value = '';
+        return listChannels();
+      }, function (e) { q('#rbChMsg').textContent = '⚠️ ' + (e && e.message || e); }).then(function () { btn.disabled = false; });
+    };
+    // opened from a share link (?rvroom=<id>): offer to join
+    (function () {
+      var id; try { id = new URL(location.href).searchParams.get('rvroom'); } catch (e) { id = null; }
+      if (!id || !/^[a-z0-9_-]{3,32}$/.test(id)) return;
+      var inv = q('#rbInvite');
+      inv.classList.remove('hidden');
+      inv.innerHTML = '<div>📨 You were invited to channel <b>' + escapeHtml(id) + '</b></div><button type="button" class="btn btn-small" id="rbInviteJoin">🚪 JOIN</button>';
+      q('#rbInviteJoin').onclick = function () { joinChannel(id); inv.classList.add('hidden'); };
+      getChannel(id).then(function (c) { if (c) inv.querySelector('b').textContent = c.name; }).catch(function () {});
+    })();
+    q('#iconUser').addEventListener('click', function () { if (!useRbox.classList.contains('hidden')) listChannels(); });
+    window.rvUserbox.createChannel = createChannel;
+    window.rvUserbox.listChannels = listChannels;
+    window.rvUserbox.joinChannel = joinChannel;
+    window.rvUserbox.deleteChannel = deleteChannel;
     renderMyInfo();
 
     console.log('👤 useRbox loaded (shared embed, profile key ' + KEY + ')');
