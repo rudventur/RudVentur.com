@@ -4,7 +4,7 @@
      <script src="embed/rvDesk.js" defer></script>
 
    Puts the Windows 13 layout straight onto the page (no ENTER screen):
-     top-left      RUDVENTUR notch menu (maps, tools, social, bank, OS, ChemVentur,
+     top-left      RUDVENTUR notch menu (view modes and Ko-fi; services are in the useRbox shop,
                    view modes, Ko-fi)
      top-right     the R circle + useRbox (embed/useRbox.js; not built here)
      bottom-left   ⌨️ Keyboards, 💬 Global Chat
@@ -33,8 +33,8 @@
   function url(u) { return new URL(u, HUB).href; }
 
   var APPS = {
-    keyboard:   { icon: '⌨️', title: 'World Keyboards', src: 'windows13/keyboard-realistic.html', w: 860, h: 560 },
-    chat:       { icon: '💬', title: 'Global Chat', src: 'global-chat-v5/index.html', w: 480, h: 620 },
+    keyboard:   { icon: '⌨️', title: 'World Keyboards', src: 'https://rudventur.github.io/windows13/keyboard-realistic.html', w: 860, h: 560 },
+    chat:       { icon: '💬', title: 'Global Chat', src: 'https://rudventur.github.io/global-chat-v5/', w: 480, h: 620 },
     popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html?v=20261018-3', w: 600, h: 760, fit: true },
     mapmerger:  { icon: '🗺️', title: 'Map Merger Venti', src: 'https://rudventur.github.io/map-merger-venti/', w: 1000, h: 680 },
     translator: { icon: '🌐', title: 'Translator v7', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
@@ -45,28 +45,23 @@
     blitz:      { icon: '⚡', title: 'Blitzortung', src: 'https://map.blitzortung.org/', w: 1000, h: 680 },
     nullschool: { icon: '🌍', title: 'Nullschool Earth', src: 'https://earth.nullschool.net/', w: 1000, h: 680 },
     zoomearth:  { icon: '🛰️', title: 'Zoom Earth', src: 'https://zoom.earth/', tab: true },
-    social:     { icon: '🎸', title: 'RudVentur Social', src: 'punk-script/index.html', w: 760, h: 680 },
+    social:     { icon: '🎸', title: 'RudVentur Social', src: 'https://rudventur.github.io/punk-script/', w: 760, h: 680 },
     bank:       { icon: '💰', title: 'Bank / Ledger', src: 'https://rudventur.github.io/bank/', w: 900, h: 700 },
     vault:      { icon: '🍿', title: 'PopCOIN Wallet', src: 'popcoin/', w: 560, h: 760 },
-    win13:      { icon: '🪟', title: 'WINDOWS 13', src: 'windows13/WINDOWS13-MASTER.html', w: 1000, h: 700 },
-    luxwin:     { icon: '🐧', title: 'LuxWin13', src: 'LuxWin13/notch-menu-final.html', w: 900, h: 640 },
+    win13:      { icon: '🪟', title: 'WINDOWS 13', src: 'https://rudventur.github.io/windows13/WINDOWS13-MASTER.html', tab: true },
+    luxwin:     { icon: '🐧', title: 'LuxWin13', src: 'https://rudventur.github.io/LuxWin13/', tab: true },
     chemmulti:  { icon: '⚗️', title: 'ChemVentur Multi v118', src: 'https://rudventur.github.io/ChemVentur-Multi-v118/', w: 1100, h: 720 },
     chem:       { icon: '🧬', title: 'ChemVentur (classic)', src: 'ChemVentur/index.html', w: 1100, h: 720 },
     typegame:   { icon: '⌨️', title: 'Type Game', src: 'https://rudventur.github.io/punk-script/type-game.html', w: 1000, h: 700 },
     kofi:       { icon: '☕', title: 'Ko-fi', src: 'https://ko-fi.com/rudventur', tab: true }
   };
-  var MENU = [
-    ['🗺️ MAPS', ['mapmerger', 'ventusky', 'windy', 'blitz', 'nullschool', 'zoomearth']],
-    ['🛠️ TOOLS', ['translator', 'snout', 'weather', 'keyboard']],
-    ['🎸 SOCIAL', ['social', 'chat']],
-    ['💰 BANK', ['bank', 'vault']],
-    ['🪟 OS', ['win13', 'luxwin']],
-    ['☢️ CHEMVENTUR', ['chemmulti', 'chem', 'typegame']]
-  ];
+  // No link list in the notch menu: services and items are in the shop, in the left section of the useRbox.
+  var MENU = [];
 
   var CSS = [
     ':root{--rvd-neon:#00ff41;--rvd-yellow:#ffe600;--rvd-bg:#07090a}',
-    'body{padding-bottom:52px}',
+    // room for the taskbar and the round corner buttons above it, so the end of the page is never under them
+    'body{padding-bottom:120px}',
     /* notch (top-left) */
     '#rvd-notch{position:fixed;top:10px;left:10px;z-index:1600;padding:7px 14px;background:#000;border:1px solid var(--rvd-neon);',
     'border-radius:0 0 12px 12px;color:var(--rvd-neon);font:900 13px/1 ui-monospace,monospace;letter-spacing:2px;cursor:pointer;',

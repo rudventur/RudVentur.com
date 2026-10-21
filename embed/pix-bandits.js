@@ -345,9 +345,9 @@
     return (neg ? '−' : '') + s;
   }
 
-  // ── Stats / probability hook (future statistics view) ───────────────────
-  // Hidden: nothing shows it yet. Records every paid spin and persists to
-  // local storage. TODO(stats): a statistics view can read getStats(), or
+  // ── Statistics ───────────────────────────────────────────────────────────
+  // Records every paid spin in local storage. Shown under the bandits in the
+  // "📈 Statistics" fold (statsHookHtml); other code can read getStats() or
   // listen for the 'pix-bandits-spin' CustomEvent on window.
   function freshStats() {
     return {
@@ -862,11 +862,24 @@
   }
 
   function statsHookHtml() {
-    // HOOK: hidden statistics / probability snapshot for a future view
-    var s = _stats;
-    return '<div class="pix-bandit-stats-hook" id="pix-stats-hook" hidden data-spins="' + s.spinsTotal +
-      '" data-illegal="' + s.illegalPopOuts + '" data-best-mini-streak="' + s.bestMiniStreak +
-      '" data-multi-jackpots="' + s.multiJackpots.join(',') + '"><!-- stats & probability: PixBandits.getStats() --></div>';
+    // the statistics view: what happened over all paid spins on this device
+    var st = getStats(), pr = st.probabilities;
+    var pc = function (x) { return (x * 100).toFixed(x && x < 0.01 ? 2 : 1) + '%'; };
+    var row = function (k, v) { return '<tr><th scope="row">' + k + '</th><td>' + v + '</td></tr>'; };
+    return '<details class="pix-bandit-stats-hook pix-stats" id="pix-stats-hook"' + (state.statsOpen ? ' open' : '') +
+      ' data-spins="' + st.spinsTotal + '" data-illegal="' + st.illegalPopOuts + '" data-best-mini-streak="' + st.bestMiniStreak +
+      '" data-multi-jackpots="' + st.multiJackpots.join(',') + '">' +
+      '<summary>📈 Statistics · ' + fmt(st.spinsTotal) + ' spins</summary>' +
+      '<table class="pix-stats-table">' +
+      row('Spent / won', fmt(st.spent) + ' / ' + fmt(st.won) + ' popCoins') +
+      row('Biggest win', fmt(st.biggestWin)) +
+      row('Any jackpot', pc(pr.anyJackpot)) +
+      row('2 jackpots / 3 jackpots', pc(pr.twoJackpots) + ' / ' + pc(pr.threeJackpots)) +
+      row('Mini reel per spin', pc(pr.miniReelPerSpin) + ' · best streak ' + st.bestMiniStreak) +
+      row('Illegal pop-outs', fmt(st.illegalPopOuts) + ' (' + pc(pr.illegalPopOut) + ')') +
+      '</table>' +
+      '<button type="button" class="pp-btn pix-stats-reset" id="pix-stats-reset">↺ Reset statistics</button>' +
+      '</details>';
   }
 
   function render(animate) {
@@ -930,6 +943,12 @@
         api.resetBandit(parseInt(ev.currentTarget.getAttribute('data-reset'), 10));
       });
     }
+    var statsEl = state.root.querySelector('#pix-stats-hook');
+    if (statsEl) statsEl.addEventListener('toggle', function () { state.statsOpen = statsEl.open; });
+    var statsReset = state.root.querySelector('#pix-stats-reset');
+    if (statsReset) statsReset.addEventListener('click', function () {
+      if (confirm('Reset the bandit statistics on this device?')) { api.resetStats(); render(false); }
+    });
     var spinAllBtn = state.root.querySelector('#pix-bandits-spin-all');
     if (spinAllBtn) spinAllBtn.addEventListener('click', function () { api.spinAll(); });
     if (live) runMiniAnim(round);

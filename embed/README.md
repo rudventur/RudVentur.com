@@ -108,6 +108,10 @@ only.
 
 ---
 
+## One useRbox file
+
+`embed/useRbox.js` (with `useRbox.css`) is the only useRbox. There are no other copies or versions in any RUDVENTUR repository: every page with the R in the top right loads this file, and a service puts its own part in the left section (below). Data saved by older boxes (`rud_useRbox_v2`, including its `signature` and `savedLocations`) is read in automatically. Never copy the box into a page.
+
 ## The profile box — `useRbox.js`
 
 The R circle top right: username, channel, motto ("P.S."), current location,
@@ -132,7 +136,7 @@ keys into `rud_useRbox_v3`:
 
 | Old key | Written by |
 |---|---|
-| `rud_useRbox_v2` | windows13 `useRbox-v2-upgraded.html`, windows13 `userbox-v2-ultimate.html` (motto saved as `signature` instead of `psignature`) and the old version of this file |
+| `rud_useRbox_v2` | the old windows13 boxes, now deleted (one saved the motto as `signature` instead of `psignature`) and the old version of this file |
 | `rv_username` | Snout First's display name |
 | `sf_owner_signature` | Snout First's "Your Motto" |
 | `sf_walk_spots` | Snout First's saved walk spots |
@@ -168,6 +172,33 @@ current view mode. To point it somewhere else, put this **before** the
 ```html
 <script>window.RUDVENTUR_TRANSLATOR_URL = 'https://rudventur.github.io/…';</script>
 ```
+
+### The left section: one slot per service
+
+The middle section (profile viewer, restaurant chooser) and the right section
+(editing, saving, people in the restaurant) are the same on every page. Only
+the left section changes: the shop is always there, and a page can put its own
+part above it.
+
+```html
+<!-- move an element of the page into the slot, and mark this service in the shop -->
+<script src="https://rudventur.github.io/RudVentur.com/embed/useRbox.js"
+        data-service="map-merger" data-left="#myPanel" data-left-title="🗺️ MAP" defer></script>
+```
+
+```js
+window.rvUserboxLeft = { title: '🐾 PETS', selector: '#petPanel' }; // before the script, or later:
+rvUserbox.setLeft(nodeOrHtmlOrSelector, { title: '🐾 PETS' });
+rvUserbox.setLeft(null);                                          // back to the shop only
+document.addEventListener('rvuserbox:ready', e => e.detail.setLeft(...));
+rvUserbox.open('left');                                           // open the box (optionally on a section)
+rvUserbox.close();
+rvUserbox.place({ top: 60, right: 220 });                         // move the R off the page's own top right controls (or data-top / data-right)
+```
+
+A moved element keeps its own event handlers. Calls made before the box is built are remembered and applied once it is. `data-service` is a service id from the
+services list (for example `windows13`, `map-merger`, `punk-script`) or a
+repository name from `popcoin-shop-items.json` (for example `LuxWin13`, `bank`).
 
 ---
 
@@ -221,15 +252,10 @@ so there is only one of each. Do one app at a time and try it on a phone.
       Redirect use `rvView.set` / `rvView.redirect`.
 - [ ] add the `useRbox.js` line to both pages.
 
-### windows13 (and its copy LuxWin13)
-- [ ] every page already has the `rvView.js` line; add the `useRbox.js` line.
-- [ ] `useRbox-v2-upgraded.html` and `userbox-v2-ultimate.html`: load and save
-      through `rvUserbox.get()` / `rvUserbox.save({...})` instead of
-      `localStorage['rud_useRbox_v2']` — or replace both with one page that just
-      loads `useRbox.js`.
-- [ ] `WINDOWS13-MASTER.html`: read the name with `rvUserbox.get().username`
-      instead of parsing `rud_useRbox_v2`; the "useRbox" desktop window can
-      show the shared box instead of its placeholder text.
+### windows13 and LuxWin13
+- [x] every page loads `useRbox.js`; their own boxes and the old box pages are deleted
+      (windows13 pull request 19, LuxWin13 pull request 4). The hub's old copies of
+      both folders are deleted; links open the real sites.
 
 ### rudTrip20
 - [ ] already loads `rvView.js`; add the `useRbox.js` line.

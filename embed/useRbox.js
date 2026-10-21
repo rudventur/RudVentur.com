@@ -15,10 +15,10 @@
  *
  * OLDER PROFILE BOXES and the keys they used — copied into rud_useRbox_v3
  * automatically, once; copying in never deletes or changes them:
- *   rud_useRbox_v2      windows13 useRbox-v2-upgraded.html and the old version of
+ *   rud_useRbox_v2      the old windows13 boxes (now deleted) and the old version of
  *                       this file ({username, channel, psignature, currentLoc,
- *                       lat, lon, saveMessages, savedLocations}); windows13
- *                       userbox-v2-ultimate.html writes the motto as "signature"
+ *                       lat, lon, saveMessages, savedLocations});
+ *                       the old Ultimate box wrote the motto as "signature"
  *   rv_username         Snout First's display name (also used by its pets,
  *                       lost-pet reports and SHOW ME)
  *   sf_owner_signature  Snout First's "Your Motto"
@@ -226,8 +226,14 @@
     get: function () { return JSON.parse(JSON.stringify(getProfile())); },
     save: saveProfile,
     migrate: migrate,
-    escapeHtml: escapeHtml
+    escapeHtml: escapeHtml,
+    // until the box is built (or when it is not built, inside a window of a page that already has it)
+    // these remember the request; init() replaces them with the real ones and replays it
+    setLeft: function (content, opts) { pendingLeft = { content: content, opts: opts }; return null; },
+    open: function (section) { pendingOpen = section || true; },
+    close: function () { pendingOpen = null; }
   };
+  var pendingLeft = null, pendingOpen = null;
 
   var scriptEl = document.currentScript;
   var baseUrl = scriptEl ? new URL('.', scriptEl.src).href : './';
@@ -251,9 +257,7 @@
       '<div id="useRbox" class="hidden">' +
       '  <div class="useRbox-notch" id="useRboxNotch" title="Collapse / Expand">⟨⟩</div>' +
       '  <div class="useRbox-header">' +
-      '    <div class="rb-topmenu"><button type="button" id="rbMenuBtn" title="Every service and the shop">☰</button>' +
-      '      <div id="rbMenu" class="rb-menu hidden"><button type="button" class="rb-menu-shop" id="rbMenuShop">🛒 POPCOIN SHOP</button><div id="rbMenuList"></div></div></div>' +
-      '    <strong>⚡ useRbox v2.0</strong>' +
+      '    <strong>⚡ useRbox</strong>' +
       '    <div class="useRbox-header-btns">' +
       '      <button id="rbFakePopShop" title="PopCoin shop (left section)">🛒</button>' +
       '      <button id="togglePrivacy" title="Online / private">🌐</button>' +
@@ -264,6 +268,7 @@
       '  </div>' +
       '  <div class="rb-cols">' +
       '   <section class="rb-col rb-col-left"><div class="rb-col-title">⚙️ SERVICE OPTIONS</div>' +
+      '  <div class="rb-section rb-left-slot" id="rbLeftSlot" hidden><div class="social-title" id="rbLeftSlotTitle"></div><div id="rbLeftSlotBody"></div></div>' +
       '  <div class="rb-section rb-shop" id="rbShop"><div class="social-title">🧭 SERVICES · 🛒 POPCOIN SHOP</div>' +
       '    <div class="rb-fakepop" id="rbFakePop" title="Fake popCoins: just for fun, saved in this browser, no real money">' +
       '      <span>🍿 <b id="rbFakePopBal">0</b> fake popCoins</span>' +
@@ -343,6 +348,7 @@
       '  <label>👤 Username</label>' +
       '  <div class="field-row">' +
       '    <input type="text" id="username" value="Rudy" style="flex:1;">' +
+      '    <button class="btn btn-small" id="randomUser" title="Pick a random name">🎲</button>' +
       '    <button class="btn btn-small" id="refreshUser">🔄 Refresh</button>' +
       '  </div>' +
       '  <label>📝 P.S. (Personal Signature)</label>' +
@@ -746,6 +752,14 @@
     renderDevices();
 
     q('#refreshUser').onclick = loadUser;
+    // 🎲 a random traveller name (press 💾 SAVE PROFILE to keep it)
+    var RAND_ADJ = ['Neon', 'Cyber', 'Quantum', 'Electric', 'Atomic', 'Cosmic', 'Digital', 'Neural', 'Plasma', 'Sonic'];
+    var RAND_NOUN = ['Wanderer', 'Explorer', 'Traveler', 'Seeker', 'Nomad', 'Pioneer', 'Voyager', 'Drifter', 'Runner', 'Walker'];
+    function randomName() {
+      var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+      return pick(RAND_ADJ) + pick(RAND_NOUN) + Math.floor(Math.random() * 999);
+    }
+    q('#randomUser').onclick = function () { q('#username').value = randomName(); q('#username').focus(); };
     q('#channelInfo').onclick = function () { alert('Your room is shared with Windows 13. Join one below, or leave to go back to main.'); };
     q('#saveUser').onclick = saveUser;
 
@@ -858,8 +872,8 @@
       { id: 'translator', name: '🌐 Translator and map', url: TRANSLATOR_URL },
       { id: 'chemventur', name: '🧪 ChemVentur', url: 'https://rudventur.github.io/v120-ChemVentur/' },
       { id: 'map-merger', name: '🗺️ Map merger', url: 'https://rudventur.github.io/map-merger-venti/' },
-      { id: 'windows13', name: '🪟 Windows 13', url: SITE + 'windows13/WINDOWS13-MASTER.html' },
-      { id: 'punk-script', name: '🎸 Punk script', url: SITE + 'punk-script/' },
+      { id: 'windows13', name: '🪟 Windows 13', url: 'https://rudventur.github.io/windows13/WINDOWS13-MASTER.html' },
+      { id: 'punk-script', name: '🎸 Punk script', url: 'https://rudventur.github.io/punk-script/' },
       { id: 'pumpkin-guy', name: '🎃 pumpKIN Guy', url: SITE + 'pumpKIN-Guy/' },
       { id: 'popcoin', name: '🪙 PopCOIN wallet', url: SITE + 'popcoin/' },
       { id: 'camera-background', name: '📷 Camera background', url: SITE + 'camera-background.html' },
@@ -1322,13 +1336,6 @@
         type: str(x.type || (svc ? 'service' : 'site')), price: Math.max(0, Math.floor(+x.price || 0)) };
     }
     var SHOP = SERVICES.map(function (x) { return shopItem({ id: 'svc-' + x.id, service: x.id, price: x.id === 'hub' ? 0 : 5 }); });
-    function renderMenu() {
-      var box = q('#rbMenuList'); box.innerHTML = '';
-      SHOP.forEach(function (it) {
-        var a = document.createElement('a'); a.className = 'rb-service'; a.href = it.url; a.textContent = it.name;
-        a.target = '_blank'; a.rel = 'noopener'; box.appendChild(a);
-      });
-    }
     var shopLoaded = new Promise(function (done) { setTimeout(function () {
       var src; try { src = new URL('popcoin-shop-items.json', new URL(baseUrl, location.href)).href; } catch (e) { return done(false); }
       if (!window.fetch) return done(false);
@@ -1336,7 +1343,7 @@
         .then(function (d) {
           var list = (d && Array.isArray(d.items) ? d.items : []).map(shopItem).filter(Boolean);
           if (!list.length) return done(false);
-          SHOP = list; window.rvUserbox.fakePop.items = SHOP; renderMenu(); fpRender(); done(true);
+          SHOP = list; window.rvUserbox.fakePop.items = SHOP; fpRender(); done(true);
         }).catch(function (e) { console.warn('useRbox: shop items not loaded, using the built-in list', e); done(false); });
     }, 0); });
 
@@ -1372,6 +1379,7 @@
           b.onclick = function () { fpBuy(it.id); }; }
         row.appendChild(b); list.appendChild(row);
       });
+      if (typeof markService === 'function') markService();
     }
     function fpBuy(id) {
       var it = SHOP.filter(function (x) { return x.id === id; })[0], d = fpRead();
@@ -1383,21 +1391,85 @@
       d.w.balance += FP_DAILY; d.w.claimed = today(); fpWrite(d); return true;
     }
     function openShop() {   // the shop is the left section: show that section and scroll to it
-      q('#rbMenu').classList.add('hidden'); useRbox.classList.remove('hidden', 'collapsed'); fpRender();
+      useRbox.classList.remove('hidden', 'collapsed'); fpRender();
       var tab = scope.querySelector('#rbTabs button[data-col="left"]'); if (tab) tab.click();
       var shop = q('#rbShop'); if (shop.scrollIntoView) shop.scrollIntoView({ block: 'start', behavior: 'smooth' });
       shop.classList.add('rb-flash'); setTimeout(function () { shop.classList.remove('rb-flash'); }, 900);
     }
     q('#rbFakePopClaim').onclick = fpClaim;
     q('#rbFakePopShop').onclick = openShop;
-    q('#rbMenuShop').onclick = function () { openShop(true); };
-    q('#rbMenuBtn').onclick = function () { q('#rbMenu').classList.toggle('hidden'); };
-    renderMenu();
     window.addEventListener('storage', function (e) { if (e.key === FP_KEY || e.key === KEY) fpRender(); });
     q('#saveUser').addEventListener('click', function () { setTimeout(fpRender, 0); });
     fpRender();
     window.rvUserbox.fakePop = { KEY: FP_KEY, items: SHOP, wallet: function () { return JSON.parse(JSON.stringify(fpRead().w)); },
       buy: fpBuy, claim: fpClaim, player: fpPlayer, openShop: openShop, loaded: shopLoaded };
+
+    /* ===== the service slot (left section) =====
+       The middle and right sections are the same on every page; only the left section
+       changes with the service. By default it is the shop. A page adds its own part above it:
+         <script src=".../embed/useRbox.js" data-service="map-merger" data-left="#myPanel" data-left-title="🗺️ MAP"></script>
+         window.rvUserboxLeft = { title, html | node | selector }   (set before the script, or any time later with:)
+         rvUserbox.setLeft(htmlOrNodeOrSelector, { title })  /  rvUserbox.setLeft(null) to clear
+       A node or a selector's element is moved into the slot, so its own event handlers keep working. */
+    var slot = q('#rbLeftSlot'), slotBody = q('#rbLeftSlotBody'), slotTitle = q('#rbLeftSlotTitle');
+    function setLeft(content, opts) {
+      opts = opts || {};
+      slotBody.innerHTML = '';
+      if (content == null || content === '') { slot.hidden = true; slotTitle.textContent = ''; return null; }
+      var node = null;
+      if (content.nodeType) node = content;
+      else if (typeof content === 'string' && /^[#.][\w-]+$/.test(content.trim())) node = document.querySelector(content.trim());
+      if (node) { node.hidden = false; if (node.style && node.style.display === 'none') node.style.display = ''; slotBody.appendChild(node); }
+      else slotBody.innerHTML = str(content);
+      slotTitle.textContent = str(opts.title || '🧩 THIS SERVICE');
+      slot.hidden = false;
+      return slotBody;
+    }
+    var currentService = str((scriptEl && scriptEl.getAttribute('data-service')) || window.RV_USERBOX_SERVICE || '');
+    function markService() {
+      if (!currentService) return;
+      [].forEach.call(q('#rbShopList').children, function (row, i) {
+        var it = SHOP[i], c = currentService.toLowerCase();
+        row.classList.toggle('rb-here', !!it && [c, 'svc-' + c, 'page-' + c].indexOf(it.id.toLowerCase()) !== -1);
+      });
+    }
+    shopLoaded.then(markService); markService();
+    window.rvUserbox.setLeft = setLeft;
+    /* open / close the box from page code: rvUserbox.open() or rvUserbox.open('left' | 'mid' | 'right') */
+    function openBox(section) {
+      root.classList.add('open'); useRbox.classList.remove('hidden'); useRbox.classList.remove('collapsed');
+      if (typeof section === 'string') {
+        var tab = scope.querySelector('#rbTabs button[data-col="' + section + '"]'); if (tab) tab.click();
+        var col = q('.rb-col-' + section); if (col && col.scrollIntoView) col.scrollIntoView({ block: 'nearest' });
+      }
+    }
+    window.rvUserbox.open = openBox;
+    /* where the R sits, for pages whose own controls are in the top right corner:
+       data-top="60px" data-right="220px" on the script tag, or rvUserbox.place({ top: 60, right: 220 }) */
+    function place(pos) {
+      pos = pos || {};
+      ['top', 'right', 'bottom', 'left'].forEach(function (k) {
+        if (pos[k] == null) return;
+        root.style[k] = typeof pos[k] === 'number' ? pos[k] + 'px' : str(pos[k]);
+      });
+    }
+    window.rvUserbox.place = place;
+    if (scriptEl) place({ top: scriptEl.getAttribute('data-top'), right: scriptEl.getAttribute('data-right') });
+    window.rvUserbox.close = function () { useRbox.classList.add('hidden'); root.classList.remove('open'); };
+    window.rvUserbox.leftSlot = function () { return slotBody; };
+    window.rvUserbox.service = currentService;
+    (function () {
+      var pre = window.rvUserboxLeft, sel = scriptEl && scriptEl.getAttribute('data-left');
+      var title = scriptEl && scriptEl.getAttribute('data-left-title');
+      if (pendingLeft) setLeft(pendingLeft.content, pendingLeft.opts);
+      else if (pre) setLeft(pre.node || pre.selector || pre.html, { title: pre.title || title });
+      else if (sel) {
+        var tryMove = function () { if (document.querySelector(sel)) setLeft(sel, { title: title }); };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tryMove); else tryMove();
+      }
+    })();
+    if (pendingOpen) openBox(pendingOpen);
+    try { document.dispatchEvent(new CustomEvent('rvuserbox:ready', { detail: window.rvUserbox })); } catch (e) {}
 
     console.log('👤 useRbox loaded (shared embed, profile key ' + KEY + ')');
   }

@@ -89,12 +89,13 @@ body::before{
   position:relative;z-index:3;
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  grid-template-rows:1fr 1fr auto;
-  gap:3px;
+  grid-template-rows:none;
+  grid-auto-rows:auto;
+  gap:6px;
   max-width:1400px;
   margin:0 auto;
   padding:0 3px 3px;
-  min-height:calc(100vh - 140px);
+  align-items:start;
 }
 
 /* ─── PANELS ─── */
@@ -105,7 +106,7 @@ body::before{
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
   border:1px solid #1a1a1a;
-  padding:1.8rem 1.5rem;
+  padding:.9rem 1rem;
   position:relative;
   overflow:hidden;
   transition:border-color .3s,box-shadow .3s,transform .2s;
@@ -219,8 +220,8 @@ body::before{
   gap:.6rem;
   cursor:pointer;
   user-select:none;
-  margin-bottom:1.2rem;
-  padding-bottom:.6rem;
+  margin-bottom:.6rem;
+  padding-bottom:.35rem;
   border-bottom:1px solid #1a1a1a;
   transition:opacity .2s;
 }
@@ -235,7 +236,7 @@ body::before{
 .panel__head:hover::after{color:#888}
 
 .panel__icon{
-  font-size:1.4rem;
+  font-size:1.1rem;
   line-height:1;
 }
 .panel__title{
@@ -260,6 +261,20 @@ body::before{
 .tool-list li{
   margin-bottom:.15rem;
 }
+.user-btns{display:flex;flex-direction:column;gap:.6rem;margin-top:1rem}
+.user-btn{
+  display:block;width:100%;text-align:center;text-decoration:none;cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:3px;
+  padding:.6rem .8rem;border-radius:10px;transition:transform .15s,box-shadow .15s;
+}
+.user-btn:hover{transform:scale(1.03)}
+.user-btn--popcorn{
+  color:#2a0a00;border:none;
+  background:linear-gradient(135deg,#fff3c4,#ffd54a 50%,#e8452c);
+  box-shadow:0 0 18px rgba(255,190,60,.35);
+}
+.user-btn--popcorn:hover{box-shadow:0 0 28px rgba(255,190,60,.6)}
+.tool-desc{color:#666;font-size:.72em;letter-spacing:0}
 .tool-link{
   display:block;
   padding:.45rem .5rem;
@@ -279,7 +294,8 @@ button.tool-link{
   letter-spacing:.5px;
   border:0;
   border-left:2px solid transparent;
-  color:#888;
+  color:#aaa;
+  cursor:pointer;
 }
 
 .tool-link:hover{
@@ -310,24 +326,6 @@ button.tool-link{
   border-left-color:transparent;
   padding-left:.5rem;
 }
-.user-btns{display:flex;flex-direction:column;gap:.6rem;margin-top:1rem}
-.user-btn{
-  display:block;width:100%;text-align:center;text-decoration:none;cursor:pointer;
-  font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:3px;
-  padding:.6rem .8rem;border-radius:10px;transition:transform .15s,box-shadow .15s;
-}
-.user-btn:hover{transform:scale(1.03)}
-.user-btn--cheese{
-  color:#1a1200;border:none;
-  background:linear-gradient(135deg,#ffe066,#ffc800 55%,#ff9f1a);
-  box-shadow:0 0 18px rgba(255,200,0,.35);
-}
-.user-btn--cheese:hover{box-shadow:0 0 28px rgba(255,200,0,.6)}
-.user-btn--app{
-  color:var(--map);background:#000;border:1px solid var(--map);
-  box-shadow:0 0 14px rgba(0,255,65,.25);
-}
-.user-btn--app:hover{background:var(--map);color:#000}
 .tool-link.soon::after{
   content:' — soon';
   font-size:.6rem;
@@ -521,6 +519,11 @@ button.tool-link{
   font-size:3rem;
 }
 
+/* the jump strip rolls the tile it scrolls to, in place */
+.panel.panel--rolled{animation:panelExpand .35s ease-out}
+/* a full-screen tile keeps clear of the fixed corners (notch menu, R circle) and the taskbar,
+   so its ✕ and its last lines can always be reached */
+.panel.fullscreen{padding-top:4.8rem;padding-bottom:7rem}
 @keyframes panelExpand{
   from{opacity:.7;transform:scale(.95)}
   to{opacity:1;transform:scale(1)}
@@ -560,7 +563,13 @@ button.tool-link{
 .panel__head::after{margin-left:.2rem}
 .panel > .sf-pbody{flex:1;display:flex;flex-direction:column;min-height:0}
 /* a folded tile shrinks to its header inside its grid cell */
-.panel.sf-panel-collapsed{align-self:start;padding-bottom:.6rem}
+.panel.sf-panel-collapsed{align-self:start}
+/* a hidden tile is one slim header bar (about 36 pixels): full width and moved to the top of
+   the grid, so several hidden tiles stack tightly with no empty space around them */
+.panel.sf-panel-collapsed:not(.fullscreen){padding:.3rem .9rem;grid-column:1/-1;order:-1}
+.panel.sf-panel-collapsed:not(.fullscreen) .panel__head{padding-bottom:0}
+.panel.sf-panel-collapsed:not(.fullscreen) .panel__icon{font-size:.95rem}
+.panel.sf-panel-collapsed:not(.fullscreen) .panel__title{font-size:.8rem}
 .panel.sf-panel-collapsed .panel__head{margin-bottom:0;border-bottom-color:transparent}
 /* top panels: the header and the jump strip hide; tabs bring them back */
 .site-header > .sf-ptoggle{position:absolute;right:1rem;bottom:.8rem;--sf-panel-accent:#444;--sf-panel-text:#777}
@@ -634,7 +643,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
   }
   .panel{
     min-height:auto;
-    padding:1.4rem 1.2rem;
+    padding:.8rem .9rem;
   }
   /* bigger touch targets for the jump-nav strip (was ~14px tall, too small to tap reliably) */
   .zone-nav{
@@ -657,8 +666,8 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 @media(max-width:480px){
   .site-header{padding:4.6rem .5rem .8rem}
   .site-header h1{letter-spacing:2px}
-  .panel{padding:1.2rem 1rem}
-  .panel.fullscreen{padding:1.5rem 1rem}
+  .panel{padding:.7rem .8rem}
+  .panel.fullscreen{padding:4.8rem 1rem 7rem}
 }
 
 </style>
@@ -739,16 +748,12 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     </div>
     <div class="sf-pbody">
     <ul class="tool-list">
-      <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/" target="_blank">Map Merger Venti (ArtSpace City)</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">↳ Translator v7</a></li>
-      <li><a class="tool-link" href="map-merger-venti/snout-first.html" target="_blank">↳ SnoutFirst</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/rudTrip20/" target="_blank">📍 rudTrip20</a></li>
-      <li><a class="tool-link" href="rudtrip20/" target="_blank">↳ rudTrip20 intro (R orb → R pin)</a></li>
-      <li><button type="button" class="tool-link soon" data-rxplanation="The in-site Browser is listed, but that page is not live yet. Maps and Snout First are the working location tools.">Browser</button></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/" target="_blank">ArtSpace City <span class="tool-desc">— walk, drive, sail or fly across a real map</span></a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/snout-first.html" target="_blank">Snout First <span class="tool-desc">— pet map: your pets, walks and lost-pet alerts</span></a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">Translator v7 <span class="tool-desc">— translate, with a map of the world's languages</span></a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/rudTrip20/" target="_blank">rudTrip20 <span class="tool-desc">— a random trip, picked on a map and a globe</span></a></li>
+      <li><a class="tool-link" href="rudtrip20/" target="_blank">rudTrip20 intro <span class="tool-desc">— the R orb that drops the R pin</span></a></li>
     </ul>
-    <div class="user-btns">
-      <a class="user-btn user-btn--cheese" href="https://rudventur.github.io/map-merger-venti/snout-first.html" target="_blank">SnoutFirst</a>
-    </div>
     </div>
   </section>
 
@@ -762,11 +767,9 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     <div class="sf-pbody">
     <div class="bank-tagline">// RUDVENTUR LEDGER //</div>
     <ul class="tool-list">
-      <li><a class="tool-link" href="owe2owe1.html" target="_blank">▸ bankowe2owe — ledger</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/bank/" target="_blank">▸ Bank / Lending Ledger</a></li>
-      <li><a class="tool-link" href="popcoin/" target="_blank">▸ 🍿 PopCOIN Wallet</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">▸ Translator v7</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/" target="_blank">▸ Maps (Map Merger Venti)</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/bank/" target="_blank">Peoples Bank Twin <span class="tool-desc">— loans and investments, lender and borrower views</span></a></li>
+      <li><a class="tool-link" href="owe2owe1.html" target="_blank">Peoples Bank, ownings only <span class="tool-desc">— a simple list of who owes what</span></a></li>
+      <li><a class="tool-link" href="popcoin/" target="_blank">PopCOIN Wallet <span class="tool-desc">— your PopCOIN balance</span></a></li>
     </ul>
     </div>
   </section>
@@ -780,12 +783,11 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     </div>
     <div class="sf-pbody">
     <ul class="tool-list">
-      <li><a class="tool-link" href="windows13/useRbox-v2-upgraded.html" target="_blank">useRbox v2 (upgraded)</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/map-merger-venti/translator_v7.html" target="_blank">Translator v7</a></li>
+      <li><button type="button" class="tool-link" onclick="window.rvUserbox && rvUserbox.open('mid')">👤 My useRbox <span class="tool-desc">— profile, places, restaurant and the PopCOIN shop</span></button></li>
+      <li><button type="button" class="tool-link" data-rv-install onclick="rvView.install()">📲 Install the app <span class="tool-desc">— RUDVENTUR on your home screen</span></button></li>
     </ul>
     <div class="user-btns">
-      <a class="user-btn user-btn--cheese" href="https://rudventur.github.io/cheese-ouiji-empire/" target="_blank">🧀 CHEESE CASINO</a>
-      <button type="button" class="user-btn user-btn--app" data-rv-install onclick="rvView.install()">📲 DOWNLOAD THE APP</button>
+      <a class="user-btn user-btn--popcorn" href="bottom-right-popcorn-complete.html" target="_blank">🍿 POPCORN</a>
     </div>
     </div>
   </section>
@@ -799,12 +801,10 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     </div>
     <div class="sf-pbody">
     <ul class="tool-list">
-      <li><a class="tool-link" href="https://rudventur.github.io/punk-script/" target="_blank">RudVentur Social (punk-script)</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/global-chat-v5/" target="_blank">Global Chat v5 (= Prompter)</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/pumpKIN-Guy/" target="_blank">🎃 pumpKIN Guy</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/rud-weather/" target="_blank">Rud Weather</a></li>
-      <li><a class="tool-link" href="windows13/keyboard-realistic.html" target="_blank">Keyboards</a></li>
-      <li><a class="tool-link" href="yesterday-today-tomorrow-weather.html" target="_blank">↳ Weather App (local live feed)</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/punk-script/" target="_blank">RudVentur Social <span class="tool-desc">— profiles for people, pets, bots and groups</span></a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/global-chat-v5/" target="_blank">Global Chat v5 <span class="tool-desc">— prompt builder and a public chat room</span></a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/pumpKIN-Guy/" target="_blank">pumpKIN Guy <span class="tool-desc">— splash game across the planets</span></a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/cheese-ouiji-empire/" target="_blank">Cheese Ouiji Empire <span class="tool-desc">— Food Bank Bandit game</span></a></li>
     </ul>
     </div>
   </section>
@@ -818,10 +818,8 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     </div>
     <div class="sf-pbody">
     <ul class="tool-list">
-      <li><a class="tool-link" href="https://rudventur.github.io/windows13/" target="_blank">Windows 13</a></li>
-      <li><a class="tool-link" href="LuxWin13/notch-menu-final.html" target="_blank">↳ LuxWin13 notch</a></li>
-      <li><a class="tool-link" href="windows13/taskbar-window-system.html" target="_blank">Taskbar &amp; Windows System</a></li>
-      <li><a class="tool-link" href="windows13/WINDOWS13-MASTER.html" target="_blank">WINDOWS13 Master</a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank">Windows 13 <span class="tool-desc">— a desktop in the browser: windows, accounts, sessions</span></a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/LuxWin13/" target="_blank">LuxWin13 <span class="tool-desc">— the lighter Windows 13 desktop</span></a></li>
     </ul>
     </div>
   </section>
@@ -835,20 +833,12 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     </div>
     <div class="sf-pbody">
     <ul class="tool-list">
-      <li><a class="tool-link" href="https://rudventur.github.io/Intellectual-PROTOCOL/" target="_blank">Intellectual PROTOCOL</a></li>
-      <li><a class="tool-link" href="bottom-right-popcorn-complete.html" target="_blank">Popcorn Hub (full)</a></li>
-      <li><a class="tool-link" href="https://rudventur.github.io/bank/" target="_blank">💰 Bank / Ledger</a></li>
-      <!-- URL placeholders — Rudy will drop final URLs here -->
-      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Minner Wallet</a></li> -->
-      <li><a class="tool-link" href="popcoin/" target="_blank">🍿 PopCOIN Wallet</a></li>
-      <!-- Prompter Architect === Prompter === Global Chat v5 -->
-      <li><a class="tool-link" href="global-chat-v5/index.html" target="_blank">Prompter Architect</a></li>
-      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Cookies Inspector</a></li> -->
-      <li><button type="button" class="tool-link soon" data-rxplanation="Cookies Inspector is listed on the index, but the page is not live yet.">Cookies Inspector</button></li>
-      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">Popcorn File Burner</a></li> -->
-      <li><button type="button" class="tool-link soon" data-rxplanation="Popcorn File Burner is listed on the index, but the page is not live yet.">Popcorn File Burner</button></li>
-      <!-- <li><a class="tool-link" href="REPLACE_ME" target="_blank">DESCRIBER — 3D Cam Scanner</a></li> -->
-      <li><button type="button" class="tool-link soon" data-rxplanation="DESCRIBER, the 3D cam scanner, is listed on the index, but the page is not live yet.">DESCRIBER — 3D Cam Scanner</button></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/Intellectual-PROTOCOL/" target="_blank">Intellectual PROTOCOL <span class="tool-desc">— a dated ledger for your ideas</span></a></li>
+      <li><a class="tool-link" href="bottom-right-popcorn-complete.html" target="_blank">Popcorn Hub <span class="tool-desc">— picture descriptions, cookies, PIX panel, PopCOIN</span></a></li>
+      <li><a class="tool-link" href="bottom-right-popcorn-complete.html#pop-miner" target="_blank">PopCOIN miner <span class="tool-desc">— mining, inside the Popcorn Hub</span></a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/rud-weather/" target="_blank">Rud Weather <span class="tool-desc">— forecasts, rain radar and weather maps</span></a></li>
+      <li><a class="tool-link" href="yesterday-today-tomorrow-weather.html" target="_blank">Weather News <span class="tool-desc">— yesterday, today and tomorrow</span></a></li>
+      <li><a class="tool-link" href="https://rudventur.github.io/windows13/keyboard-realistic.html" target="_blank">World Keyboards <span class="tool-desc">— on-screen keyboards for many languages</span></a></li>
     </ul>
     </div>
   </section>
@@ -864,7 +854,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
     <div class="chem-grid">
       <a class="chem-btn" href="https://rudventur.github.io/ChemVentur-Multi-v118/" target="_blank"><span class="chem-icon">⚗️</span>ChemVentur Multi v118</a>
       <a class="chem-btn" href="https://rudventur.github.io/v120-ChemVentur/" target="_blank"><span class="chem-icon">🧪</span>ChemVentur v120</a>
-      <a class="chem-btn" href="ChemVentur/index.html" target="_blank"><span class="chem-icon">🧬</span>ChemVentur (classic)</a>
+      <a class="chem-btn" href="https://rudventur.github.io/ChemVentur/" target="_blank"><span class="chem-icon">🧬</span>ChemVentur (classic)</a>
       <!-- Type Game lives in the standalone rudventur/punk-script repo, deployed via GitHub Pages -->
       <a class="chem-btn" href="https://rudventur.github.io/punk-script/type-game.html" target="_blank" rel="noopener"><span class="chem-icon">⌨️</span>Type Game (punk-script)</a>
       <a class="chem-btn" href="https://www.tinkercad.com" target="_blank" rel="noopener"><span class="chem-icon">🔧</span>Tinkercad</a>
@@ -913,16 +903,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
         </div>
       </div>
       <div class="repos-inside__group">
-        <a class="repos-inside__repo" href="https://rudventur.github.io/windows13/" target="_blank" rel="noopener">🪟 Windows 13</a>
-        <div class="repos-inside__links">
-          <a href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank" rel="noopener">WINDOWS13 MASTER</a>
-          <a href="https://rudventur.github.io/windows13/bottom-right-popcorn-complete.html" target="_blank" rel="noopener">Bottom right popcorn complete</a>
-          <a href="https://rudventur.github.io/windows13/keyboard-realistic.html" target="_blank" rel="noopener">Keyboard realistic</a>
-          <a href="https://rudventur.github.io/windows13/notch-menu-final.html" target="_blank" rel="noopener">Notch menu final</a>
-          <a href="https://rudventur.github.io/windows13/taskbar-window-system.html" target="_blank" rel="noopener">Taskbar window system</a>
-          <a href="https://rudventur.github.io/windows13/useRbox-v2-upgraded.html" target="_blank" rel="noopener">UseRbox v2 upgraded</a>
-          <a href="https://rudventur.github.io/windows13/userbox-v2-ultimate.html" target="_blank" rel="noopener">Userbox v2 ultimate</a>
-        </div>
+        <a class="repos-inside__repo" href="https://rudventur.github.io/windows13/WINDOWS13-MASTER.html" target="_blank" rel="noopener">🪟 Windows 13</a>
       </div>
       <div class="repos-inside__group">
         <a class="repos-inside__repo" href="https://rudventur.github.io/punk-script/" target="_blank" rel="noopener">✍️ punk-script</a>
@@ -949,10 +930,6 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
       </div>
       <div class="repos-inside__group">
         <a class="repos-inside__repo" href="https://rudventur.github.io/LuxWin13/" target="_blank" rel="noopener">💡 LuxWin13</a>
-        <div class="repos-inside__links">
-          <a href="https://rudventur.github.io/LuxWin13/notch-menu-final.html" target="_blank" rel="noopener">Notch menu final</a>
-          <a href="https://rudventur.github.io/LuxWin13/userbox-v2-ultimate.html" target="_blank" rel="noopener">Userbox v2 ultimate</a>
-        </div>
       </div>
     </div>
     </div>
@@ -1081,17 +1058,16 @@ function toggleFullscreen(headEl, ev) {
   }
 }
 
-// Focus a panel (from index links) — scroll to it or fullscreen it
+// Jump to a panel (from the index strip): scroll to it and play its roll-in animation.
+// It no longer goes full screen, so the sections below stay visible and usable.
 function focusPanel(name) {
   const panel = document.querySelector('.panel--' + name);
   if (!panel) return;
-  // close any fullscreen first
   document.querySelectorAll('.panel.fullscreen').forEach(p => p.classList.remove('fullscreen'));
   document.body.style.overflow = '';
-  // fullscreen the target
   openTile(panel);
-  panel.classList.add('fullscreen');
-  document.body.style.overflow = 'hidden';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  panel.classList.remove('panel--rolled'); void panel.offsetWidth; panel.classList.add('panel--rolled');
 }
 
 // ESC to close fullscreen panel / logo menu
@@ -1133,7 +1109,7 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
       return `
       <a class="repo-card" href="${liveUrl}" target="_blank" rel="noopener">
         <div class="repo-card__name">${r.name}</div>
-        <div class="repo-card__desc">${r.description || 'No description'}</div>
+        ${r.description ? `<div class="repo-card__desc">${r.description.replace(/[<>&]/g, '')}</div>` : ''}
         <div class="repo-card__meta">
           ${r.language ? `<span class="repo-card__lang" style="--lang-color:${langColors[r.language]||'#888'}">${r.language}</span>` : ''}
           ${r.stargazers_count ? `<span class="repo-card__stars">★ ${r.stargazers_count}</span>` : ''}
