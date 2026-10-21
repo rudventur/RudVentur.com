@@ -261,6 +261,19 @@ body::before{
 .tool-list li{
   margin-bottom:.15rem;
 }
+.user-btns{display:flex;flex-direction:column;gap:.6rem;margin-top:1rem}
+.user-btn{
+  display:block;width:100%;text-align:center;text-decoration:none;cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:3px;
+  padding:.6rem .8rem;border-radius:10px;transition:transform .15s,box-shadow .15s;
+}
+.user-btn:hover{transform:scale(1.03)}
+.user-btn--popcorn{
+  color:#2a0a00;border:none;
+  background:linear-gradient(135deg,#fff3c4,#ffd54a 50%,#e8452c);
+  box-shadow:0 0 18px rgba(255,190,60,.35);
+}
+.user-btn--popcorn:hover{box-shadow:0 0 28px rgba(255,190,60,.6)}
 .tool-desc{color:#666;font-size:.72em;letter-spacing:0}
 .tool-link{
   display:block;
@@ -773,6 +786,9 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
       <li><button type="button" class="tool-link" onclick="window.rvUserbox && rvUserbox.open('mid')">👤 My useRbox <span class="tool-desc">— profile, places, restaurant and the PopCOIN shop</span></button></li>
       <li><button type="button" class="tool-link" data-rv-install onclick="rvView.install()">📲 Install the app <span class="tool-desc">— RUDVENTUR on your home screen</span></button></li>
     </ul>
+    <div class="user-btns">
+      <a class="user-btn user-btn--popcorn" href="bottom-right-popcorn-complete.html" target="_blank">🍿 POPCORN</a>
+    </div>
     </div>
   </section>
 
