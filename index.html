@@ -89,12 +89,13 @@ body::before{
   position:relative;z-index:3;
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  grid-template-rows:1fr 1fr auto;
-  gap:3px;
+  grid-template-rows:none;
+  grid-auto-rows:auto;
+  gap:6px;
   max-width:1400px;
   margin:0 auto;
   padding:0 3px 3px;
-  min-height:calc(100vh - 140px);
+  align-items:start;
 }
 
 /* ─── PANELS ─── */
@@ -105,7 +106,7 @@ body::before{
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
   border:1px solid #1a1a1a;
-  padding:1.8rem 1.5rem;
+  padding:.9rem 1rem;
   position:relative;
   overflow:hidden;
   transition:border-color .3s,box-shadow .3s,transform .2s;
@@ -219,8 +220,8 @@ body::before{
   gap:.6rem;
   cursor:pointer;
   user-select:none;
-  margin-bottom:1.2rem;
-  padding-bottom:.6rem;
+  margin-bottom:.6rem;
+  padding-bottom:.35rem;
   border-bottom:1px solid #1a1a1a;
   transition:opacity .2s;
 }
@@ -235,7 +236,7 @@ body::before{
 .panel__head:hover::after{color:#888}
 
 .panel__icon{
-  font-size:1.4rem;
+  font-size:1.1rem;
   line-height:1;
 }
 .panel__title{
@@ -565,7 +566,13 @@ button.tool-link{
 .panel__head::after{margin-left:.2rem}
 .panel > .sf-pbody{flex:1;display:flex;flex-direction:column;min-height:0}
 /* a folded tile shrinks to its header inside its grid cell */
-.panel.sf-panel-collapsed{align-self:start;padding-bottom:.6rem}
+.panel.sf-panel-collapsed{align-self:start}
+/* a hidden tile is one slim header bar (about 36 pixels): full width and moved to the top of
+   the grid, so several hidden tiles stack tightly with no empty space around them */
+.panel.sf-panel-collapsed:not(.fullscreen){padding:.3rem .9rem;grid-column:1/-1;order:-1}
+.panel.sf-panel-collapsed:not(.fullscreen) .panel__head{padding-bottom:0}
+.panel.sf-panel-collapsed:not(.fullscreen) .panel__icon{font-size:.95rem}
+.panel.sf-panel-collapsed:not(.fullscreen) .panel__title{font-size:.8rem}
 .panel.sf-panel-collapsed .panel__head{margin-bottom:0;border-bottom-color:transparent}
 /* top panels: the header and the jump strip hide; tabs bring them back */
 .site-header > .sf-ptoggle{position:absolute;right:1rem;bottom:.8rem;--sf-panel-accent:#444;--sf-panel-text:#777}
@@ -639,7 +646,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
   }
   .panel{
     min-height:auto;
-    padding:1.4rem 1.2rem;
+    padding:.8rem .9rem;
   }
   /* bigger touch targets for the jump-nav strip (was ~14px tall, too small to tap reliably) */
   .zone-nav{
@@ -662,7 +669,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 @media(max-width:480px){
   .site-header{padding:4.6rem .5rem .8rem}
   .site-header h1{letter-spacing:2px}
-  .panel{padding:1.2rem 1rem}
+  .panel{padding:.7rem .8rem}
   .panel.fullscreen{padding:4.8rem 1rem 7rem}
 }
 
