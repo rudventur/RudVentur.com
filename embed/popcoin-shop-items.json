@@ -108,8 +108,8 @@
     },
     {
       "id": "page-global-chat-v5",
-      "name": "💬 Global chat v5",
-      "url": "https://rudventur.github.io/global-chat-v5/",
+      "name": "💬 Global chat (in the translator)",
+      "url": "https://rudventur.github.io/map-merger-venti/translator_v7.html?tab=chat",
       "price": 10,
       "type": "site"
     },
