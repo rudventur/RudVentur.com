@@ -1,200 +1,83 @@
-/* RudVentur rxplanation — right-click any button/link for a short explanation.
-   Ensures buttons are visible, not overlayed, links are explained, and right-click works. */
+/* RUDVENTUR rxplanation: right-click (or long-press on a phone) any button to see what it does.
+   One shared file, loaded by the shared useRbox (embed/useRbox.js) on every RUDVENTUR page.
+   The text comes from the button's data-explain attribute, then its title or aria-label.
+   Only buttons are explained: links and text boxes keep the normal browser right-click menu.
+   API: window.rvExplain.show(element) */
 (function () {
-  if (window.__rvRxplanation) return;
-  window.__rvRxplanation = true;
+  'use strict';
+  if (window.rvExplain) return;
 
-  var CSS = '' +
-    '#rxplanation-menu{position:fixed;z-index:2147483647;min-width:240px;max-width:340px;' +
-    'background:#0e0e10;border:1px solid #3a3a3a;border-radius:10px;padding:.55rem .6rem .65rem;' +
-    'box-shadow:0 16px 48px rgba(0,0,0,.75);color:#eee;font-family:"DM Mono",ui-monospace,monospace;' +
-    'display:none;pointer-events:auto}' +
-    '#rxplanation-menu.open{display:block}' +
-    '#rxplanation-menu .rx-kicker{font-size:.55rem;letter-spacing:2px;color:#7CFF4A;text-transform:uppercase;margin-bottom:.25rem}' +
-    '#rxplanation-menu .rx-title{font-size:.82rem;font-weight:700;margin-bottom:.35rem;color:#fff}' +
-    '#rxplanation-menu .rx-body{font-size:.68rem;line-height:1.45;color:#bbb;margin-bottom:.55rem}' +
-    '#rxplanation-menu .rx-href{font-size:.55rem;color:#6aa;word-break:break-all;margin-bottom:.5rem}' +
-    '#rxplanation-menu button{display:block;width:100%;text-align:left;background:rgba(255,255,255,.04);' +
-    'border:1px solid #2a2a2a;color:#ddd;font:inherit;font-size:.65rem;letter-spacing:.4px;' +
-    'padding:.45rem .55rem;border-radius:6px;cursor:pointer;margin-top:.28rem}' +
-    '#rxplanation-menu button:hover{background:rgba(124,255,74,.12);border-color:#7CFF4A;color:#fff}' +
-    'button,a,[role="button"],.tool-link,.chem-btn,.user-btn,.repo-card,input[type="button"],input[type="submit"]{' +
-    'position:relative !important;z-index:10 !important;visibility:visible !important;opacity:1 !important;' +
-    'pointer-events:auto !important}' +
-    '.soon{opacity:.65 !important;cursor:default !important}' +
-    '.tool-list{display:flex;flex-direction:column;gap:.25rem}' +
-    '.tool-list li{display:block;position:relative;z-index:5}' +
-    '.tool-link,.user-btn,.comp-link,.footer-link{z-index:20 !important}';
+  var BUTTONS = 'button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],[data-explain]';
+  var CSS = '#rv-explain{position:fixed;z-index:2147483646;max-width:300px;min-width:180px;background:#0e0e10;color:#ddd;' +
+    'border:1px solid #7CFF4A;border-radius:9px;padding:.55rem .7rem .6rem;box-shadow:0 12px 40px rgba(0,0,0,.7);' +
+    'font:12px/1.45 ui-monospace,"DM Mono",monospace;display:none}' +
+    '#rv-explain.open{display:block}' +
+    '#rv-explain .rv-ex-t{color:#7CFF4A;font-weight:700;margin-bottom:.25rem;padding-right:1.4rem}' +
+    '#rv-explain .rv-ex-x{position:absolute;top:.3rem;right:.4rem;background:none;border:0;color:#888;font-size:14px;cursor:pointer}';
 
-  var style = document.createElement('style');
-  style.textContent = CSS;
-  document.head.appendChild(style);
+  var box, timer = null, pressEl = null, swallowClick = false;
 
-  var menu = document.createElement('div');
-  menu.id = 'rxplanation-menu';
-  menu.setAttribute('role', 'dialog');
-  menu.setAttribute('aria-label', 'rxplanation');
-  document.documentElement.appendChild(menu);
-
-  var current = null;
-
-  function labelOf(el) {
-    return (el.getAttribute('aria-label') || el.getAttribute('title') || (el.innerText || el.value || '')).replace(/\s+/g, ' ').trim();
+  function clean(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
+  function nameOf(el) {
+    return clean(el.getAttribute('aria-label') || el.innerText || el.value || el.getAttribute('title') || 'Button').slice(0, 60);
   }
-
-  function explain(el) {
-    var custom = el.getAttribute('data-rxplanation');
-    if (custom) return custom;
-    var label = labelOf(el) || 'This control';
-    var href = el.getAttribute('href') || '';
-    if (el.classList && el.classList.contains('soon')) {
-      return label + ' is listed, but the page is not live yet. Right-click only explains it — it does not open a dead link.';
-    }
-    if (href && href !== '#' && href.indexOf('REPLACE_ME') === -1) {
-      return label + ' opens ' + href + '. Right-click shows this rxplanation before you follow the link.';
-    }
-    if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button') {
-      return label + ' runs an action on this page. Right-click shows this rxplanation instead of the browser menu.';
-    }
-    return label + '. Right-click any button or link for its rxplanation.';
+  function textOf(el) {
+    var t = el.getAttribute('data-explain') || el.getAttribute('data-rxplanation') || el.getAttribute('title') || el.getAttribute('aria-label');
+    t = clean(t);
+    if (t && t !== nameOf(el)) return t;
+    return (t || nameOf(el)) + ' — runs this action on the page.';
   }
-
-  function isControl(el) {
-    if (!el || el === menu || menu.contains(el)) return false;
-    if (el.id === 'rxplanation-menu') return false;
+  function find(target) {
+    var el = target && target.closest ? target.closest(BUTTONS + ',[onclick]') : null;
+    if (!el || (box && box.contains(el))) return null;
     var tag = el.tagName;
-    if (tag === 'BUTTON' || tag === 'A') return true;
-    if (tag === 'INPUT') {
-      var t = (el.getAttribute('type') || '').toLowerCase();
-      return t === 'button' || t === 'submit' || t === 'reset';
-    }
-    if (el.getAttribute && el.getAttribute('role') === 'button') return true;
-    if (el.classList && (el.classList.contains('tool-link') || el.classList.contains('chem-btn') || el.classList.contains('user-btn') || el.classList.contains('repo-card') || el.classList.contains('comp-link') || el.classList.contains('footer-link') || el.classList.contains('social-icon'))) return true;
-    return false;
+    if (tag === 'A' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable) return null;
+    if (tag === 'INPUT' && !/^(button|submit|reset)$/i.test(el.type)) return null;
+    return el;
   }
-
-  function hide() {
-    menu.classList.remove('open');
-    menu.innerHTML = '';
-    current = null;
+  function build() {
+    if (box) return;
+    var st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
+    box = document.createElement('div'); box.id = 'rv-explain'; box.setAttribute('role', 'tooltip');
+    box.innerHTML = '<button type="button" class="rv-ex-x" aria-label="Close the explanation">✕</button><div class="rv-ex-t"></div><div class="rv-ex-b"></div>';
+    box.querySelector('.rv-ex-x').addEventListener('click', hide);
+    document.body.appendChild(box);
   }
-
   function show(el, x, y) {
-    current = el;
-    var title = labelOf(el) || 'Control';
-    var body = explain(el);
-    var href = el.getAttribute('href') || '';
-    menu.innerHTML = '' +
-      '<div class="rx-kicker">rxplanation</div>' +
-      '<div class="rx-title"></div>' +
-      '<div class="rx-body"></div>' +
-      (href ? '<div class="rx-href"></div>' : '') +
-      (href && href !== '#' && !el.classList.contains('soon') ? '<button type="button" data-act="open">Open link</button>' : '') +
-      '<button type="button" data-act="click">Activate this button</button>' +
-      (href ? '<button type="button" data-act="copy">Copy link</button>' : '') +
-      '<button type="button" data-act="close">Close</button>';
-    menu.querySelector('.rx-title').textContent = title;
-    menu.querySelector('.rx-body').textContent = body;
-    if (href) menu.querySelector('.rx-href').textContent = href;
-    menu.classList.add('open');
-    var mw = menu.offsetWidth || 280;
-    var mh = menu.offsetHeight || 180;
-    var left = Math.max(8, Math.min(x, window.innerWidth - mw - 8));
-    var top = Math.max(8, Math.min(y, window.innerHeight - mh - 8));
-    menu.style.left = left + 'px';
-    menu.style.top = top + 'px';
+    build();
+    box.querySelector('.rv-ex-t').textContent = nameOf(el);
+    box.querySelector('.rv-ex-b').textContent = textOf(el);
+    box.classList.add('open');
+    if (x == null) { var r = el.getBoundingClientRect(); x = r.left; y = r.bottom + 6; }
+    var w = box.offsetWidth, h = box.offsetHeight;
+    box.style.left = Math.max(6, Math.min(x, innerWidth - w - 6)) + 'px';
+    box.style.top = Math.max(6, Math.min(y, innerHeight - h - 6)) + 'px';
   }
-
-  function tagControls() {
-    document.querySelectorAll('button, a, [role="button"], input[type="button"], input[type="submit"]').forEach(function (el) {
-      if (menu.contains(el)) return;
-      if (!el.getAttribute('data-rxplanation')) el.setAttribute('data-rxplanation', explain(el));
-      var tip = el.getAttribute('title');
-      if (!tip || tip.indexOf('rxplanation') === -1) {
-        el.setAttribute('title', (tip ? tip + ' — ' : '') + 'Right-click for rxplanation');
-      }
-      el.style.visibility = 'visible';
-      el.style.opacity = el.classList.contains('soon') ? '0.65' : '1';
-      el.style.pointerEvents = 'auto';
-    });
-  }
+  function hide() { if (box) box.classList.remove('open'); }
 
   document.addEventListener('contextmenu', function (e) {
-    var el = e.target;
-    while (el && !isControl(el)) el = el.parentElement;
-    if (!el) return;
+    var el = find(e.target);
+    if (!el) return;            // links, text boxes and plain text: the normal menu
     e.preventDefault();
-    e.stopPropagation();
     show(el, e.clientX, e.clientY);
   }, true);
 
-  menu.addEventListener('click', function (e) {
-    var act = e.target.getAttribute && e.target.getAttribute('data-act');
-    if (!act) return;
-    if (act === 'close') { hide(); return; }
-    if (!current) return;
-    if (act === 'open' && current.href) {
-      window.open(current.href, current.target || '_blank');
-    } else if (act === 'click') {
-      current.click();
-    } else if (act === 'copy' && current.href) {
-      if (navigator.clipboard) navigator.clipboard.writeText(current.href).catch(function () {});
-    }
-    hide();
+  // long-press on phones and tablets
+  document.addEventListener('touchstart', function (e) {
+    var el = find(e.target); if (!el || e.touches.length !== 1) return;
+    var t = e.touches[0], x = t.clientX, y = t.clientY;
+    pressEl = el; clearTimeout(timer);
+    timer = setTimeout(function () { swallowClick = true; show(el, x, y); }, 550);
+  }, { passive: true, capture: true });
+  ['touchend', 'touchmove', 'touchcancel'].forEach(function (n) {
+    document.addEventListener(n, function () { clearTimeout(timer); }, { passive: true, capture: true });
   });
-
   document.addEventListener('click', function (e) {
-    if (!menu.contains(e.target)) hide();
-  });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') hide();
-  });
-  window.addEventListener('resize', hide);
+    if (swallowClick) { swallowClick = false; if (pressEl && pressEl.contains(e.target)) { e.preventDefault(); e.stopPropagation(); return; } }
+    if (box && !box.contains(e.target)) hide();
+  }, true);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hide(); });
   window.addEventListener('scroll', hide, true);
 
-  function unstack() {
-    document.querySelectorAll('button, a, [role="button"]').forEach(function (el) {
-      if (menu.contains(el)) return;
-      var cs = window.getComputedStyle(el);
-      if (cs.display === 'none') return;
-      el.style.zIndex = '100';
-    });
-    var floats = [];
-    document.querySelectorAll('button, a, [role="button"]').forEach(function (el) {
-      if (menu.contains(el)) return;
-      var cs = window.getComputedStyle(el);
-      if (cs.display === 'none' || cs.visibility === 'hidden') return;
-      var r = el.getBoundingClientRect();
-      if (r.width < 8 || r.height < 8) return;
-      if (cs.position === 'fixed' || cs.position === 'sticky' || cs.position === 'absolute') {
-        floats.push({ el: el, r: r });
-      }
-    });
-    floats.sort(function (a, b) { return a.r.top - b.r.top || a.r.left - b.r.left; });
-    for (var i = 0; i < floats.length; i++) {
-      for (var j = 0; j < i; j++) {
-        var a = floats[j].r;
-        var b = floats[i].r;
-        var overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
-        var overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-        if (overlapX > 6 && overlapY > 6) {
-          var el = floats[i].el;
-          var shift = Math.ceil(overlapY + 12);
-          el.style.marginTop = (parseFloat(el.style.marginTop) || 0) + shift + 'px';
-          floats[i].r = el.getBoundingClientRect();
-        }
-      }
-    }
-  }
-
-  function boot() {
-    tagControls();
-    setTimeout(unstack, 300);
-    setTimeout(unstack, 1200);
-    setTimeout(tagControls, 2000);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-  var mo = new MutationObserver(function () { tagControls(); });
-  mo.observe(document.documentElement, { childList: true, subtree: true });
+  window.rvExplain = { show: function (el) { show(el); }, hide: hide, text: textOf };
 })();
