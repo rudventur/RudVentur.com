@@ -438,7 +438,7 @@
     var nagSteps = [
       { type: "text", text: "☕ Support the universe — it's only £10 per year" },
       { type: "text", text: "Promise you will pay one day so that this thing can be developed" },
-      { type: "checkbox", text: "I'm not a robot", id: "notRobot" },
+      { type: "robot" },
       { type: "text", text: "One coffee keeps the servers and the experiments running" },
       { type: "kofi-ok", text: "Help keep it going" },
       { type: "text", text: "OK — you can hide this for now (it will come back next visit)" }
@@ -461,6 +461,17 @@
         nagOk.disabled = true;
         var cb = nagMsg.querySelector("input");
         if (cb) cb.onchange = function () { nagOk.disabled = !cb.checked; };
+      } else if (step.type === "robot") {
+        // two ways through: a human, or a proud robot (the robot gets a 🤖 badge on its profile)
+        nagMsg.innerHTML = '<div class="rv-robot-q">Quick check:</div><div class="rv-robot-btns"><button type="button" class="rv-nag-ok" id="rvHuman">✅ I\'m not a robot</button><button type="button" class="rv-nag-ok rv-robot" id="rvRobotBtn">🤖 I am a robot</button></div>';
+        nagOk.style.display = "none";
+        nagMsg.querySelector('#rvHuman').onclick = function () { rbLsSet('rvRobot', '0'); advanceNag(); renderMyInfoSoon(); };
+        nagMsg.querySelector('#rvRobotBtn').onclick = function () {
+          rbLsSet('rvRobot', '1');
+          nagMsg.innerHTML = '🤖 Beep boop! Welcome, fellow robot. You get a robot badge on your profile.<br><button type="button" class="rv-nag-ok" id="rvRobotOk">BEEP 🤖 OK</button>';
+          nagMsg.querySelector('#rvRobotOk').onclick = advanceNag;
+          renderMyInfoSoon();
+        };
       } else if (step.type === "kofi-ok") {
         var kofiFirst = Math.random() < 0.5;
         var kofiHtml = '<a href="https://ko-fi.com/rudventur" target="_blank" rel="noopener" class="rv-nag-kofi" style="margin:0 6px;">☕ Ko-fi</a>';
@@ -471,6 +482,7 @@
         if (inlineOk) inlineOk.onclick = advanceNag;
       }
     }
+    function renderMyInfoSoon() { setTimeout(function () { if (typeof renderMyInfo === 'function') { renderMyInfo(); if (window.rvUserbox.presence) window.rvUserbox.presence.publish(); } }, 0); }
     function advanceNag() {
       nagIndex++;
       if (nagIndex >= nagSteps.length) {
@@ -834,7 +846,9 @@
     function showPerson(p) {
       var box = q('#rbViewed');
       q('#rbViewedTitle').textContent = '👁 ' + (p.username || p.name || 'useR');
-      var rows = [['📝 P.S.', p.psignature], ['📍 Location', p.currentLoc], ['✨ Public note', p.publicNote], ['⚰️ Burial wish', p.burialWish]];
+      var rows = [['🤖 Robot', p.robot ? 'Yes, beep boop' : ''], ['📝 P.S.', p.psignature], ['📍 Location', p.currentLoc], ['✨ Public note', p.publicNote], ['⚰️ Burial wish', p.burialWish]];
+      var n = p.now || {}, ST = { available: '🟢 Available', busy: '🔴 Busy', away: '🌙 Away', playing: '🎮 Playing' };
+      [['🎭 Mood', n.mood], ['🚦 Status', ST[n.status]], ['🛠 Doing now', n.doing], ['🔋 Energy', n.energy], ['💬 Open to chat', n.chat === true ? 'Yes' : n.chat === false ? 'Not now' : ''], ['🎮 Game or room', n.game], ['🔎 Looking for', n.looking]].forEach(function (r) { rows.push(r); });
       q('#rbViewedBody').innerHTML = rows.filter(function (r) { return r[1]; }).map(function (r) {
         return '<label>' + r[0] + '</label><div class="rb-viewed-val">' + escapeHtml(r[1]) + '</div>';
       }).join('') || '<div class="rb-empty">This useR has not shared anything yet.</div>';
@@ -894,7 +908,7 @@
     function readPub() {
       var d = {}; try { d = JSON.parse(lsGet(PUB_KEY) || '{}') || {}; } catch (e) {}
       return { shareLoc: !!d.shareLoc, shareBurial: !!d.shareBurial, subscriber: !!d.subscriber,
-        restOpen: d.restOpen === 'closed' ? 'closed' : 'online', tables: Array.isArray(d.tables) ? d.tables : [] };
+        restOpen: d.restOpen === 'closed' ? 'closed' : 'online', tables: Array.isArray(d.tables) ? d.tables : [], locLevel: d.locLevel === 'area' ? 'area' : 'exact' };
     }
     function loadPub() {
       var d = readPub();
@@ -908,7 +922,8 @@
       var tables = [];
       tableBox.querySelectorAll('input:checked').forEach(function (i) { tables.push(i.value); });
       lsSet(PUB_KEY, JSON.stringify({ shareLoc: q('#rbShareLoc').checked, shareBurial: q('#rbShareBurial').checked,
-        subscriber: q('#rbSubscriber').checked, restOpen: q('#rbRestOpen').value, tables: tables }));
+        subscriber: q('#rbSubscriber').checked, restOpen: q('#rbRestOpen').value, tables: tables,
+        locLevel: (function () { try { return (JSON.parse(lsGet(PUB_KEY) || '{}') || {}).locLevel; } catch (e) { return undefined; } })() }));
       var b = this, t = b.textContent; b.textContent = '✅ SAVED'; setTimeout(function () { b.textContent = t; }, 1200);
       renderMyInfo(); presence.publish();
     };
@@ -916,18 +931,24 @@
 
     /* ===== middle column: this useR's info, read only ===== */
     function extraData() { try { return JSON.parse(lsGet('rud_useRbox_extra') || '{}') || {}; } catch (e) { return {}; } }
-    function renderMyInfo(live) {
+    function renderMyInfo() {
+      // the builder's draft (✏️) or the approved profile (✅); see the profile builder below
+      var v = window.rvUserbox.profileView ? window.rvUserbox.profileView() : null;
       var x = extraData(), d = readPub(), pf = getProfile();
-      var dr = window.rvUserbox.previewDraft ? window.rvUserbox.previewDraft() : { avatar: pf.avatar, languages: pf.languages };
-      if (live) { d.shareLoc = q('#rbShareLoc').checked; d.subscriber = q('#rbSubscriber').checked; d.tables = []; tableBox.querySelectorAll('input:checked').forEach(function (i) { d.tables.push(i.value); }); x.publicNote = q('#publicNote').value; }
-      var langs = Array.isArray(dr.languages) ? dr.languages : str(dr.languages).split(',').filter(Boolean);
-      var rows = [['🙂 Avatar', str(dr.avatar)], ['👤 Name', q('#username').value], ['📝 P.S.', q('#psignature').value],
-        ['📍 Location', q('#currentLoc').value + (q('#currentLoc').value ? (d.shareLoc ? '  (shared)' : '  (private)') : '')],
-        ['✨ Public note', x.publicNote], ['⚰️ Burial wish', x.burialWish ? x.burialWish + (d.shareBurial ? '  (public)' : '  (private)') : ''],
-        ['🗣 Languages', langs.map(function (v) { var o = q('#rbLang option[value="' + v + '"]'); return o ? o.textContent : v; }).join(', ')],
+      if (!v) v = { username: q('#username').value, psignature: q('#psignature').value, avatar: str(pf.avatar), languages: str(pf.languages).split(',').filter(Boolean), publicNote: q('#publicNote').value || x.publicNote,
+        currentLoc: q('#currentLoc').value, locLevel: d.shareLoc ? 'exact' : 'private', subscriber: d.subscriber, tables: d.tables, now: { share: {} }, isDraft: false, robot: rbLsGet('rvRobot') === '1' };
+      var STY = window.rvUserbox._styleSig || function (t) { return t; };
+      var rows = [['🙂 Avatar', str(v.avatar) + (v.robot ? '  🤖 robot' : '')], ['👤 Name', v.username], ['📝 P.S.', STY(v.psignature, v.sigStyle)],
+        ['📍 Location', v.currentLoc ? v.currentLoc + (v.locLevel === 'private' ? '  (private)' : v.locLevel === 'area' ? '  (area shared)' : '  (shared)') : ''],
+        ['✨ Public note', v.publicNote], ['⚰️ Burial wish', x.burialWish ? x.burialWish + (d.shareBurial ? '  (public)' : '  (private)') : ''],
+        ['🗣 Languages', (v.languages || []).map(function (l) { var o = q('#rbLang option[value="' + l + '"]'); return o ? o.textContent : l; }).join(', ')],
         ['📡 Room', lsGet('rudventur_channel') || 'main'],
-        ['🍽️ Restaurant', d.subscriber ? (d.restOpen === 'online' ? 'Open when online · ' + d.tables.length + ' tables' : 'Closed') : '']];
-      q('#rbMyInfo').innerHTML = rows.filter(function (r) { return r[1]; }).map(function (r) {
+        ['🍽️ Restaurant', v.subscriber ? (d.restOpen === 'online' ? 'Open when online · ' + (v.tables || []).length + ' tables' : 'Closed') : '']];
+      var now = v.now || { share: {} }, NL = { mood: '🎭 Mood', status: '🚦 Status', doing: '🛠 Doing now', energy: '🔋 Energy', chat: '💬 Open to chat', game: '🎮 Game or room', looking: '🔎 Looking for' };
+      var ST = { available: '🟢 Available', busy: '🔴 Busy', away: '🌙 Away', playing: '🎮 Playing' };
+      Object.keys(NL).forEach(function (f) { var val = now[f]; if (val) rows.push([NL[f], (f === 'status' ? ST[val] || val : f === 'chat' ? (val === 'yes' ? 'Yes' : 'Not now') : val) + ((now.share || {})[f] ? '  👁' : '  🔒')]); });
+      var badge = v.isDraft ? '<div class="rb-badge rb-badge-draft">✏️ DRAFT — not saved yet</div>' : '<div class="rb-badge rb-badge-ok">✅ APPROVED</div>';
+      q('#rbMyInfo').innerHTML = badge + rows.filter(function (r) { return r[1]; }).map(function (r) {
         return '<div class="rb-info-row"><span>' + r[0] + '</span><b>' + escapeHtml(r[1]) + '</b></div>';
       }).join('');
     }
@@ -1018,7 +1039,20 @@
           lastSeen: firebase.database.ServerValue.TIMESTAMP, sub: d.subscriber };
         var ps = str(q('#psignature').value).slice(0, 200); if (ps) rec.ps = ps;
         var nt = str(x.publicNote).slice(0, 300); if (nt) rec.note = nt;
-        if (d.shareLoc && q('#currentLoc').value) rec.loc = str(q('#currentLoc').value).slice(0, 80);
+        if (d.shareLoc && q('#currentLoc').value) {
+          var full = str(q('#currentLoc').value);
+          var lvl = ''; try { lvl = (JSON.parse(lsGet('rvPublicSettings') || '{}') || {}).locLevel; } catch (e) {}
+          if (lvl === 'area') { var parts = full.split(',').map(function (x) { return x.trim(); }).filter(Boolean); full = parts.length > 1 ? parts.slice(-2).join(', ') : parts.join(''); }
+          rec.loc = full.slice(0, 80);
+        }
+        // "right now" lines: only the ones ticked 👁, and only while shown in the room list (publish() checks that)
+        var nw = {}; try { nw = JSON.parse(lsGet('rvNowState') || '{}') || {}; } catch (e) {}
+        var sh = nw.share || {}, out = {}, LIM = { mood: 24, doing: 60, energy: 12, game: 40, looking: 60 };
+        Object.keys(LIM).forEach(function (f) { if (sh[f] && nw[f]) out[f] = str(nw[f]).slice(0, LIM[f]); });
+        if (sh.status && ['available', 'busy', 'away', 'playing'].indexOf(nw.status) >= 0) out.status = nw.status;
+        if (sh.chat && (nw.chat === 'yes' || nw.chat === 'no')) out.chat = nw.chat === 'yes';
+        if (Object.keys(out).length) rec.now = out;
+        if (lsGet('rvRobot') === '1') rec.robot = true;
         if (d.shareBurial && x.burialWish) rec.burial = str(x.burialWish).slice(0, 120);
         if (d.subscriber) {
           var tables = {};
@@ -1060,7 +1094,7 @@
               var v = c.val() || {};
               if (c.key === st.uid || !v.online) return;
               list.push({ id: c.key, username: v.name, psignature: v.ps, currentLoc: v.loc, publicNote: v.note,
-                burialWish: v.burial, channel: lsGet('rudventur_channel') || 'main', subscriber: !!v.sub,
+                burialWish: v.burial, channel: lsGet('rudventur_channel') || 'main', subscriber: !!v.sub, now: v.now || null, robot: !!v.robot,
                 restaurant: v.sub && v.rest ? { open: !!v.rest.open, tables: Object.keys(v.rest.tables || {}) } : null });
             });
             window.rvUserbox.setChannelPeople(list);
@@ -1116,86 +1150,209 @@
     setTab(rbLsGet('rvUseRboxTab') || 'mid');
     setView(rbLsGet(VIEW_KEY) || 'three');
 
-    /* ===== profile builder (Editing column): one step at a time, live preview in 👤 MY INFO ===== */
-    var AVATARS = ['🙂', '😎', '🦊', '🐱', '🐸', '🦉', '🐙', '🌵', '🍄', '🚀', '🎸', '🧪', '🎃', '🌍', '👽', '🤖'];
+    /* ===== profile builder (Editing column): tiles with quick-pick chips + your own entry, Skip / Back / Next,
+       a review tile at the end. Everything is a DRAFT (rvProfileDraft) until "Approve and create profile".
+       The middle 👤 MY INFO shows the draft live, marked ✏️ DRAFT, or the approved profile, marked ✅ APPROVED. ===== */
+    var DRAFT_KEY = 'rvProfileDraft', NOW_KEY = 'rvNowState';
+    var NOW_FIELDS = ['mood', 'status', 'doing', 'energy', 'chat', 'game', 'looking'];
+    var NOW_LABEL = { mood: '🎭 Mood', status: '🚦 Status', doing: '🛠 Doing now', energy: '🔋 Energy', chat: '💬 Open to chat', game: '🎮 Game or room', looking: '🔎 Looking for' };
+    var STATUS = { available: '🟢 Available', busy: '🔴 Busy', away: '🌙 Away', playing: '🎮 Playing' };
+    var SIG_STYLES = { plain: 'Plain', sparkle: '✨ Sparkle ✨', wave: '〰 Wavy 〰', caps: 'CAPITALS', punk: '🎸 Punk' };
+    var LOC_LEVELS = { private: '🔒 Private', area: '🏙 Area only', exact: '📍 Exact place' };
+    function styleSig(t, s) {
+      t = str(t); if (!t) return '';
+      if (s === 'sparkle') return '✨ ' + t + ' ✨';
+      if (s === 'wave') return '〰 ' + t + ' 〰';
+      if (s === 'caps') return t.toUpperCase();
+      if (s === 'punk') return '🎸 ' + t.toUpperCase() + '!';
+      return t;
+    }
+    function areaOf(loc) { var parts = str(loc).split(',').map(function (x) { return x.trim(); }).filter(Boolean); return parts.length > 1 ? parts.slice(-2).join(', ') : parts.join(''); }
+    function readNow() { try { var n = JSON.parse(lsGet(NOW_KEY) || '{}') || {}; n.share = n.share || {}; return n; } catch (e) { return { share: {} }; } }
+    function approvedProfile() {
+      var p = getProfile(), x = extraData(), d = readPub(), now = readNow();
+      return { username: q('#username').value, psignature: q('#psignature').value, sigStyle: str(p.sigStyle) || 'plain', avatar: str(p.avatar),
+        languages: str(p.languages).split(',').filter(Boolean), publicNote: q('#publicNote').value || str(x.publicNote),
+        locLevel: d.shareLoc ? (d.locLevel === 'area' ? 'area' : 'exact') : 'private', currentLoc: q('#currentLoc').value,
+        subscriber: d.subscriber, tables: d.tables.slice(), now: now, robot: rbLsGet('rvRobot') === '1' };
+    }
+    var draft = null;   // null = no changes waiting
+    try { draft = JSON.parse(lsGet(DRAFT_KEY) || 'null'); } catch (e) { draft = null; }
+    function saveDraft() { if (draft) lsSet(DRAFT_KEY, JSON.stringify(draft)); else { try { localStorage.removeItem(DRAFT_KEY); } catch (e) {} } }
+    function ensureDraft() { if (!draft) { draft = approvedProfile(); delete draft.robot; } return draft; }
+    function current() { var a = approvedProfile(); if (!draft) return a; var o = JSON.parse(JSON.stringify(draft)); o.robot = a.robot; return o; }
+
     var LANGS = Array.prototype.map.call(q('#rbLang').options, function (o) { return { v: o.value, t: o.textContent }; });
     function langName(v) { var l = LANGS.filter(function (x) { return x.v === v; })[0]; return l ? l.t : v; }
-    var draft = { avatar: '', languages: [] };
-    function loadDraft() { var p = getProfile(); draft.avatar = str(p.avatar); draft.languages = str(p.languages).split(',').filter(Boolean).slice(0, 8); }   // stored as "pl,en" (profile fields are strings)
+    var POP_LANGS = ['en', 'pl', 'es', 'fr', 'de', 'it', 'pt', 'uk', 'ru', 'ar', 'hi', 'zh-CN', 'ja', 'ko', 'tr', 'nl', 'sv', 'el', 'he', 'sw', 'cy', 'ga'];
+    var AVATARS = ['🙂', '😎', '🤓', '🥳', '😴', '🤠', '🦊', '🐱', '🐶', '🐸', '🦉', '🐙', '🦄', '🐝', '🐢', '🦖', '🌵', '🍄', '🌻', '🌙', '⭐', '🔥', '🌊', '🍕', '☕', '🚀', '🛸', '🎸', '🎧', '🎨', '📚', '🧪', '⚛️', '🧬', '🎃', '👽', '🤖', '👻', '🌍', '💎'];
+    var NAMES = ['useR', 'Neon Owl', 'Atom Ant', 'Pumpkin', 'Star Pilot', 'Quiet Fox', 'Rudy'];
+    var SIGS = ["You don't have to have legs to Trip", 'Bonds in 3D', 'Coffee first ☕', 'Here for the experiments', 'Be kind, rewind', 'Out of office, into space'];
+    var NOTES = ['Say hi, I like new people 👋', 'Ask me about chemistry 🧪', 'I translate for coffee ☕', 'Looking for a gaming buddy 🎮', 'Just watching for now 👀', 'My door is always open 🚪'];
+    var CH = {
+      mood: ['😀 Happy', '😌 Calm', '🤩 Excited', '😴 Sleepy', '🤔 Thoughtful', '😤 Focused', '🥲 Meh', '🥳 Celebrating'],
+      doing: ['💻 Working', '📚 Studying', '🎮 Gaming', '🎵 Listening to music', '🍳 Cooking', '🚶 Out and about', '🧪 Experimenting', '☕ Coffee break'],
+      energy: ['🔋 1 · low', '🔋 2', '🔋 3 · okay', '🔋 4', '🔋 5 · full'],
+      game: ['🧪 ChemVentur', '🌐 Translator', '🪟 Windows 13', '🎃 pumpKIN Guy', '🍿 Popcorn'],
+      looking: ['🤝 New friends', '🎮 Someone to play with', '🗣 Language exchange', '💡 Ideas', '🛠 Help with a project', '🍽️ An open restaurant', '👀 Nothing, just browsing']
+    };
+    function chips(key, list, cur, multi) {
+      return '<div class="rb-chips">' + list.map(function (c) {
+        var on = multi ? cur.indexOf(c[0]) >= 0 : cur === c[0];
+        return '<button type="button" class="rb-chip' + (on ? ' on' : '') + '" data-k="' + key + '" data-v="' + escapeHtml(c[0]) + '">' + escapeHtml(c[1]) + '</button>';
+      }).join('') + '</div>';
+    }
+    var pairs = function (arr) { return arr.map(function (x) { return [x, x]; }); };
+    function shareBox(f, now) { return '<label class="toggle rb-sharebox"><input type="checkbox" data-share="' + f + '"' + (now.share[f] ? ' checked' : '') + '><span>👁 share with the room</span></label>'; }
+    function custom(key, val, ph, max, area) {
+      return area ? '<textarea data-in="' + key + '" maxlength="' + max + '" placeholder="' + ph + '">' + escapeHtml(val) + '</textarea>'
+        : '<input type="text" data-in="' + key + '" maxlength="' + max + '" placeholder="' + ph + '" value="' + escapeHtml(val) + '">';
+    }
     var STEPS = [
-      { t: '1 · Your name', h: 'What should people call you?', f: '<input type="text" data-b="username" maxlength="32" placeholder="Your name">' },
-      { t: '2 · Signature', h: 'A short line under your name (your P.S.)', f: '<textarea data-b="psignature" maxlength="200" placeholder="You don\'t have to have legs to Trip"></textarea>' },
-      { t: '3 · Avatar', h: 'Pick an emoji', f: '<div class="rb-avatars">' + AVATARS.map(function (a) { return '<button type="button" data-av="' + a + '">' + a + '</button>'; }).join('') + '</div>' },
-      { t: '4 · Languages', h: 'The languages you speak (up to 8)', f: '<div class="field-row"><select data-b="langpick" style="flex:1;">' + LANGS.map(function (l) { return '<option value="' + l.v + '">' + escapeHtml(l.t) + '</option>'; }).join('') + '</select><button type="button" class="btn btn-small" data-b="langadd">＋ ADD</button></div><div class="rb-chips" data-b="langlist"></div>' },
-      { t: '5 · Public note', h: 'Something anyone in your room may read', f: '<textarea data-b="publicNote" maxlength="300"></textarea>' },
-      { t: '6 · Location', h: 'Should the room see your current location?', f: '<label class="toggle"><input type="radio" name="rbBLoc" value="private"><span>🔒 Keep it private</span></label><label class="toggle"><input type="radio" name="rbBLoc" value="share"><span>📍 Share my current location</span></label>' },
-      { t: '7 · Restaurant tables', h: 'Supporters get a restaurant; the tables are the services you serve', f: '<label class="toggle"><input type="checkbox" data-b="sub"><span>I am a subscriber (supporter)</span></label><div data-b="tables"></div>' },
-      { t: '8 · Done', h: 'Check the preview in 👤 MY INFO, then save', f: '<div class="rb-dev-note">Saving keeps everything on this device. Only what you chose to share goes to the room, and only while "Show me in the room list" is on.</div>' }
+      { t: '👤 Your name', h: 'Pick one or type your own', r: function (d) { return chips('username', pairs(NAMES), d.username) + custom('username', d.username, 'Your own name', 32); } },
+      { t: '📝 Signature', h: 'A line under your name, and its style', r: function (d) {
+          return chips('psignature', pairs(SIGS), d.psignature) + custom('psignature', d.psignature, 'Your own signature', 200, true) +
+            '<div class="rb-subtitle">Style</div>' + chips('sigStyle', Object.keys(SIG_STYLES).map(function (k) { return [k, SIG_STYLES[k]]; }), d.sigStyle) +
+            '<div class="rb-dev-note">Preview: ' + escapeHtml(styleSig(d.psignature || 'Your signature', d.sigStyle)) + '</div>'; } },
+      { t: '🙂 Avatar', h: 'Tap an emoji, or paste any emoji', r: function (d) {
+          return '<div class="rb-avatars">' + AVATARS.map(function (a) { return '<button type="button" data-k="avatar" data-v="' + a + '"' + (d.avatar === a ? ' class="active"' : '') + '>' + a + '</button>'; }).join('') + '</div>' + custom('avatar', d.avatar, 'Any emoji', 8); } },
+      { t: '🗣 Languages', h: 'Tap all you speak (up to 12), or add any of 160+', r: function (d) {
+          return chips('languages', POP_LANGS.map(function (v) { return [v, langName(v)]; }), d.languages, true) +
+            '<div class="field-row"><select data-in="langpick" style="flex:1;">' + LANGS.map(function (l) { return '<option value="' + l.v + '">' + escapeHtml(l.t) + '</option>'; }).join('') + '</select><button type="button" class="btn btn-small" data-act="langadd">＋ ADD</button></div>' +
+            '<div class="rb-dev-note">Chosen: ' + (d.languages.map(langName).join(', ') || 'none yet') + '</div>'; } },
+      { t: '✨ Public note', h: 'A template or your own words', r: function (d) { return chips('publicNote', pairs(NOTES), d.publicNote) + custom('publicNote', d.publicNote, 'Your own note', 300, true); } },
+      { t: '📍 Location', h: 'How much of your place the room may see', r: function (d) {
+          return chips('locLevel', Object.keys(LOC_LEVELS).map(function (k) { return [k, LOC_LEVELS[k]]; }), d.locLevel) + custom('currentLoc', d.currentLoc, 'Street, town, country', 80) +
+            '<div class="rb-dev-note">The room sees: ' + escapeHtml(d.locLevel === 'private' ? 'nothing' : d.locLevel === 'area' ? (areaOf(d.currentLoc) || '—') : (d.currentLoc || '—')) + '</div>'; } },
+      { t: '🍽️ Restaurant tables', h: 'Supporters run a restaurant; tables are the services you serve', r: function (d) {
+          return chips('subscriber', [['yes', '⭐ I am a supporter'], ['no', 'Not yet']], d.subscriber ? 'yes' : 'no') +
+            (d.subscriber ? chips('tables', SERVICES.map(function (s) { return [s.id, s.name]; }), d.tables, true) +
+              '<div class="rb-chips"><button type="button" class="rb-chip" data-act="allTables">All tables</button><button type="button" class="rb-chip" data-act="noTables">No tables</button></div>' : ''); } },
+      { t: '🌤 Right now', h: 'How you are at the moment. Tick 👁 to share a line with the room (only while you are online and shown in the room list)', r: function (d) {
+          var n = d.now; var row = function (f, html) { return '<div class="rb-nowrow"><div class="rb-subtitle">' + NOW_LABEL[f] + '</div>' + html + shareBox(f, n) + '</div>'; };
+          return row('mood', chips('now.mood', pairs(CH.mood), n.mood) + custom('now.mood', n.mood, 'Your own mood', 24)) +
+            row('status', chips('now.status', Object.keys(STATUS).map(function (k) { return [k, STATUS[k]]; }), n.status)) +
+            row('doing', chips('now.doing', pairs(CH.doing), n.doing) + custom('now.doing', n.doing, 'What are you doing?', 60)) +
+            row('energy', chips('now.energy', pairs(CH.energy), n.energy)) +
+            row('chat', chips('now.chat', [['yes', '💬 Yes, talk to me'], ['no', '🤫 Not now']], n.chat)) +
+            row('game', chips('now.game', pairs(CH.game.concat(['📡 Room: ' + (lsGet('rudventur_channel') || 'main')])), n.game) + custom('now.game', n.game, 'Your own game or room', 40)) +
+            row('looking', chips('now.looking', pairs(CH.looking), n.looking) + custom('now.looking', n.looking, 'What are you looking for?', 60)); } }
     ];
+    var REVIEW = STEPS.length;
     var builder = document.createElement('details');
     builder.className = 'rb-fold'; builder.id = 'rbBuilder'; builder.open = true;
     builder.innerHTML = '<summary>🧭 PROFILE BUILDER</summary><div class="rb-fold-body">' +
-      '<div class="rb-steps" id="rbSteps">' + STEPS.map(function (s, i) { return '<span data-i="' + i + '"></span>'; }).join('') + '</div>' +
-      STEPS.map(function (s, i) { return '<div class="rb-step hidden" data-step="' + i + '"><div class="rb-subtitle">' + s.t + '</div><small class="rb-dev-note">' + s.h + '</small>' + s.f + '</div>'; }).join('') +
-      '<div class="field-row" style="margin-top:10px;"><button type="button" class="btn btn-small" id="rbBack">⬅ BACK</button><span style="flex:1"></span><button type="button" class="btn btn-small" id="rbNext">NEXT ➡</button></div></div>';
+      '<div class="rb-steps" id="rbSteps">' + STEPS.concat([0]).map(function (s, i) { return '<span data-i="' + i + '"></span>'; }).join('') + '</div>' +
+      '<div id="rbTile"></div>' +
+      '<div class="field-row rb-nav" id="rbNav" style="margin-top:10px;"><button type="button" class="btn btn-small" id="rbBack">⬅ BACK</button><button type="button" class="btn btn-small" id="rbSkip">SKIP ⏭</button><span style="flex:1"></span><button type="button" class="btn btn-small" id="rbNext">NEXT ➡</button></div></div>';
     var rightCol = q('.rb-col-right');
     rightCol.insertBefore(builder, rightCol.firstChild);
-    var bq = function (k) { return builder.querySelector('[data-b="' + k + '"]'); };
-    var bTables = bq('tables');
-    SERVICES.forEach(function (x) { var l = document.createElement('label'); l.className = 'toggle'; l.innerHTML = '<input type="checkbox" value="' + x.id + '"><span>' + escapeHtml(x.name) + '</span>'; bTables.appendChild(l); });
+    var tile = q('#rbTile');
     var step = 0;
-    function renderLangs() {
-      bq('langlist').innerHTML = draft.languages.map(function (v) { return '<button type="button" class="rb-chip" data-lang="' + escapeHtml(v) + '">' + escapeHtml(langName(v)) + ' ✖</button>'; }).join('') || '<span class="rb-empty">None yet</span>';
+    function summaryRows(d) {
+      var rows = [['🙂 Avatar', d.avatar], ['👤 Name', d.username], ['📝 Signature', styleSig(d.psignature, d.sigStyle)], ['🗣 Languages', d.languages.map(langName).join(', ')],
+        ['✨ Public note', d.publicNote], ['📍 Location', LOC_LEVELS[d.locLevel] + (d.currentLoc ? ' · ' + (d.locLevel === 'area' ? areaOf(d.currentLoc) : d.currentLoc) : '')],
+        ['🍽️ Restaurant', d.subscriber ? d.tables.length + ' tables: ' + d.tables.map(function (t) { var s = serviceById(t); return s ? s.name : t; }).join(', ') : 'not a supporter']];
+      NOW_FIELDS.forEach(function (f) { var v = d.now[f]; if (v) rows.push([NOW_LABEL[f], (f === 'status' ? STATUS[v] || v : f === 'chat' ? (v === 'yes' ? 'Yes' : 'Not now') : v) + (d.now.share[f] ? '  👁' : '  🔒')]); });
+      return rows;
     }
-    function fillBuilder() {
-      loadDraft(); var d = readPub();
-      bq('username').value = q('#username').value; bq('psignature').value = q('#psignature').value;
-      bq('publicNote').value = q('#publicNote').value || extraData().publicNote || '';
-      builder.querySelectorAll('input[name="rbBLoc"]').forEach(function (r) { r.checked = r.value === (d.shareLoc ? 'share' : 'private'); });
-      bq('sub').checked = d.subscriber;
-      bTables.querySelectorAll('input').forEach(function (i) { i.checked = d.tables.indexOf(i.value) >= 0; });
-      bq('langpick').value = q('#rbLang').value;
-      renderLangs(); showStep(step);
-    }
-    function showStep(i) {
-      step = Math.max(0, Math.min(STEPS.length - 1, i));
-      builder.querySelectorAll('.rb-step').forEach(function (el) { el.classList.toggle('hidden', +el.getAttribute('data-step') !== step); });
+    function rowsHtml(rows) { return rows.filter(function (r) { return r[1]; }).map(function (r) { return '<div class="rb-info-row"><span>' + r[0] + '</span><b>' + escapeHtml(r[1]) + '</b></div>'; }).join(''); }
+    function renderTile() {
+      var d = current();
+      if (step >= REVIEW) {
+        tile.innerHTML = '<div class="rb-review"><div class="rb-subtitle">🧾 REVIEW YOUR PROFILE</div><div class="rb-dev-note">' + (draft ? 'Nothing is saved yet. Approve to create it.' : 'No changes since your last approval.') + '</div>' +
+          rowsHtml(summaryRows(d)) +
+          '<button type="button" class="btn rb-approve" id="rbApprove"' + (draft ? '' : ' disabled') + '>✅ APPROVE AND CREATE PROFILE</button>' +
+          '<div class="field-row"><button type="button" class="btn btn-small" id="rbBackEdit" style="flex:1;">✏️ BACK TO EDIT</button><button type="button" class="btn btn-small" id="rbDiscard" style="flex:1;"' + (draft ? '' : ' disabled') + '>🗑 DISCARD CHANGES</button></div></div>';
+        q('#rbNav').style.display = 'none';
+      } else {
+        var s = STEPS[step];
+        tile.innerHTML = '<div class="rb-step" data-step="' + step + '"><div class="rb-subtitle">' + (step + 1) + ' of ' + STEPS.length + ' · ' + s.t + '</div><small class="rb-dev-note">' + s.h + '</small>' + s.r(d) + '</div>';
+        q('#rbNav').style.display = '';
+        q('#rbBack').disabled = step === 0;
+        q('#rbNext').textContent = step === STEPS.length - 1 ? 'REVIEW 🧾' : 'NEXT ➡';
+      }
       builder.querySelectorAll('#rbSteps span').forEach(function (el) { var n = +el.getAttribute('data-i'); el.className = n < step ? 'done' : n === step ? 'now' : ''; });
-      builder.querySelectorAll('[data-av]').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-av') === draft.avatar); });
-      q('#rbBack').disabled = step === 0;
-      q('#rbNext').textContent = step === STEPS.length - 1 ? '💾 SAVE PROFILE' : 'NEXT ➡';
-      bTables.style.display = bq('sub').checked ? '' : 'none';
     }
-    // every change goes straight into the editing fields, so 👤 MY INFO previews it at once
-    function preview() {
-      q('#username').value = bq('username').value; q('#psignature').value = bq('psignature').value;
-      q('#publicNote').value = bq('publicNote').value;
-      var shareLoc = builder.querySelector('input[name="rbBLoc"]:checked');
-      q('#rbShareLoc').checked = !!shareLoc && shareLoc.value === 'share';
-      q('#rbSubscriber').checked = bq('sub').checked; q('#rbRestSettings').style.display = bq('sub').checked ? '' : 'none';
-      var on = []; bTables.querySelectorAll('input:checked').forEach(function (i) { on.push(i.value); });
-      tableBox.querySelectorAll('input').forEach(function (i) { i.checked = on.indexOf(i.value) >= 0; });
-      renderMyInfo(true);
+    function setVal(key, v) {
+      var d = ensureDraft();
+      if (key.indexOf('now.') === 0) { var f = key.slice(4); d.now[f] = str(v).slice(0, f === 'game' ? 40 : f === 'mood' ? 24 : 60); }
+      else if (key === 'subscriber') d.subscriber = v === 'yes';
+      else d[key] = v;
+      saveDraft(); refresh();
     }
-    builder.addEventListener('input', function () { preview(); showStep(step); });
-    builder.addEventListener('change', function () { preview(); showStep(step); });
+    function refresh() { renderMyInfo(); }
+    function goStep(i) { step = Math.max(0, Math.min(REVIEW, i)); renderTile(); }
     builder.addEventListener('click', function (e) {
-      var av = e.target.closest('[data-av]'), chip = e.target.closest('[data-lang]');
-      if (av) { draft.avatar = av.getAttribute('data-av'); preview(); showStep(step); }
-      if (chip) { var v = chip.getAttribute('data-lang'); draft.languages = draft.languages.filter(function (x) { return x !== v; }); renderLangs(); preview(); }
-      if (e.target === bq('langadd')) { var v2 = bq('langpick').value; if (v2 && draft.languages.indexOf(v2) < 0 && draft.languages.length < 8) draft.languages.push(v2); renderLangs(); preview(); }
+      var c = e.target.closest('[data-k]'), a = e.target.closest('[data-act]');
+      if (c) {
+        var k = c.getAttribute('data-k'), v = c.getAttribute('data-v'), d = ensureDraft();
+        if (k === 'languages' || k === 'tables') {
+          var list = d[k], i = list.indexOf(v);
+          if (i >= 0) list.splice(i, 1); else if (list.length < 12) list.push(v);
+          saveDraft(); refresh();
+        } else if (k.indexOf('now.') === 0 && d.now[k.slice(4)] === v) setVal(k, '');   // tap again to clear
+        else setVal(k, v);
+        renderTile();
+      }
+      if (a) {
+        var dd = ensureDraft(), act = a.getAttribute('data-act');
+        if (act === 'langadd') { var pick = builder.querySelector('[data-in="langpick"]').value; if (pick && dd.languages.indexOf(pick) < 0 && dd.languages.length < 12) dd.languages.push(pick); }
+        if (act === 'allTables') dd.tables = SERVICES.map(function (s) { return s.id; });
+        if (act === 'noTables') dd.tables = [];
+        saveDraft(); refresh(); renderTile();
+      }
+      if (e.target.id === 'rbApprove') approve();
+      if (e.target.id === 'rbBackEdit') goStep(0);
+      if (e.target.id === 'rbDiscard') { draft = null; saveDraft(); refresh(); renderTile(); }
     });
-    q('#rbBack').onclick = function () { showStep(step - 1); };
-    q('#rbNext').onclick = function () {
-      if (step < STEPS.length - 1) { showStep(step + 1); return; }
-      preview();
-      saveProfile({ avatar: draft.avatar, languages: draft.languages.slice(0, 8).join(','), username: q('#username').value, psignature: q('#psignature').value });   // shared profile (rvUserbox.get)
+    builder.addEventListener('input', function (e) {
+      var k = e.target.getAttribute('data-in');
+      if (k && k !== 'langpick') { setVal(k, e.target.value); builder.querySelectorAll('[data-k="' + k + '"]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-v') === e.target.value); }); }
+    });
+    builder.addEventListener('change', function (e) {
+      var f = e.target.getAttribute('data-share');
+      if (f) { var d = ensureDraft(); d.now.share[f] = e.target.checked; saveDraft(); refresh(); }
+      if (e.target.getAttribute('data-in') && e.target.getAttribute('data-in') !== 'langpick') renderTile();   // update the little previews under the field
+    });
+    q('#rbBack').onclick = function () { goStep(step - 1); };
+    q('#rbSkip').onclick = function () { goStep(step + 1); };
+    q('#rbNext').onclick = function () { goStep(step + 1); };
+
+    function approve() {
+      if (!draft) return;
+      var d = draft;
+      q('#username').value = str(d.username).slice(0, 32); q('#psignature').value = str(d.psignature).slice(0, 200);
+      q('#publicNote').value = str(d.publicNote).slice(0, 300); q('#currentLoc').value = str(d.currentLoc).slice(0, 80);
+      q('#rbShareLoc').checked = d.locLevel !== 'private'; q('#rbSubscriber').checked = !!d.subscriber;
+      q('#rbRestSettings').style.display = d.subscriber ? '' : 'none';
+      tableBox.querySelectorAll('input').forEach(function (i) { i.checked = d.tables.indexOf(i.value) >= 0; });
+      saveProfile({ avatar: d.avatar, languages: d.languages.slice(0, 12).join(','), sigStyle: d.sigStyle || 'plain', username: q('#username').value, psignature: q('#psignature').value });
+      lsSet(NOW_KEY, JSON.stringify(d.now));
       q('#saveUser').click(); q('#saveExtra').click(); q('#rbSavePublic').click();
-      var b = q('#rbNext'); b.textContent = '✅ SAVED'; setTimeout(function () { showStep(step); }, 1200);
-    };
-    builder.addEventListener('toggle', function () { if (builder.open) fillBuilder(); });
-    q('#iconUser').addEventListener('click', fillBuilder);
-    window.rvUserbox.previewDraft = function () { return { avatar: draft.avatar, languages: draft.languages.slice() }; };
+      var pub = readPub(); pub.locLevel = d.locLevel === 'area' ? 'area' : 'exact';
+      var raw = {}; try { raw = JSON.parse(lsGet(PUB_KEY) || '{}') || {}; } catch (e) {}
+      raw.locLevel = pub.locLevel; lsSet(PUB_KEY, JSON.stringify(raw));
+      draft = null; saveDraft();
+      renderMyInfo(); renderTile(); presence.publish();
+      celebrate();
+    }
+    function celebrate() {
+      var box = document.createElement('div'); box.className = 'rb-celebrate'; box.id = 'rbCelebrate';
+      var bits = ''; for (var i = 0; i < 24; i++) bits += '<i style="left:' + Math.round(Math.random() * 100) + '%;animation-delay:' + (Math.random() * 0.5).toFixed(2) + 's">' + ['✨', '🎉', '⭐', '💚', '🎊'][i % 5] + '</i>';
+      box.innerHTML = bits + '<div class="rb-celebrate-msg">Profile created ✨</div>';
+      useRbox.appendChild(box);
+      setTimeout(function () { box.classList.add('fade'); }, 2200);
+      setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 3000);
+    }
+    // the editing fields on the right also update the middle at once
+    rightCol.addEventListener('input', function (e) { if (!builder.contains(e.target)) renderMyInfo(); });
+    rightCol.addEventListener('change', function (e) { if (!builder.contains(e.target)) renderMyInfo(); });
+    q('#iconUser').addEventListener('click', function () { renderTile(); renderMyInfo(); });
+    window.rvUserbox.profileView = function () { var o = current(); o.isDraft = !!draft; return o; };
+    window.rvUserbox.nowState = readNow;
+    window.rvUserbox._styleSig = styleSig;
+    renderTile();
 
     /* ===== channels: make your own room (popcoin Realtime Database, channels/...) ===== */
     var chBox = document.createElement('details');
