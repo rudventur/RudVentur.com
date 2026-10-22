@@ -2,11 +2,11 @@
 
      <script src="https://rudventur.github.io/RudVentur.com/embed/popcoin-reward.js" defer></script>
      ...
-     PopCOINReward(pips, 'type-game');   // 100 pips = 1 PopCOIN
+     PopCOINReward(pips, 'type-game');   // 100 pips = 1 FAKE popCornCoin
 
-   Shows a "+0.42 PopCOIN 🍿" pop-up and queues the reward; the PopCOIN engine
+   Shows a "+0.42 FAKE popCornCoin 🍿" pop-up and queues the reward; the FAKE popCornCoin engine
    (loaded only when needed) pays it into the wallet as fast as the rules allow:
-   up to 3 PopCOIN every 30 seconds and 50 a day. The queue is shared by every
+   up to 3 FAKE popCornCoin every 30 seconds and 50 a day. The queue is shared by every
    page on rudventur.github.io, so nothing is lost if you leave the page.
 */
 (function () {
@@ -48,7 +48,7 @@
       box = document.createElement('a');
       box.className = 'pc-toast';
       box.href = WALLET; box.target = '_blank'; box.rel = 'noopener';
-      box.title = 'Open your PopCOIN Wallet';
+      box.title = 'Open your FAKE popCornCoin Wallet';
       document.body.appendChild(box);
     }
     box.textContent = text;
@@ -60,7 +60,7 @@
   window.PopCOINReward = function (pips, reason) {
     pips = Math.round(pips);
     if (!(pips > 0)) return;
-    toast('+' + (pips / 100).toFixed(2) + ' PopCOIN 🍿' + (reason ? ' · ' + reason : ''));
+    toast('+' + (pips / 100).toFixed(2) + ' FAKE popCornCoin 🍿' + (reason ? ' · ' + reason : ''));
     getEngine().then(function (P) { P.reward(pips, reason); }, function (e) {
       console.warn('PopCOIN engine unavailable, reward not queued', e);
     });
