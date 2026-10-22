@@ -22,6 +22,8 @@
     return clean(el.getAttribute('aria-label') || el.innerText || el.value || el.getAttribute('title') || 'Button').slice(0, 60);
   }
   function textOf(el) {
+    var inner = el.hasAttribute('data-explain') ? null : el.querySelector('[data-explain]');
+    if (inner) el = inner; // a map marker carries its explanation on the inner element
     var t = el.getAttribute('data-explain') || el.getAttribute('data-rxplanation') || el.getAttribute('title') || el.getAttribute('aria-label');
     t = clean(t);
     if (t && t !== nameOf(el)) return t;
@@ -30,6 +32,11 @@
   function find(target) {
     var el = target && target.closest ? target.closest(BUTTONS + ',[onclick]') : null;
     if (!el || (box && box.contains(el))) return null;
+    // a link or text field inside the control keeps the normal browser menu
+    var keep = target.closest('a,textarea,select,input:not([type=button]):not([type=submit]):not([type=reset]),[contenteditable=""],[contenteditable=true]');
+    if (keep && el.contains(keep) && keep !== el) return null;
+    // a plain click handler on a box that holds other controls (an overlay, a card) is not a button
+    if (!el.matches(BUTTONS) && el.querySelector('button,a,input,textarea,select')) return null;
     var tag = el.tagName;
     if (tag === 'A' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable) return null;
     if (tag === 'INPUT' && !/^(button|submit|reset)$/i.test(el.type)) return null;
