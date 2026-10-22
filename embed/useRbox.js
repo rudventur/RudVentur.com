@@ -259,7 +259,7 @@
       '  <div class="useRbox-header">' +
       '    <strong>⚡ useRbox</strong>' +
       '    <div class="useRbox-header-btns">' +
-      '      <button id="rbFakePopShop" title="PopCoin shop (left section)">🛒</button>' +
+      '      <button id="rbFakePopShop" title="FAKE popCornCoin shop (left section)">🛒</button>' +
       '      <button id="togglePrivacy" title="Online / private">🌐</button>' +
       '      <button id="toggleTransparency" title="Toggle transparency">🌑</button>' +
       '      <button id="collapseUser" title="Collapse to notch">⤢</button>' +
@@ -269,12 +269,12 @@
       '  <div class="rb-cols">' +
       '   <section class="rb-col rb-col-left"><div class="rb-col-title">⚙️ SERVICE OPTIONS</div>' +
       '  <div class="rb-section rb-left-slot" id="rbLeftSlot" hidden><div class="social-title" id="rbLeftSlotTitle"></div><div id="rbLeftSlotBody"></div></div>' +
-      '  <div class="rb-section rb-shop" id="rbShop"><div class="social-title">🧭 SERVICES · 🛒 POPCOIN SHOP</div>' +
-      '    <div class="rb-fakepop" id="rbFakePop" title="Fake popCoins: just for fun, saved in this browser, no real money">' +
-      '      <span>🍿 <b id="rbFakePopBal">0</b> fake popCoins</span>' +
+      '  <div class="rb-section rb-shop" id="rbShop"><div class="social-title">🧭 SERVICES · 🛒 FAKE POPCORNCOIN SHOP</div>' +
+      '    <div class="rb-fakepop" id="rbFakePop" title="FAKE popCornCoins: just for fun, saved in this browser, no real money">' +
+      '      <span>🍿 <b id="rbFakePopBal">0</b> FAKE popCornCoins</span>' +
       '      <button type="button" class="btn btn-small" id="rbFakePopClaim">🎁 DAILY</button>' +
       '    </div>' +
-      '    <small class="rb-dev-note">Fake popCoins only: no real money. Buy a link once and it is yours on this browser.</small>' +
+      '    <small class="rb-dev-note">FAKE popCornCoins only: no real money. Buy a link once and it is yours on this browser.</small>' +
       '    <div id="rbShopList" class="rb-services"></div></div>' +
       '  <div id="liveClock">--:--:--</div>' +
       '  <div class="rb-section">' +
@@ -875,7 +875,7 @@
       { id: 'windows13', name: '🪟 Windows 13', url: 'https://rudventur.github.io/windows13/WINDOWS13-MASTER.html' },
       { id: 'punk-script', name: '🎸 Punk script', url: 'https://rudventur.github.io/punk-script/' },
       { id: 'pumpkin-guy', name: '🎃 pumpKIN Guy', url: SITE + 'pumpKIN-Guy/' },
-      { id: 'popcoin', name: '🪙 PopCOIN wallet', url: SITE + 'popcoin/' },
+      { id: 'popcoin', name: '🪙 FAKE popCornCoin wallet', url: SITE + 'popcoin/' },
       { id: 'camera-background', name: '📷 Camera background', url: SITE + 'camera-background.html' },
       { id: 'weather', name: '⛅ Weather', url: SITE + 'yesterday-today-tomorrow-weather.html' }
     ];
@@ -1328,7 +1328,7 @@
     var GH = 'https://rudventur.github.io/';
     /* The items and their prices live in embed/popcoin-shop-items.json (next to this file):
        { id, name, price, type: service | site | repository, and service (an id from SERVICES) or url }.
-       If that file cannot be loaded, the shop falls back to the services above at 5 fake popCoins each (the hub free). */
+       If that file cannot be loaded, the shop falls back to the services above at 5 FAKE popCornCoins each (the hub free). */
     function shopItem(x) {
       var svc = x && x.service ? serviceById(x.service) : null, url = svc ? svc.url : str(x && x.url);
       if (!x || !x.id || !url) return null;
@@ -1363,7 +1363,7 @@
       var d = fpRead(), w = d.w;
       q('#rbFakePopBal').textContent = w.balance;
       var claim = q('#rbFakePopClaim'); claim.disabled = w.claimed === today();
-      claim.title = claim.disabled ? 'Come back tomorrow' : 'Claim ' + FP_DAILY + ' fake popCoins';
+      claim.title = claim.disabled ? 'Come back tomorrow' : 'Claim ' + FP_DAILY + ' FAKE popCornCoins';
       var list = q('#rbShopList'); list.innerHTML = '';
       SHOP.forEach(function (it) {
         var row = document.createElement('div'); row.className = 'rb-shop-item rb-shop-' + it.type;
@@ -1375,7 +1375,7 @@
         b.className = 'btn btn-small';
         if (mine) { b.href = url; b.target = '_blank'; b.rel = 'noopener'; b.textContent = it.price ? '↗ OPEN' : '↗ FREE'; }
         else { b.type = 'button'; b.textContent = '🍿 ' + it.price + ' BUY'; b.disabled = w.balance < it.price;
-          b.title = b.disabled ? 'Not enough fake popCoins' : 'Buy for ' + it.price + ' fake popCoins';
+          b.title = b.disabled ? 'Not enough fake popCoins' : 'Buy for ' + it.price + ' FAKE popCornCoins';
           b.onclick = function () { fpBuy(it.id); }; }
         row.appendChild(b); list.appendChild(row);
       });

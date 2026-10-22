@@ -1,5 +1,5 @@
 {
-  "howToEdit": "Prices of the fake popCoin shop in the useRbox. Change a price, add or remove an item, save. Every item needs a unique id, a name, a price (whole fake popCoins, 0 means free) and a type: service, site or repository. A service item gives service (an id from the SERVICES list in useRbox.js) instead of url, so it follows that service's address; site and repository items give a full url. Keep an id the same once players may have bought it.",
+  "howToEdit": "Prices of the FAKE popCornCoin shop in the useRbox. Change a price, add or remove an item, save. Every item needs a unique id, a name, a price (whole FAKE popCornCoins, 0 means free) and a type: service, site or repository. A service item gives service (an id from the SERVICES list in useRbox.js) instead of url, so it follows that service's address; site and repository items give a full url. Keep an id the same once players may have bought it.",
   "items": [
     {
       "id": "svc-hub",
@@ -52,7 +52,7 @@
     },
     {
       "id": "svc-popcoin",
-      "name": "🪙 PopCOIN wallet",
+      "name": "🪙 FAKE popCornCoin wallet",
       "service": "popcoin",
       "price": 5,
       "type": "service"
