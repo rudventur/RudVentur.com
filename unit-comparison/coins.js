@@ -1,29 +1,30 @@
-// ⚖️ Unit Comparison coin cards. Add a new coin by adding one object here.
-window.UC_COINS = [
- {id:'bitcoin',name:'Bitcoin',ticker:'BTC',emoji:'🟠',what:'The first cryptocurrency, born in 2009. Only 21 million will ever exist.',
-  pros:['Longest track record of any coin','Fixed supply, so no one can print more','Very widely accepted and easy to buy'],
-  cons:['Price swings a lot','Transfers can be slow and fees can spike','Mining uses a lot of electricity']},
- {id:'ethereum',name:'Ethereum',ticker:'ETH',emoji:'💎',what:'A shared world computer that runs programs called smart contracts.',
-  pros:['Huge number of apps built on it','Uses far less energy since 2022','Big community of builders'],
-  cons:['Fees can get pricey when busy','More complex, so more ways to make mistakes','No fixed supply cap']},
- {id:'solana',name:'Solana',ticker:'SOL',emoji:'🌅',what:'A fast network built for cheap, quick transfers and apps.',
-  pros:['Very fast and very cheap','Popular for games and collectibles','Easy to use wallets'],
-  cons:['Has had several outages','Running a node needs strong computers','Younger, so less proven']},
- {id:'litecoin',name:'Litecoin',ticker:'LTC',emoji:'🥈',what:'An early "lighter" cousin of Bitcoin, from 2011.',
-  pros:['Faster blocks than Bitcoin','Low fees','Long, steady history'],
-  cons:['Few new features','Less attention than bigger coins','Price swings too']},
- {id:'dogecoin',name:'Dogecoin',ticker:'DOGE',emoji:'🐕',what:'Started as a joke in 2013 with a dog on it. Now very popular.',
-  pros:['Friendly, fun community','Cheap and quick to send','Easy to understand'],
-  cons:['No supply cap, new coins every minute','Price moves on hype and celebrity posts','Little development work']},
- {id:'monero',name:'Monero',ticker:'XMR',emoji:'🕶️',what:'A coin focused on privacy: amounts and senders are hidden.',
-  pros:['Strong privacy by default','Hard to trace or censor','Mining works on normal computers'],
-  cons:['Removed from many exchanges','Harder to buy','Some countries frown on it']},
- {id:'cardano',name:'Cardano',ticker:'ADA',emoji:'🔬',what:'A network built slowly and carefully, with research papers first.',
-  pros:['Careful, research based design','Low energy use','Low fees'],
-  cons:['Slow to ship features','Fewer apps than rivals','Price swings']},
- {id:'usd-coin',name:'USD Coin',ticker:'USDC',emoji:'💵',what:'A "stablecoin": each one aims to stay worth one United States dollar.',
-  pros:['Price stays near one dollar','Handy for moving dollars fast','Backed by cash and short government bonds'],
-  cons:['A company controls it and can freeze coins','You must trust that company','Grows no value of its own']},
- {id:null,name:'REAL popCoin',ticker:'',emoji:'🍿',soon:true,what:'Our own real coin. Coming later! For now, play with FAKE popCornCoin.',
-  pros:['Made in the popcorn world','Plans being cooked'],cons:['Does not exist yet 🙂']}
+// ⚖️ Unit Comparison coin cards. Add a coin by adding one row. Fields:
+// [id on CoinGecko, name, ticker, emoji, launch year, what it is for, speed and fees, plain explanation, good sides, bad sides, fallback rank]
+window.UC_COINS_RAW = [
+['bitcoin','Bitcoin','BTC','🟠',2009,'Saving and sending value','Slow-ish (about 10 minutes), fees go up when busy','The first cryptocurrency. Only 21 million will ever exist.',['Longest track record','Fixed supply, no one can print more','Accepted almost everywhere crypto is'],['Big price swings','Fees can spike','Mining uses lots of electricity'],1],
+['ethereum','Ethereum','ETH','💎',2015,'Running apps and smart contracts','Seconds to minutes, fees from cents to dollars','A shared world computer that runs programs called smart contracts.',['Most apps built on it','Uses far less energy since 2022','Huge builder community'],['Fees get pricey when busy','Complex, more ways to slip up','No fixed supply cap'],2],
+['tether','Tether','USDT','💵',2014,'A digital dollar for traders','Depends on the network, usually fast and cheap','A stablecoin: each one aims to stay worth one United States dollar.',['Price stays near one dollar','Most traded coin in the world','Works on many networks'],['A company controls it and can freeze coins','Past questions about its reserves','You must trust the company'],3],
+['binancecoin','BNB','BNB','🟡',2017,'Paying fees on the Binance exchange and its network','Fast, cheap','The coin of the Binance exchange and its own network.',['Cheap, fast transfers','Discounts on Binance fees','Many apps on its network'],['Tied to one company','Regulators have fined Binance','Fewer independent validators'],4],
+['ripple','XRP','XRP','💧',2012,'Fast payments between banks and people','Seconds, tiny fees','A payment network built for moving money across borders quickly.',['Very fast and cheap','Low energy use','Long history'],['A company holds a large share','Years of court fights in the United States','Less spread out control'],5],
+['usd-coin','USD Coin','USDC','💲',2018,'A digital dollar','Depends on the network, usually fast and cheap','A stablecoin backed by cash and short government bonds, aiming for one dollar each.',['Price stays near one dollar','Regular reserve reports','Handy for moving dollars fast'],['A company can freeze coins','Grows no value of its own','You must trust the company'],6],
+['solana','Solana','SOL','🌅',2020,'Fast apps, games and collectibles','Very fast, fractions of a cent','A fast network built for cheap, quick transfers and apps.',['Very fast and cheap','Popular for games and collectibles','Easy wallets'],['Has had several outages','Running a node needs strong computers','Younger, less proven'],7],
+['tron','TRON','TRX','🔺',2017,'Sending stablecoins and running apps','Fast, low fees','A network best known for cheap transfers of digital dollars.',['Cheap, fast transfers','Hugely used for Tether payments','Low energy use'],['Control is concentrated','Founder faced legal trouble','Fewer independent builders'],8],
+['dogecoin','Dogecoin','DOGE','🐕',2013,'Fun payments and tipping','About a minute, cheap','Started as a joke with a dog on it. Now very popular.',['Friendly community','Cheap and quick','Easy to understand'],['No supply cap','Moves on hype and celebrity posts','Little development'],12],
+['zcash','Zcash','ZEC','🛡️',2016,'Private payments','Minutes, cheap','A coin that lets you choose to hide who paid whom.',['Strong optional privacy','Fixed supply like Bitcoin','Serious research behind it'],['Most people do not use the private mode','Some exchanges dropped it','Smaller community'],10],
+['hyperliquid','Hyperliquid','HYPE','🌀',2024,'Trading on its own exchange network','Very fast, low fees','The coin of a trading platform that runs on its own network.',['Very fast trading','Fees go back to the coin','Fast growing'],['Very new','Tied to one platform','Small set of validators'],11],
+['monero','Monero','XMR','🕶️',2014,'Private payments','About 2 minutes, cheap','A privacy coin: amounts and senders are hidden by default.',['Strong privacy by default','Hard to censor','Mining works on normal computers'],['Removed from many exchanges','Harder to buy','Some countries frown on it'],13],
+['usds','USDS','USDS','🏛️',2024,'A digital dollar run by a community','Ethereum speed and fees','A stablecoin run by the Sky community, the new form of Dai.',['Not run by one company','Can earn savings interest','Transparent on the blockchain'],['Complex rules behind it','Young name','Relies on other coins as backing'],14],
+['whitebit','WhiteBIT Coin','WBT','⚪',2022,'Discounts on the WhiteBIT exchange','Fast, cheap','The coin of the WhiteBIT exchange.',['Fee discounts for users','Exchange buys coins back','Simple purpose'],['Tied to one company','Few uses outside it','Mostly held by insiders'],15],
+['chainlink','Chainlink','LINK','🔗',2017,'Feeding real world data to apps','Ethereum speed and fees','A service that brings prices and outside data into blockchain apps.',['Used by thousands of apps','Solves a real problem','Long track record'],['Value depends on adoption','Not built for payments','Team holds many coins'],16],
+['leo-token','LEO Token','LEO','🦁',2019,'Discounts on the Bitfinex exchange','Depends on the network','The coin of the Bitfinex exchange.',['Exchange buys and burns coins','Fee discounts','Steady price history'],['Tied to one company','Few other uses','Born after an exchange money hole'],17],
+['cardano','Cardano','ADA','🔬',2017,'Apps and payments, research first','Under a minute, cheap','A network built slowly and carefully, with research papers first.',['Careful design','Low energy use','Low fees'],['Slow to ship features','Fewer apps than rivals','Price swings'],18],
+['near','NEAR Protocol','NEAR','🌐',2020,'Easy apps and artificial intelligence projects','Very fast, cheap','A fast, friendly network aimed at simple apps.',['Fast and cheap','Easy account names','Grows by splitting work'],['Fewer users than leaders','Strong rivals','Price swings'],19],
+['stellar','Stellar','XLM','✨',2014,'Cheap payments across borders','Seconds, tiny fees','A payment network made to send money cheaply around the world.',['Very cheap and fast','Works with banks and payment firms','Low energy'],['Foundation holds many coins','Fewer apps','Strong rival in XRP'],20],
+['bitcoin-cash','Bitcoin Cash','BCH','💚',2017,'Everyday cash payments','About 10 minutes, very cheap','A split from Bitcoin with bigger blocks for cheaper payments.',['Low fees','Bitcoin style supply cap','Simple to use'],['Fewer miners, less security','Less attention','Community arguments'],22],
+['litecoin','Litecoin','LTC','🥈',2011,'Faster cheaper Bitcoin style payments','About 2.5 minutes, cheap','An early "lighter" cousin of Bitcoin.',['Faster than Bitcoin','Low fees','Long steady history'],['Few new features','Less attention','Price swings'],24],
+['dai','Dai','DAI','🟨',2017,'A digital dollar not run by a company','Ethereum speed and fees','A stablecoin kept near one dollar by locked coins, not a bank account.',['No single company in charge','Transparent','Long running'],['Complex system','Being replaced by USDS','Relies on other coins'],25],
+['avalanche-2','Avalanche','AVAX','🏔️',2020,'Apps and custom networks','Seconds, cheap','A network that lets projects build their own linked mini networks.',['Fast finality','Flexible','Low fees'],['Complex setup','Strong rivals','Price swings'],28],
+['sui','Sui','SUI','🌊',2023,'Fast apps and games','Very fast, cheap','A new fast network made by former Facebook engineers.',['Very fast','Fresh design','Growing app scene'],['Very young','Insiders hold a lot','Has had an outage'],29]
 ];
+window.UC_COINS = window.UC_COINS_RAW.map(r=>({id:r[0],name:r[1],ticker:r[2],emoji:r[3],year:r[4],use:r[5],speed:r[6],what:r[7],pros:r[8],cons:r[9],rank:r[10]}));
+window.UC_POPCOIN = {id:null,name:'REAL popCoin',ticker:'',emoji:'🍿',soon:true,year:'Later',use:'Our own real coin',speed:'To be cooked',what:'Our own real coin. Coming later! For now, play with FAKE popCornCoin.',pros:['Made in the popcorn world','Plans being cooked'],cons:['Does not exist yet 🙂']};
