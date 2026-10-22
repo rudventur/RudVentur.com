@@ -106,6 +106,7 @@ function sync(id) {
     b.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (el && el.id) b.setAttribute('aria-controls', el.id);
     b.title = (open ? 'Hide ' : 'Show ') + p.label;
+    b.setAttribute('data-explain', (open ? 'Hides ' + p.label + ' to free the space. A small tab stays at its edge to show it again.' : 'Shows ' + p.label + ' again.') + ' Your choice is remembered on this device.');
     b.classList.toggle('sf-pt-open', open);
     const icon = b.querySelector('.sf-pt-icon');
     if (icon) icon.textContent = open ? icons.open : icons.closed;

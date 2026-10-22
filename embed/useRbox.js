@@ -238,6 +238,13 @@
   var scriptEl = document.currentScript;
   var baseUrl = scriptEl ? new URL('.', scriptEl.src).href : './';
 
+  // the shared right-click / long-press button explanations (embed/rxplanation.js), once per page
+  (function loadExplain() {
+    if (window.rvExplain || document.querySelector('script[src*="rxplanation.js"]')) return;
+    var el = document.createElement('script'); el.src = baseUrl + 'rxplanation.js'; el.defer = true;
+    (document.head || document.documentElement).appendChild(el);
+  })();
+
   function injectStylesheet() {
     var link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -249,21 +256,21 @@
     var root = document.createElement('div');
     root.id = 'topRightUser';
     root.innerHTML =
-      '<div id="Rcircle" title="useR">R</div>' +
+      '<div data-explain="Opens your useRbox corner: the translator and your profile appear next to the R." id="Rcircle" title="useR">R</div>' +
       '<div id="Ricons">' +
-      '  <div class="Ricon" id="iconTranslator" title="Translator">🌐</div>' +
-      '  <div class="Ricon" id="iconUser" title="useRbox">👤</div>' +
+      '  <div data-explain="Opens the RUDVENTUR translator in your language: translate, chat with translation and on-screen keyboards." class="Ricon" id="iconTranslator" title="Translator">🌐</div>' +
+      '  <div data-explain="Opens the full useRbox: your profile, places, rooms, the restaurant and the PopCOIN shop." class="Ricon" id="iconUser" title="useRbox">👤</div>' +
       '</div>' +
       '<div id="useRbox" class="hidden">' +
       '  <div class="useRbox-notch" id="useRboxNotch" title="Collapse / Expand">⟨⟩</div>' +
       '  <div class="useRbox-header">' +
       '    <strong>⚡ useRbox</strong>' +
       '    <div class="useRbox-header-btns">' +
-      '      <button id="rbFakePopShop" title="PopCoin shop (left section)">🛒</button>' +
-      '      <button id="togglePrivacy" title="Online / private">🌐</button>' +
-      '      <button id="toggleTransparency" title="Toggle transparency">🌑</button>' +
-      '      <button id="collapseUser" title="Collapse to notch">⤢</button>' +
-      '      <button id="closeUser" title="Close">✖</button>' +
+      '      <button data-explain="Jumps to the PopCOIN shop in the left section, where you spend popCoins on pages and items." id="rbFakePopShop" title="PopCoin shop (left section)">🛒</button>' +
+      '      <button data-explain="Switches between online (others can see your name in the room) and private mode (nobody sees you)." id="togglePrivacy" title="Online / private">🌐</button>' +
+      '      <button data-explain="Makes the useRbox background see-through so the page behind stays visible, or solid again." id="toggleTransparency" title="Toggle transparency">🌑</button>' +
+      '      <button data-explain="Folds the useRbox into a small notch at the edge of the screen; tap the notch to bring it back." id="collapseUser" title="Collapse to notch">⤢</button>' +
+      '      <button data-explain="Closes the useRbox. Everything you saved stays on this device." id="closeUser" title="Close">✖</button>' +
       '    </div>' +
       '  </div>' +
       '  <div class="rb-cols">' +
@@ -272,7 +279,7 @@
       '  <div class="rb-section rb-shop" id="rbShop"><div class="social-title">🧭 SERVICES · 🛒 POPCOIN SHOP</div>' +
       '    <div class="rb-fakepop" id="rbFakePop" title="Fake popCoins: just for fun, saved in this browser, no real money">' +
       '      <span>🍿 <b id="rbFakePopBal">0</b> fake popCoins</span>' +
-      '      <button type="button" class="btn btn-small" id="rbFakePopClaim">🎁 DAILY</button>' +
+      '      <button type="button" class="btn btn-small" data-explain="Claims your free daily popCoins. You can claim once a day." id="rbFakePopClaim">🎁 DAILY</button>' +
       '    </div>' +
       '    <small class="rb-dev-note">Fake popCoins only: no real money. Buy a link once and it is yours on this browser.</small>' +
       '    <div id="rbShopList" class="rb-services"></div></div>' +
@@ -285,8 +292,8 @@
       '  <div class="rb-devices">' +
       '    <div class="social-title">📷 🎤 CAMERA &amp; MIC</div>' +
       '    <div class="rb-dev-row">' +
-      '      <button type="button" class="rb-dev" id="rbCam"><span>📷 CAMERA</span><small>OFF</small></button>' +
-      '      <button type="button" class="rb-dev" id="rbMic"><span>🎤 MICROPHONE</span><small>OFF</small></button>' +
+      '      <button type="button" data-explain="Turns your camera on or off for the popcorn window and the PIX camera challenges. Nothing is recorded or sent." class="rb-dev" id="rbCam"><span>📷 CAMERA</span><small>OFF</small></button>' +
+      '      <button type="button" data-explain="Turns your microphone on or off for pages that listen, such as voice features. Nothing is recorded or sent." class="rb-dev" id="rbMic"><span>🎤 MICROPHONE</span><small>OFF</small></button>' +
       '    </div>' +
       '    <label>Camera</label>' +
       '    <select id="rbFacing">' +
@@ -299,18 +306,18 @@
       '    <input type="range" id="rbContrast" min="-100" max="100" value="0">' +
       '    <label class="toggle"><input type="checkbox" id="rbMirror"><span>Mirror the picture</span></label>' +
       '    <div class="field-row" style="margin-top:8px;">' +
-      '      <button type="button" class="btn" id="rbOpenPopcorn" style="flex:1;">🍿 OPEN POPCORN WINDOW</button>' +
-      '      <button type="button" class="btn btn-small" id="rbCamReset" title="Brightness, contrast and mirror back to normal">↺</button>' +
+      '      <button type="button" class="btn" data-explain="Opens the Popcorn Hub window: wallet, PIX camera challenges, bunker and tools." id="rbOpenPopcorn" style="flex:1;">🍿 OPEN POPCORN WINDOW</button>' +
+      '      <button type="button" class="btn btn-small" data-explain="Puts the camera brightness, contrast and mirror settings back to normal." id="rbCamReset" title="Brightness, contrast and mirror back to normal">↺</button>' +
       '    </div>' +
       '    <small class="rb-dev-note">Camera and mic only ever run inside the 🍿 popcorn window, which is sealed off from the internet. ' +
       'Recordings and 🎬 movie maker are in there.</small>' +
       '  </div>' +
-      '  <button type="button" class="btn" id="rbGetApp" style="width:100%;margin-top:14px;padding:10px;">📲 DOWNLOAD THE RUDVENTUR APP</button>' +
+      '  <button type="button" class="btn" data-explain="Installs RUDVENTUR on your home screen as an app, or shows how to do it on your phone." id="rbGetApp" style="width:100%;margin-top:14px;padding:10px;">📲 DOWNLOAD THE RUDVENTUR APP</button>' +
       '   </section>' +
       '   <section class="rb-col rb-col-mid"><div class="rb-col-title">👤 useR</div>' +
       '  <div id="rvInsideHeader" class="rv-inside-header">' +
       '    <div class="rv-nag-msg" id="rvNagMsg">☕ Support the universe — it\'s only £10 per year</div>' +
-      '    <button type="button" id="rvNagOk" class="rv-nag-ok">OK</button>' +
+      '    <button type="button" data-explain="Hides this notice." id="rvNagOk" class="rv-nag-ok">OK</button>' +
       '  </div>' +
       '  <details class="rb-fold" id="rbMyProfile" open><summary>👤 MY INFO</summary><div class="rb-fold-body">' +
       '  <div class="rb-incognito">' +
@@ -318,7 +325,7 @@
       '    <strong>INCOGNITO — PRIVATE MODE</strong>' +
       '    <p>No login, no profile, nothing saved about you. Camera and microphone are off. ' +
       'You can still use every public tool.</p>' +
-      '    <button class="btn" id="goOnline">🌐 GO ONLINE (only your name is shown)</button>' +
+      '    <button class="btn" data-explain="Joins the room online. Only your name is shown to others, never your location unless you share it." id="goOnline">🌐 GO ONLINE (only your name is shown)</button>' +
       '  </div>' +
       '  <div class="avatar-wrap">' +
       '    <div id="avatarHalftone"></div>' +
@@ -327,19 +334,19 @@
       '    <div class="rb-myinfo" id="rbMyInfo"></div>' +
       '    <small class="rb-dev-note">Read only. Change it in ✏️ Editing on the right.</small>' +
       '  </div></details>' +
-      '  <div class="rb-viewed hidden" id="rbViewed"><div class="rb-viewed-head"><span id="rbViewedTitle">👁 PROFILE</span><button type="button" class="btn btn-small" id="rbViewedClose" title="Close this profile">✖</button></div><div id="rbViewedBody"></div></div>' +
+      '  <div class="rb-viewed hidden" id="rbViewed"><div class="rb-viewed-head"><span id="rbViewedTitle">👁 PROFILE</span><button type="button" class="btn btn-small" data-explain="Closes the profile you are looking at and goes back to your own." id="rbViewedClose" title="Close this profile">✖</button></div><div id="rbViewedBody"></div></div>' +
       '  <details class="rb-fold rb-room" id="rbRoom" open><summary>🍽️ RESTAURANT</summary><div class="rb-fold-body">' +
       '    <label>📡 Channel</label>' +
-      '    <div class="field-row"><input type="text" id="channel" value="main" disabled style="flex:1;"><button class="btn btn-small" id="channelInfo" title="About channels">ℹ️</button></div>' +
+      '    <div class="field-row"><input type="text" id="channel" value="main" disabled style="flex:1;"><button class="btn btn-small" data-explain="Explains what channels are: shared rooms where people on the same channel see each other." id="channelInfo" title="About channels">ℹ️</button></div>' +
       '    <label>🔁 Join another room</label>' +
-      '    <div class="field-row"><input type="text" id="rbRoomInput" placeholder="Room name..." style="flex:1;"><button type="button" class="btn btn-small" id="rbRoomJoin">JOIN</button></div>' +
+      '    <div class="field-row"><input type="text" id="rbRoomInput" placeholder="Room name..." style="flex:1;"><button type="button" class="btn btn-small" data-explain="Joins the room typed in the box next to it." id="rbRoomJoin">JOIN</button></div>' +
       '    <div class="rb-known-rooms" id="rbKnownRooms"></div>' +
-      '    <div class="field-row" style="margin-top:8px;"><button type="button" class="btn" id="rbRoomLeave" style="flex:1;">🚪 LEAVE (back to main)</button></div>' +
+      '    <div class="field-row" style="margin-top:8px;"><button type="button" class="btn" data-explain="Leaves this room and goes back to the main room." id="rbRoomLeave" style="flex:1;">🚪 LEAVE (back to main)</button></div>' +
       '    <label class="toggle"><input type="checkbox" id="rbRoomVisible"><span>Show me in the room list</span></label>' +
       '    <small class="rb-dev-note" id="rbPresenceNote">Off by default. When on, your name and the public fields you chose are shared live with this room.</small>' +
       '    <div class="rb-subtitle">🍽️ OPEN RESTAURANTS</div>' +
       '    <div id="rbRestaurants"><div class="rb-empty">No restaurants open right now</div></div>' +
-      '    <div class="rb-tables hidden" id="rbTables"><div class="rb-viewed-head"><span id="rbTablesTitle"></span><button type="button" class="btn btn-small" id="rbTablesClose" title="Close">✖</button></div><div id="rbTablesList"></div></div>' +
+      '    <div class="rb-tables hidden" id="rbTables"><div class="rb-viewed-head"><span id="rbTablesTitle"></span><button type="button" class="btn btn-small" data-explain="Closes the restaurant tables list." id="rbTablesClose" title="Close">✖</button></div><div id="rbTablesList"></div></div>' +
       '  </div></details>' +
       '   </section>' +
       '   <section class="rb-col rb-col-right">' +
@@ -348,15 +355,15 @@
       '  <label>👤 Username</label>' +
       '  <div class="field-row">' +
       '    <input type="text" id="username" value="Rudy" style="flex:1;">' +
-      '    <button class="btn btn-small" id="randomUser" title="Pick a random name">🎲</button>' +
-      '    <button class="btn btn-small" id="refreshUser">🔄 Refresh</button>' +
+      '    <button class="btn btn-small" data-explain="Picks a random fun name for you. Save the profile to keep it." id="randomUser" title="Pick a random name">🎲</button>' +
+      '    <button class="btn btn-small" data-explain="Reloads your profile from this device, undoing changes you have not saved." id="refreshUser">🔄 Refresh</button>' +
       '  </div>' +
       '  <label>📝 P.S. (Personal Signature)</label>' +
       '  <textarea id="psignature" placeholder="You don\'t have to have legs to Trip"></textarea>' +
       '  <label>📍 Current Location</label>' +
       '  <div class="field-row">' +
       '    <input type="text" id="currentLoc" placeholder="???" style="flex:1;">' +
-      '    <button class="btn btn-small" id="gpsBtn">📍 GPS</button>' +
+      '    <button class="btn btn-small" data-explain="Reads your position from the device once, so you can save it as a place. Your browser asks first." id="gpsBtn">📍 GPS</button>' +
       '  </div>' +
       '  <div style="display:flex; gap:8px; margin-top:8px;">' +
       '    <div style="flex:1;"><label style="margin:0 0 4px;">Lat</label><input type="text" id="lat" placeholder="0.000000"></div>' +
@@ -366,12 +373,12 @@
       '    <label>📌 Saved GPS Locations</label>' +
       '    <div class="field-row" style="margin-top:8px;">' +
       '      <input type="text" id="gpsName" placeholder="Location name..." style="flex:1;">' +
-      '      <button class="btn btn-small" id="saveGpsBtn">💾 Save</button>' +
+      '      <button class="btn btn-small" data-explain="Saves the position read by GPS as one of your places." id="saveGpsBtn">💾 Save</button>' +
       '    </div>' +
       '    <div id="gpsList"></div>' +
       '  </div>' +
       '  <label class="toggle"><input type="checkbox" id="saveMessages" checked><span>Save my messages</span></label>' +
-      '  <button id="saveUser">💾 SAVE PROFILE</button>' +
+      '  <button data-explain="Saves your profile (name, avatar, languages and more) on this device." id="saveUser">💾 SAVE PROFILE</button>' +
       '    <div class="rb-subtitle">⚰️ EXTRA</div>' +
       '  <div class="useRbox-right" id="useRboxRight">' +
       '    <div class="useRbox-right-header">👤 Profile Editor</div>' +
@@ -382,7 +389,7 @@
       '    <input type="text" id="burialWish" placeholder="shoot in the space">' +
       '    <label>✨ Other public note</label>' +
       '    <textarea id="publicNote"></textarea>' +
-      '    <button type="button" class="btn" id="saveExtra">💾 SAVE EXTRA</button>' +
+      '    <button type="button" class="btn" data-explain="Saves the extra profile fields on this device." id="saveExtra">💾 SAVE EXTRA</button>' +
       '    <small>Stored on this device for now.</small>' +
       '    <div class="rb-subtitle">🔓 WHAT THE ROOM MAY SEE</div>' +
       '    <label class="toggle"><input type="checkbox" id="rbShareLoc"><span>Share my current location</span></label>' +
@@ -394,7 +401,7 @@
       '      <label>Opening</label><select id="rbRestOpen"><option value="online">🟢 Open when I am online</option><option value="closed">🔴 Closed</option></select>' +
       '      <label>Tables (the services I serve)</label><div id="rbTableChoices"></div>' +
       '    </div>' +
-      '    <button type="button" class="btn" id="rbSavePublic" style="width:100%;margin-top:10px;">💾 SAVE SHARING AND RESTAURANT</button>' +
+      '    <button type="button" class="btn" data-explain="Saves what you share publicly and your restaurant opening and tables." id="rbSavePublic" style="width:100%;margin-top:10px;">💾 SAVE SHARING AND RESTAURANT</button>' +
       '  </div>' +
       '  </div></details>' +
       '  <div class="rb-people"><div class="rb-col-title">👥 IN THIS ROOM <span id="rbPeopleRoom"></span></div>' +
@@ -464,7 +471,7 @@
       } else if (step.type === "kofi-ok") {
         var kofiFirst = Math.random() < 0.5;
         var kofiHtml = '<a href="https://ko-fi.com/rudventur" target="_blank" rel="noopener" class="rv-nag-kofi" style="margin:0 6px;">☕ Ko-fi</a>';
-        var okHtml = '<button type="button" class="rv-nag-ok" id="rvNagOkInline">OK</button>';
+        var okHtml = '<button type="button" class="rv-nag-ok" data-explain="Hides this notice." id="rvNagOkInline">OK</button>';
         nagMsg.innerHTML = step.text + '<br>' + (kofiFirst ? kofiHtml + okHtml : okHtml + kofiHtml);
         nagOk.style.display = "none";
         var inlineOk = nagMsg.querySelector("#rvNagOkInline");
@@ -602,7 +609,7 @@
         var del = document.createElement('button');
         del.className = 'gps-item-delete';
         del.type = 'button';
-        del.title = 'Delete';
+        del.title = 'Delete'; del.setAttribute('data-explain', 'Deletes this saved place from your list (asks first).');
         del.textContent = '\uD83D\uDDD1\uFE0F';
         del.onclick = function () {
           if (!confirm('Delete this location?')) return;
@@ -822,6 +829,7 @@
     KNOWN_ROOMS.forEach(function (name) {
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'btn btn-small'; b.textContent = name;
+      b.setAttribute('data-explain', 'Moves you into the ' + name + ' room, where you see the people in that room.');
       b.onclick = function () { setRoom(name); };
       rk.appendChild(b);
     });
@@ -853,6 +861,7 @@
         var b = document.createElement('button');
         b.type = 'button'; b.className = 'rb-person';
         b.textContent = '👤 ' + (p.username || p.name || 'useR');
+        b.setAttribute('data-explain', 'Shows what this person shares publicly: note, location and wishes.');
         b.onclick = function () { showPerson(p); };
         list.appendChild(b);
       });
@@ -944,6 +953,7 @@
         var b = document.createElement('button');
         b.type = 'button'; b.className = 'rb-person';
         b.textContent = restaurantName(p) + ' · ' + p.restaurant.tables.length + ' tables';
+        b.setAttribute('data-explain', 'Shows the open tables at this restaurant, so you can sit down and talk.');
         b.onclick = function () { showTables(p); };
         box.appendChild(b);
       });
@@ -1081,10 +1091,11 @@
     var VIEW_LABEL = { three: '▥ 3 sections', half: '◧ Half screen', full: '⛶ Full screen' };
     var viewBtn = document.createElement('button');
     viewBtn.id = 'rbViewMode'; viewBtn.type = 'button';
+    viewBtn.setAttribute('data-explain', 'Changes how the useRbox is laid out: three sections side by side, half the screen with tabs, or the full screen.');
     q('#closeUser').parentNode.insertBefore(viewBtn, q('#closeUser'));
     var tabs = document.createElement('div');
     tabs.className = 'rb-tabs'; tabs.id = 'rbTabs';
-    tabs.innerHTML = '<button type="button" data-col="left">⚙️ Options</button><button type="button" data-col="mid">👤 useR</button><button type="button" data-col="right">✏️ Editing</button>';
+    tabs.innerHTML = '<button type="button" data-col="left" data-explain="Shows the Options section: shop, camera, microphone, popcorn window and app.">⚙️ Options</button><button type="button" data-col="mid" data-explain="Shows the useR section: you, your room, the people here and the restaurants.">👤 useR</button><button type="button" data-col="right" data-explain="Shows the Editing section: the profile builder, places and channels.">✏️ Editing</button>';
     var cols = q('.rb-cols');
     cols.parentNode.insertBefore(tabs, cols);
     function setTab(col) {
@@ -1125,8 +1136,8 @@
     var STEPS = [
       { t: '1 · Your name', h: 'What should people call you?', f: '<input type="text" data-b="username" maxlength="32" placeholder="Your name">' },
       { t: '2 · Signature', h: 'A short line under your name (your P.S.)', f: '<textarea data-b="psignature" maxlength="200" placeholder="You don\'t have to have legs to Trip"></textarea>' },
-      { t: '3 · Avatar', h: 'Pick an emoji', f: '<div class="rb-avatars">' + AVATARS.map(function (a) { return '<button type="button" data-av="' + a + '">' + a + '</button>'; }).join('') + '</div>' },
-      { t: '4 · Languages', h: 'The languages you speak (up to 8)', f: '<div class="field-row"><select data-b="langpick" style="flex:1;">' + LANGS.map(function (l) { return '<option value="' + l.v + '">' + escapeHtml(l.t) + '</option>'; }).join('') + '</select><button type="button" class="btn btn-small" data-b="langadd">＋ ADD</button></div><div class="rb-chips" data-b="langlist"></div>' },
+      { t: '3 · Avatar', h: 'Pick an emoji', f: '<div class="rb-avatars">' + AVATARS.map(function (a) { return '<button type="button" data-explain="Uses this emoji as your avatar." data-av="' + a + '">' + a + '</button>'; }).join('') + '</div>' },
+      { t: '4 · Languages', h: 'The languages you speak (up to 8)', f: '<div class="field-row"><select data-b="langpick" style="flex:1;">' + LANGS.map(function (l) { return '<option value="' + l.v + '">' + escapeHtml(l.t) + '</option>'; }).join('') + '</select><button type="button" class="btn btn-small" data-b="langadd" data-explain="Adds the language picked in the list to the languages you speak (up to 8).">＋ ADD</button></div><div class="rb-chips" data-b="langlist"></div>' },
       { t: '5 · Public note', h: 'Something anyone in your room may read', f: '<textarea data-b="publicNote" maxlength="300"></textarea>' },
       { t: '6 · Location', h: 'Should the room see your current location?', f: '<label class="toggle"><input type="radio" name="rbBLoc" value="private"><span>🔒 Keep it private</span></label><label class="toggle"><input type="radio" name="rbBLoc" value="share"><span>📍 Share my current location</span></label>' },
       { t: '7 · Restaurant tables', h: 'Supporters get a restaurant; the tables are the services you serve', f: '<label class="toggle"><input type="checkbox" data-b="sub"><span>I am a subscriber (supporter)</span></label><div data-b="tables"></div>' },
@@ -1137,7 +1148,7 @@
     builder.innerHTML = '<summary>🧭 PROFILE BUILDER</summary><div class="rb-fold-body">' +
       '<div class="rb-steps" id="rbSteps">' + STEPS.map(function (s, i) { return '<span data-i="' + i + '"></span>'; }).join('') + '</div>' +
       STEPS.map(function (s, i) { return '<div class="rb-step hidden" data-step="' + i + '"><div class="rb-subtitle">' + s.t + '</div><small class="rb-dev-note">' + s.h + '</small>' + s.f + '</div>'; }).join('') +
-      '<div class="field-row" style="margin-top:10px;"><button type="button" class="btn btn-small" id="rbBack">⬅ BACK</button><span style="flex:1"></span><button type="button" class="btn btn-small" id="rbNext">NEXT ➡</button></div></div>';
+      '<div class="field-row" style="margin-top:10px;"><button type="button" class="btn btn-small" data-explain="Goes back one step in the profile builder." id="rbBack">⬅ BACK</button><span style="flex:1"></span><button type="button" class="btn btn-small" data-explain="Goes to the next step in the profile builder." id="rbNext">NEXT ➡</button></div></div>';
     var rightCol = q('.rb-col-right');
     rightCol.insertBefore(builder, rightCol.firstChild);
     var bq = function (k) { return builder.querySelector('[data-b="' + k + '"]'); };
@@ -1145,7 +1156,7 @@
     SERVICES.forEach(function (x) { var l = document.createElement('label'); l.className = 'toggle'; l.innerHTML = '<input type="checkbox" value="' + x.id + '"><span>' + escapeHtml(x.name) + '</span>'; bTables.appendChild(l); });
     var step = 0;
     function renderLangs() {
-      bq('langlist').innerHTML = draft.languages.map(function (v) { return '<button type="button" class="rb-chip" data-lang="' + escapeHtml(v) + '">' + escapeHtml(langName(v)) + ' ✖</button>'; }).join('') || '<span class="rb-empty">None yet</span>';
+      bq('langlist').innerHTML = draft.languages.map(function (v) { return '<button type="button" class="rb-chip" data-explain="Removes this language from the languages you speak." data-lang="' + escapeHtml(v) + '">' + escapeHtml(langName(v)) + ' ✖</button>'; }).join('') || '<span class="rb-empty">None yet</span>';
     }
     function fillBuilder() {
       loadDraft(); var d = readPub();
@@ -1214,7 +1225,7 @@
       '<label>Description (optional)</label><textarea id="rbChDesc" maxlength="200" placeholder="What is this channel about?"></textarea>' +
       '<label class="toggle"><input type="radio" name="rbChVis" value="public" checked><span>🌍 Public: listed for everyone</span></label>' +
       '<label class="toggle"><input type="radio" name="rbChVis" value="private"><span>🔒 Private: only people with the link</span></label>' +
-      '<button type="button" class="btn" id="rbChCreate" style="width:100%;margin-top:8px;">📡 CREATE CHANNEL</button>' +
+      '<button type="button" class="btn" data-explain="Creates a new channel with the name and settings above, and gives you a link to share." id="rbChCreate" style="width:100%;margin-top:8px;">📡 CREATE CHANNEL</button>' +
       '<small class="rb-dev-note" id="rbChMsg">You are the owner. Only you can change or delete it.</small></div>';
     rightCol.insertBefore(mk, builder.nextSibling);
 
@@ -1229,7 +1240,7 @@
     function chRow(c, mine) {
       var row = document.createElement('div'); row.className = 'rb-channel';
       row.innerHTML = '<div class="rb-ch-name">' + (c.public ? '🌍 ' : '🔒 ') + escapeHtml(c.name) + '</div>' + (c.desc ? '<div class="rb-ch-desc">' + escapeHtml(c.desc) + '</div>' : '') +
-        '<div class="field-row"><button type="button" class="btn btn-small" data-a="join">🚪 JOIN</button><button type="button" class="btn btn-small" data-a="share">🔗 SHARE</button>' + (mine ? '<button type="button" class="btn btn-small" data-a="del" title="Delete this channel">🗑</button>' : '') + '</div>';
+        '<div class="field-row"><button type="button" class="btn btn-small" data-a="join" data-explain="Joins this channel: you see and talk with the people in it.">🚪 JOIN</button><button type="button" class="btn btn-small" data-a="share" data-explain="Copies a link to this channel so you can invite people.">🔗 SHARE</button>' + (mine ? '<button type="button" class="btn btn-small" data-a="del" title="Delete this channel" data-explain="Deletes this channel you made. People in it are moved back to the main room.">🗑</button>' : '') + '</div>';
       row.querySelector('[data-a="join"]').onclick = function () { joinChannel(c.id); };
       row.querySelector('[data-a="share"]').onclick = function () {
         var link = shareLink(c.id), done = function () { chNote('Link copied: ' + link); };
@@ -1309,7 +1320,7 @@
       if (!id || !/^[a-z0-9_-]{3,32}$/.test(id)) return;
       var inv = q('#rbInvite');
       inv.classList.remove('hidden');
-      inv.innerHTML = '<div>📨 You were invited to channel <b>' + escapeHtml(id) + '</b></div><button type="button" class="btn btn-small" id="rbInviteJoin">🚪 JOIN</button>';
+      inv.innerHTML = '<div>📨 You were invited to channel <b>' + escapeHtml(id) + '</b></div><button type="button" class="btn btn-small" data-explain="Joins the channel you were invited to." id="rbInviteJoin">🚪 JOIN</button>';
       q('#rbInviteJoin').onclick = function () { joinChannel(id); inv.classList.add('hidden'); };
       getChannel(id).then(function (c) { if (c) inv.querySelector('b').textContent = c.name; }).catch(function () {});
     })();
@@ -1376,6 +1387,7 @@
         if (mine) { b.href = url; b.target = '_blank'; b.rel = 'noopener'; b.textContent = it.price ? '↗ OPEN' : '↗ FREE'; }
         else { b.type = 'button'; b.textContent = '🍿 ' + it.price + ' BUY'; b.disabled = w.balance < it.price;
           b.title = b.disabled ? 'Not enough fake popCoins' : 'Buy for ' + it.price + ' fake popCoins';
+          b.setAttribute('data-explain', 'Buys ' + it.name + ' for ' + it.price + ' popCoins. After buying, this button opens it.');
           b.onclick = function () { fpBuy(it.id); }; }
         row.appendChild(b); list.appendChild(row);
       });

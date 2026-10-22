@@ -688,7 +688,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 <header class="site-header" id="siteHeader">
   <button class="sf-ptoggle" type="button" data-panel-toggle="header"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
   <div class="title-row">
-    <h1 onclick="toggleLogoMenu(event)" title="click for view options">RUDVENTUR</h1>
+    <h1 data-explain="Opens the view menu: full screen layouts, popcorn window sizes and installing the app." onclick="toggleLogoMenu(event)" title="click for view options">RUDVENTUR</h1>
   </div>
   <div class="tagline">a creative web universe</div>
   <div class="version">v3.0 — all repos consolidated</div>
@@ -697,24 +697,24 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 <!-- LOGO VIEW MENU — placed as a direct child of <body>, not inside <header>, so it can't
      get trapped behind .universe-grid's stacking context (see .logo-menu CSS comment) -->
 <div id="logo-menu" class="logo-menu" role="menu">
-  <button role="menuitem" onclick="setView('horizontal')">Full Screen Horizontal</button>
-  <button role="menuitem" onclick="setView('panoramic')">Full Screen Panoramic</button>
-  <button role="menuitem" onclick="setView('normal')">Normal / Default Browser</button>
+  <button role="menuitem" data-explain="Fills the whole screen in landscape (wide) orientation. Press Escape or pick Normal to go back." onclick="setView('horizontal')">Full Screen Horizontal</button>
+  <button role="menuitem" data-explain="Fills the screen in a wide panoramic layout, good for maps and the desktop." onclick="setView('panoramic')">Full Screen Panoramic</button>
+  <button role="menuitem" data-explain="Back to the normal browser view, not full screen." onclick="setView('normal')">Normal / Default Browser</button>
   <!-- the popcorn window's full screen choices (embed/rvDesk.js) -->
   <div class="menu-sep"></div>
-  <button role="menuitem" onclick="closeLogoMenu();window.rvDesk&&rvDesk.popcorn&&rvDesk.popcorn('max')">🍿 Popcorn — Fill the Screen</button>
-  <button role="menuitem" onclick="closeLogoMenu();window.rvDesk&&rvDesk.popcorn&&rvDesk.popcorn('fullscreen')">🍿 Popcorn — True Full Screen</button>
-  <button role="menuitem" onclick="closeLogoMenu();window.rvDesk&&rvDesk.popcorn&&rvDesk.popcorn('camera')">📷 Popcorn — Full Screen Camera</button>
-  <button role="menuitem" onclick="closeLogoMenu();window.rvDesk&&rvDesk.popcorn&&rvDesk.popcorn('normal')">🍿 Popcorn — Normal Size</button>
+  <button role="menuitem" data-explain="Opens the Popcorn Hub window filling the page (the browser bars stay)." onclick="closeLogoMenu();window.rvDesk&&rvDesk.popcorn&&rvDesk.popcorn('max')">🍿 Popcorn — Fill the Screen</button>
+  <button role="menuitem" data-explain="Opens the Popcorn Hub in true full screen, hiding the browser bars." onclick="closeLogoMenu();window.rvDesk&&rvDesk.popcorn&&rvDesk.popcorn('fullscreen')">🍿 Popcorn — True Full Screen</button>
+  <button role="menuitem" data-explain="Opens the Popcorn Hub straight into the full screen camera for the PIX challenges." onclick="closeLogoMenu();window.rvDesk&&rvDesk.popcorn&&rvDesk.popcorn('camera')">📷 Popcorn — Full Screen Camera</button>
+  <button role="menuitem" data-explain="Puts the Popcorn Hub window back to its normal size." onclick="closeLogoMenu();window.rvDesk&&rvDesk.popcorn&&rvDesk.popcorn('normal')">🍿 Popcorn — Normal Size</button>
   <div class="menu-sep"></div>
-  <button class="settings-toggle" role="menuitem" onclick="toggleSettingsSubmenu(event)">Settings One</button>
+  <button class="settings-toggle" role="menuitem" data-explain="Shows more view choices: locked or rotating panoramic, and full screen vertical." onclick="toggleSettingsSubmenu(event)">Settings One</button>
   <div id="logo-submenu" class="logo-submenu">
-    <button role="menuitem" onclick="setView('panoramic-locked')">↳ Panoramic — Locked</button>
-    <button role="menuitem" onclick="setView('panoramic-default')">↳ Panoramic — Default Rotation</button>
-    <button role="menuitem" onclick="setView('vertical')">↳ Full Screen Vertical</button>
+    <button role="menuitem" data-explain="Panoramic full screen that stays wide even when the phone is turned." onclick="setView('panoramic-locked')">↳ Panoramic — Locked</button>
+    <button role="menuitem" data-explain="Panoramic full screen that follows the phone rotation." onclick="setView('panoramic-default')">↳ Panoramic — Default Rotation</button>
+    <button role="menuitem" data-explain="Fills the screen in portrait (tall) orientation." onclick="setView('vertical')">↳ Full Screen Vertical</button>
   </div>
   <div class="menu-sep" data-rv-install style="display:none"></div>
-  <button role="menuitem" data-rv-install style="display:none" onclick="closeLogoMenu();rvView.install()">📲 Download the RUDVENTUR app</button>
+  <button role="menuitem" data-rv-install style="display:none" data-explain="Installs RUDVENTUR on your home screen as an app." onclick="closeLogoMenu();rvView.install()">📲 Download the RUDVENTUR app</button>
 </div>
 
 <!-- tabs that bring the top panels back once they have been hidden -->
@@ -741,7 +741,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 
   <!-- PANEL 1 — MAP ZONE (top left) -->
   <section class="panel panel--map">
-    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen" data-explain="Click the tile header to roll the tile open and bring it into view; click again to roll it back.">
       <span class="panel__icon">🗺️</span>
       <span class="panel__title sf-ptitle">The Map</span>
       <button class="sf-ptoggle" type="button" data-panel-toggle="map"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
@@ -759,7 +759,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 
   <!-- PANEL 2 — THE BANK (top middle) -->
   <section class="panel panel--bank">
-    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen" data-explain="Click the tile header to roll the tile open and bring it into view; click again to roll it back.">
       <span class="panel__icon">💰</span>
       <span class="panel__title sf-ptitle">The Bank</span>
       <button class="sf-ptoggle" type="button" data-panel-toggle="bank"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
@@ -776,15 +776,15 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 
   <!-- PANEL 3 — USER ZONE (top right) -->
   <section class="panel panel--user">
-    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen" data-explain="Click the tile header to roll the tile open and bring it into view; click again to roll it back.">
       <span class="panel__icon">👤</span>
       <span class="panel__title sf-ptitle">The User</span>
       <button class="sf-ptoggle" type="button" data-panel-toggle="user"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
     </div>
     <div class="sf-pbody">
     <ul class="tool-list">
-      <li><button type="button" class="tool-link" onclick="window.rvUserbox && rvUserbox.open('mid')">👤 My useRbox <span class="tool-desc">— profile, places, restaurant and the PopCOIN shop</span></button></li>
-      <li><button type="button" class="tool-link" data-rv-install onclick="rvView.install()">📲 Install the app <span class="tool-desc">— RUDVENTUR on your home screen</span></button></li>
+      <li><button type="button" class="tool-link" data-explain="Opens your useRbox: profile, places, rooms, the restaurant and the PopCOIN shop." onclick="window.rvUserbox && rvUserbox.open('mid')">👤 My useRbox <span class="tool-desc">— profile, places, restaurant and the PopCOIN shop</span></button></li>
+      <li><button type="button" class="tool-link" data-explain="Installs RUDVENTUR on your home screen as an app, or shows how on your phone." data-rv-install onclick="rvView.install()">📲 Install the app <span class="tool-desc">— RUDVENTUR on your home screen</span></button></li>
     </ul>
     <div class="user-btns">
       <a class="user-btn user-btn--popcorn" href="bottom-right-popcorn-complete.html" target="_blank">🍿 POPCORN</a>
@@ -794,7 +794,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 
   <!-- PANEL 4 — SOCIAL ZONE (bottom left) -->
   <section class="panel panel--social">
-    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen" data-explain="Click the tile header to roll the tile open and bring it into view; click again to roll it back.">
       <span class="panel__icon">💬</span>
       <span class="panel__title sf-ptitle">The Social</span>
       <button class="sf-ptoggle" type="button" data-panel-toggle="social"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
@@ -811,7 +811,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 
   <!-- PANEL 5 — OS ZONE (bottom middle) -->
   <section class="panel panel--os">
-    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen" data-explain="Click the tile header to roll the tile open and bring it into view; click again to roll it back.">
       <span class="panel__icon">🖥️</span>
       <span class="panel__title sf-ptitle">The OS</span>
       <button class="sf-ptoggle" type="button" data-panel-toggle="os"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
@@ -826,7 +826,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 
   <!-- PANEL 6 — TOOLS ZONE (bottom right) -->
   <section class="panel panel--tools">
-    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen" data-explain="Click the tile header to roll the tile open and bring it into view; click again to roll it back.">
       <span class="panel__icon">🔧</span>
       <span class="panel__title sf-ptitle">The Tools</span>
       <button class="sf-ptoggle" type="button" data-panel-toggle="tools"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
@@ -844,7 +844,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 
   <!-- PANEL 7 — CHEMVENTUR (full width row) -->
   <section class="panel panel--chem">
-    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen" data-explain="Click the tile header to roll the tile open and bring it into view; click again to roll it back.">
       <span class="panel__icon">🧪</span>
       <span class="panel__title sf-ptitle">ChemVentur</span>
       <button class="sf-ptoggle" type="button" data-panel-toggle="chem"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
@@ -865,7 +865,7 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
 
   <!-- PANEL 8 — REPOS (full width row) -->
   <section class="panel panel--repos">
-    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen" data-explain="Click the tile header to roll the tile open and bring it into view; click again to roll it back.">
       <span class="panel__icon">📦</span>
       <span class="panel__title sf-ptitle">The Repos</span>
       <button class="sf-ptoggle" type="button" data-panel-toggle="repos"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
@@ -1158,6 +1158,5 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
 </script>
 <script src="embed/popcornWindow.js" defer></script>
 <script src="embed/popcornMovie.js" defer></script>
-<script src="embed/rxplanation.js" defer></script>
 </body>
 </html>
