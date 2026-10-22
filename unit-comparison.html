@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⚖️ Unit Comparison</title>
+<style>
+:root{--bg:#07080b;--card:#12151c;--line:#262b36;--txt:#eef;--dim:#9aa3b5;--acc:#ffd23f;--good:#4ade80;--bad:#ff6b6b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,sans-serif}
+header{padding:14px 16px 6px}h1{margin:0;font-size:1.4rem}header p{margin:4px 0 0;color:var(--dim)}
+nav{display:flex;gap:6px;padding:8px 12px;position:sticky;top:0;background:var(--bg);z-index:2;overflow-x:auto}
+nav button{flex:1;min-width:110px;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:12px;font-size:.95rem;cursor:pointer}
+nav button.on{border-color:var(--acc);color:var(--acc)}
+section{display:none;padding:10px 12px 40px}section.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.card h3{margin:0 0 4px;font-size:1.1rem}.price{font-size:1.2rem;color:var(--acc);margin:4px 0}
+.card ul{margin:4px 0;padding-left:18px}.pros li::marker{content:'👍 '}.cons li::marker{content:'👎 '}
+.soon{opacity:.75;border-style:dashed}.dim{color:var(--dim);font-size:.85rem}
+.note{background:#1d1a0b;border:1px solid #5a4a10;padding:10px;border-radius:12px;margin:8px 0}
+.warn{background:#2a0e10;border:1px solid #7a2027;padding:12px;border-radius:12px;margin:8px 0;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips label{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer}
+.bar{display:flex;align-items:center;gap:8px;margin:4px 0}.bar .n{width:120px;flex:none;font-size:.9rem}.bar .b{height:16px;background:var(--acc);border-radius:6px;min-width:2px}.bar .v{font-size:.85rem;white-space:nowrap}
+input,select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0c0e13;color:var(--txt);font-size:1rem}
+.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--acc);background:#2a2408;color:var(--acc);cursor:pointer;font-size:.95rem;margin:6px 6px 0 0}
+.row{display:flex;gap:6px;flex-wrap:wrap}.msg{margin:8px 0;min-height:1em}
+a{color:#7ecbff}details{margin:6px 0}summary{cursor:pointer;font-weight:600}
+</style></head><body>
+<header><h1>⚖️ Unit Comparison</h1><p>Coins, countries and a look-only wallet, side by side.</p></header>
+<nav><button data-t="coins" class="on">🪙 Coins</button><button data-t="world">🌍 World economies</button><button data-t="watch">👀 Watch wallet</button></nav>
+
+<section id="coins" class="on">
+ <div class="note">Not money advice! Just plain facts with good and bad sides. Prices are in United States dollars. Our own FAKE popCornCoin is just for fun.</div>
+ <div class="msg dim" id="priceMsg">Loading live prices…</div>
+ <div class="grid" id="coinGrid"></div>
+ <p class="dim">Prices from CoinGecko.</p>
+</section>
+
+<section id="world">
+ <details open><summary>📚 Economics explained, in plain words</summary>
+  <p><b>What is money?</b> Something everyone agrees to swap for stuff. It helps us trade without bartering chickens for shoes.</p>
+  <p><b>What is inflation?</b> When prices go up over time, so the same money buys less. A little is normal; a lot hurts savings.</p>
+  <p><b>Why are currencies different?</b> Each country runs its own money. How strong it is depends on what the country makes and sells, how much money is printed, interest rates and how much people trust it.</p>
+  <p><b>Gross domestic product</b> is the value of everything a country makes in a year. <b>Per person</b> divides that by the number of people, so big and small countries can be compared fairly.</p>
+ </details>
+ <p>Pick countries to compare:</p>
+ <div class="chips" id="countryChips"></div>
+ <div id="charts"></div>
+ <p class="dim">Source: World Bank open data, latest year available for each country (year shown beside each value).</p>
+</section>
+
+<section id="watch">
+ <div class="warn">⚠️ Never paste your secret key or recovery words here. This wallet only LOOKS at public addresses. It can never move coins.</div>
+ <label>Public Bitcoin or Ethereum address<input id="addr" placeholder="bc1… or 0x…" autocomplete="off" spellcheck="false"></label>
+ <input id="label" placeholder="Nickname (optional)" style="margin-top:6px">
+ <div class="row"><button class="btn" id="addBtn">👀 Watch it</button></div>
+ <div class="msg" id="wMsg"></div>
+ <details><summary>🔒 Lock my list with a passphrase (optional)</summary>
+  <p class="dim">Your list is stored only on this device. With a passphrase it is encrypted, so others using this device can't read it. Forget the passphrase and the list is gone.</p>
+  <input id="pass" type="password" placeholder="Passphrase">
+  <div class="row"><button class="btn" id="lockBtn">🔒 Lock and save</button><button class="btn" id="unlockBtn">🔓 Unlock</button><button class="btn" id="plainBtn">Remove lock</button></div>
+ </details>
+ <div class="grid" id="watchList" style="margin-top:10px"></div>
+ <p class="dim">Balances from mempool.space for Bitcoin and PublicNode for Ethereum.</p>
+ <details open style="margin-top:14px"><summary>🏦 Having a real wallet, in plain words</summary>
+  <p>There are two main ways to own real coins. Neither is perfect. Not advice, just the good and bad sides.</p>
+  <div class="grid">
+  <div class="card"><h3>📱 An app or exchange holds them for you</h3><p class="dim">Like <a href="https://www.revolut.com/" target="_blank" rel="noopener">Revolut</a>, <a href="https://www.coinbase.com/" target="_blank" rel="noopener">Coinbase</a>, <a href="https://www.kraken.com/" target="_blank" rel="noopener">Kraken</a> or <a href="https://www.binance.com/" target="_blank" rel="noopener">Binance</a>. The company keeps the secret keys.</p>
+   <b>Good sides</b><ul class="pros"><li>Very easy, feels like a bank app</li><li>Buy with normal money from your bank card</li><li>Forgot your password? Support can help</li><li>Usually regulated in your country</li></ul>
+   <b>Bad sides</b><ul class="cons"><li>"Not your keys, not your coins": the company holds them</li><li>If it goes bust or gets hacked, coins can be lost</li><li>It can freeze your account or limit withdrawals</li><li>Fees and price spreads can be high</li><li>Some apps won't let you move coins out</li></ul></div>
+  <div class="card"><h3>🔑 You hold them yourself</h3><p class="dim">A software wallet on your phone, or a hardware wallet (a small device that keeps keys offline).</p>
+   <b>Good sides</b><ul class="pros"><li>You hold the keys, no one can freeze them</li><li>Works with any app or exchange</li><li>Hardware wallets keep keys away from the internet</li><li>No company in the middle</li></ul>
+   <b>Bad sides</b><ul class="cons"><li>Lose your recovery words and the coins are gone forever</li><li>No support desk to call</li><li>Fake wallet apps and scams target beginners</li><li>Usually you still need an exchange to buy with normal money</li><li>Hardware wallets cost money</li></ul></div>
+  </div>
+  <p class="dim">Golden rule: nobody real will ever ask for your recovery words. Not support, not a friend, not us.</p>
+ </details>
+</section>
+
+<script src="unit-comparison/coins.js?v=20261022-2"></script>
+<script>
+const $=s=>document.querySelector(s);
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button,section').forEach(e=>e.classList.remove('on'));b.classList.add('on');$('#'+b.dataset.t).classList.add('on');if(b.dataset.t==='world')loadWorld();});
+const usd=(n,d=2)=>n==null?'?':'$'+Number(n).toLocaleString('en-GB',{maximumFractionDigits:d});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let PRICES={};
+async function getPrices(){
+ const ids=UC_COINS.filter(c=>c.id).map(c=>c.id).join(',');
+ const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+ids+'&vs_currencies=usd&include_24hr_change=true');
+ if(!r.ok)throw new Error(r.status);PRICES=await r.json();return PRICES;
+}
+function drawCoins(){
+ $('#coinGrid').innerHTML=UC_COINS.map(c=>{const p=c.id&&PRICES[c.id];const ch=p&&p.usd_24h_change;
+ return `<div class="card ${c.soon?'soon':''}"><h3>${c.emoji} ${esc(c.name)} ${c.ticker?`<span class="dim">(${c.ticker})</span>`:''}</h3>
+ <div class="price">${c.soon?'Coming later':p?usd(p.usd,p.usd<1?4:2)+(ch!=null?` <span class="dim" style="color:${ch>=0?'var(--good)':'var(--bad)'}">${ch>=0?'▲':'▼'} ${Math.abs(ch).toFixed(1)}% today</span>`:''):'—'}</div>
+ <p>${esc(c.what)}</p><b>Good sides</b><ul class="pros">${c.pros.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><b>Bad sides</b><ul class="cons">${c.cons.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`}).join('');
+}
+drawCoins();
+getPrices().then(()=>{$('#priceMsg').textContent='Live prices ✔ updated '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});drawCoins();})
+ .catch(()=>{$('#priceMsg').textContent='📴 Can\'t reach live prices right now (offline or busy). The cards still work, prices will come back later.';});
+
+// 🌍 World economies
+const COUNTRIES={GBR:'🇬🇧 United Kingdom',POL:'🇵🇱 Poland',USA:'🇺🇸 United States',DEU:'🇩🇪 Germany',FRA:'🇫🇷 France',CHN:'🇨🇳 China',JPN:'🇯🇵 Japan',IND:'🇮🇳 India',BRA:'🇧🇷 Brazil',NGA:'🇳🇬 Nigeria',UKR:'🇺🇦 Ukraine',ARG:'🇦🇷 Argentina',TUR:'🇹🇷 Turkey',CHE:'🇨🇭 Switzerland',NOR:'🇳🇴 Norway',SLV:'🇸🇻 El Salvador'};
+const IND=[['NY.GDP.MKTP.CD','💰 Gross domestic product (United States dollars)',v=>usd(v/1e9,0)+' billion'],['NY.GDP.PCAP.CD','🧍 Gross domestic product per person',v=>usd(v,0)],['FP.CPI.TOTL.ZG','📈 Inflation (prices up per year)',v=>v.toFixed(1)+'%'],['SP.POP.TOTL','👥 Population',v=>(v/1e6).toFixed(1)+' million']];
+let picked=['GBR','POL','USA','DEU'],WB={},worldStarted=false;
+$('#countryChips').innerHTML=Object.entries(COUNTRIES).map(([k,v])=>`<label><input type="checkbox" value="${k}" ${picked.includes(k)?'checked':''} style="width:auto"> ${v}</label>`).join('');
+$('#countryChips').onchange=()=>{picked=[...document.querySelectorAll('#countryChips input:checked')].map(i=>i.value);loadWorld(true);};
+async function wbAll(codes,ind){const need=codes.filter(c=>WB[c+ind]===undefined);
+ if(need.length){for(let t=0;t<2;t++){try{const r=await fetch(`https://api.worldbank.org/v2/country/${need.join(';')}/indicator/${ind}?format=json&mrnev=1&per_page=100`);const j=await r.json();
+  need.forEach(c=>WB[c+ind]=null);(j[1]||[]).forEach(d=>{if(d.value!=null)WB[d.countryiso3code+ind]={v:d.value,y:d.date};});break;}catch(e){if(t)need.forEach(c=>WB[c+ind]='err');else await new Promise(r=>setTimeout(r,800));}}}
+ return codes.map(c=>WB[c+ind]);}
+async function loadWorld(force){if(worldStarted&&!force)return;worldStarted=true;
+ if(!picked.length){$('#charts').innerHTML='<p>Tick at least one country 🙂</p>';return;}
+ $('#charts').innerHTML='<p class="dim">Fetching world data…</p>';
+ const out=[];let anyErr=false;
+ for(const [ind,title,fmt] of IND){const vals=await wbAll(picked,ind);
+  const ok=vals.filter(x=>x&&x!=='err');if(vals.includes('err'))anyErr=true;
+  const max=Math.max(...ok.map(x=>Math.abs(x.v)),1e-9);
+  out.push(`<div class="card" style="margin:8px 0"><h3>${title}</h3>`+picked.map((c,i)=>{const x=vals[i];
+   return `<div class="bar"><span class="n">${COUNTRIES[c]}</span>${x&&x!=='err'?`<span class="b" style="width:${Math.max(2,Math.abs(x.v)/max*55)}%;${x.v<0?'background:var(--bad)':''}"></span><span class="v">${fmt(x.v)} <span class="dim">(${x.y})</span></span>`:'<span class="v dim">no data</span>'}</div>`}).join('')+'</div>');}
+ $('#charts').innerHTML=(anyErr?'<p class="msg">📴 Some world data could not load (offline or busy). Try again later.</p>':'')+out.join('');
+ if(anyErr)Object.keys(WB).forEach(k=>{if(WB[k]==='err')delete WB[k];});
+}
+
+// 👀 Watch-only wallet
+const KEY='uc-watch-v1';let WATCH=[],PASS=null;
+function looksSecret(s){const t=s.trim();const words=t.toLowerCase().split(/\s+/);
+ if(words.length>=11&&words.every(w=>/^[a-z]{3,8}$/.test(w)))return 'That looks like recovery words';
+ if(/^(0x)?[0-9a-fA-F]{64}$/.test(t))return 'That looks like a secret key';
+ if(/^[5KL][1-9A-HJ-NP-Za-km-z]{50,51}$/.test(t))return 'That looks like a secret key';
+ if(/^[xyz]prv/i.test(t))return 'That looks like a secret key';return null;}
+function kind(a){if(/^0x[0-9a-fA-F]{40}$/.test(a))return 'eth';if(/^(bc1[02-9ac-hj-np-z]{11,71}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/.test(a))return 'btc';return null;}
+const enc=new TextEncoder(),dec=new TextDecoder();const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function dkey(p,salt){const k=await crypto.subtle.importKey('raw',enc.encode(p),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
+async function save(){if(PASS){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+ const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},await dkey(PASS,salt),enc.encode(JSON.stringify(WATCH)));
+ localStorage.setItem(KEY,JSON.stringify({locked:1,salt:b64(salt),iv:b64(iv),ct:b64(ct)}));}else localStorage.setItem(KEY,JSON.stringify({locked:0,list:WATCH}));}
+function stored(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+const msg=(t)=>$('#wMsg').textContent=t;
+async function bal(w){try{if(w.k==='btc'){const r=await fetch('https://mempool.space/api/address/'+w.a);if(!r.ok)throw 0;const j=await r.json();
+  return ((j.chain_stats.funded_txo_sum-j.chain_stats.spent_txo_sum)+(j.mempool_stats.funded_txo_sum-j.mempool_stats.spent_txo_sum))/1e8;}
+ for(const u of['https://ethereum-rpc.publicnode.com','https://cloudflare-eth.com']){try{const r=await fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getBalance',params:[w.a,'latest']})});const j=await r.json();if(j.result)return Number(BigInt(j.result))/1e18;}catch(e){}}throw 0;}catch(e){return null}}
+async function drawWatch(){const st=stored();
+ if(st&&st.locked&&!PASS){$('#watchList').innerHTML='<div class="card">🔒 Your list is locked. Type your passphrase above and tap Unlock.</div>';return;}
+ if(!WATCH.length){$('#watchList').innerHTML='<div class="card dim">Nothing watched yet. Paste a public address above 🙂</div>';return;}
+ if(!PRICES.bitcoin)try{await getPrices()}catch(e){}
+ $('#watchList').innerHTML=WATCH.map((w,i)=>`<div class="card"><h3>${w.k==='btc'?'🟠 Bitcoin':'💎 Ethereum'} ${esc(w.l||'')}</h3><div class="dim" style="word-break:break-all">${esc(w.a)}</div><div class="price" id="b${i}">Checking…</div><button class="btn" data-del="${i}">Stop watching</button></div>`).join('');
+ WATCH.forEach(async(w,i)=>{const b=await bal(w);const el=$('#b'+i);if(!el)return;const p=PRICES[w.k==='btc'?'bitcoin':'ethereum'];
+  el.innerHTML=b==null?'📴 Balance unavailable right now':`${b.toLocaleString('en-GB',{maximumFractionDigits:8})} ${w.k==='btc'?'BTC':'ETH'}`+(p?` <span class="dim">≈ ${usd(b*p.usd)}</span>`:'');});}
+$('#watchList').onclick=e=>{const i=e.target.dataset.del;if(i!=null){WATCH.splice(+i,1);save();drawWatch();}};
+$('#addBtn').onclick=()=>{const a=$('#addr').value.trim();const s=looksSecret(a);
+ if(s){$('#addr').value='';msg('🛑 '+s+'! Please never paste those anywhere. I cleared it and saved nothing. Use your PUBLIC address instead.');return;}
+ const k=kind(a);if(!k){msg('🤔 That doesn\'t look like a Bitcoin or Ethereum public address.');return;}
+ if(stored()?.locked&&!PASS){msg('🔒 Unlock your list first.');return;}
+ if(WATCH.some(w=>w.a===a)){msg('Already watching that one 👀');return;}
+ WATCH.push({a,k,l:$('#label').value.trim().slice(0,40)});save();$('#addr').value=$('#label').value='';msg('✔ Watching it!');drawWatch();};
+$('#lockBtn').onclick=async()=>{const p=$('#pass').value;if(p.length<6){msg('Pick a passphrase of at least 6 characters.');return;}if(stored()?.locked&&!PASS){msg('Unlock first.');return;}PASS=p;await save();$('#pass').value='';msg('🔒 Locked and saved on this device.');};
+$('#unlockBtn').onclick=async()=>{const st=stored();if(!st||!st.locked){msg('Nothing locked.');return;}const p=$('#pass').value;
+ try{const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(st.iv)},await dkey(p,unb64(st.salt)),unb64(st.ct));WATCH=JSON.parse(dec.decode(pt));PASS=p;$('#pass').value='';msg('🔓 Unlocked!');drawWatch();}catch(e){msg('❌ Wrong passphrase.');}};
+$('#plainBtn').onclick=async()=>{if(stored()?.locked&&!PASS){msg('Unlock first.');return;}PASS=null;await save();msg('Lock removed. List saved without encryption.');};
+{const st=stored();if(st&&!st.locked)WATCH=st.list||[];}drawWatch();
+</script></body></html>
