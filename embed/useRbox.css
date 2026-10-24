@@ -684,3 +684,5 @@
 .rb-file { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid rgba(0,255,65,0.3); border-radius: 6px; background: rgba(0,255,65,0.05); }
 .rb-file-icon { font-size: 18px; flex: 0 0 auto; }
 @media (max-width: 600px) { .rb-file { flex-wrap: wrap; } .rb-file .rb-pet-text { flex: 1 1 100%; } }
+.rb-file-link { color: var(--neon); font-weight: bold; text-decoration: underline; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+@media (max-width: 600px) { .rb-file-link { white-space: normal; overflow-wrap: anywhere; } }

@@ -1539,15 +1539,22 @@
         return ids.length ? ids.map(function (id) {
           var f = obj[id];
           return '<div class="rb-file"><span class="rb-file-icon">' + (/^image\//.test(f.type) ? '🖼️' : /^audio\//.test(f.type) ? '🎵' : /^video\//.test(f.type) ? '🎬' : '📄') + '</span>' +
-            '<div class="rb-pet-text"><b title="' + escapeHtml(f.name) + '">' + escapeHtml(f.name) + '</b><small>' + size(f.size) + ' · ' + escapeHtml(day(f.created)) + '</small></div>' +
-            '<button type="button" class="btn btn-small" data-open="' + escapeHtml(f.path) + '" title="Open or download">⬇️</button>' +
+            '<div class="rb-pet-text"><a class="rb-file-link" target="_blank" rel="noopener" data-path="' + escapeHtml(f.path) + '" title="Open ' + escapeHtml(f.name) + '">' + escapeHtml(f.name) + '</a><small>' + size(f.size) + ' · ' + escapeHtml(day(f.created)) + '</small></div>' +
             (mine ? '<button type="button" class="btn btn-small" data-delf="' + escapeHtml(id) + '" title="Delete this file">🗑️</button>' : '') + '</div>';
         }).join('') : '<div class="rb-empty">No files yet</div>';
       }
-      function openFile(path) { storage().then(function (s) { return s.ref(path).getDownloadURL(); }).then(function (u) { window.open(u, '_blank', 'noopener'); }, err); }
+      // give every file name a real link (target _blank), so a click opens it straight away
+      function linkFiles(box) {
+        if (!box) return;
+        var links = box.querySelectorAll('a[data-path]:not([href])');
+        if (!links.length) return;
+        storage().then(function (s) {
+          [].forEach.call(links, function (a) { s.ref(a.dataset.path).getDownloadURL().then(function (u) { a.href = u; }, function () { a.title = 'File missing'; }); });
+        }, err);
+      }
       function loadMyFiles() {
         if (!real(st.user)) return;
-        db().ref('files/' + st.user.uid).once('value').then(function (s) { q('#rbMyFiles').innerHTML = fileRows(s.val(), true); }, err);
+        db().ref('files/' + st.user.uid).once('value').then(function (s) { q('#rbMyFiles').innerHTML = fileRows(s.val(), true); linkFiles(q('#rbMyFiles')); }, err);
       }
       var kind = 'person', petEmoji = PET_EMOJI[0];
       q('#rbPubKind').onclick = function (e) { var b = e.target.closest('[data-k]'); if (b) { kind = b.dataset.k; paintKind(); } };
@@ -1580,7 +1587,6 @@
         loadMyFiles();
       }
       q('#rbMyFiles').onclick = function (e) {
-        var o = e.target.closest('[data-open]'); if (o) { openFile(o.dataset.open); return; }
         var d = e.target.closest('[data-delf]'); if (!d || !real(st.user)) return;
         var id = d.dataset.delf, path = 'files/' + st.user.uid + '/' + id;
         if (!confirm('Delete this file?')) return;
@@ -1636,8 +1642,7 @@
           (p.motto ? '<div class="rb-dev-note">' + escapeHtml(p.motto) + '</div>' : '') + '<div class="rb-pets">' + pets(p.pets, false) + '</div>' +
           '<div class="rb-subtitle">📁 FILES</div><div class="rb-files" id="rbProfFiles"><div class="rb-empty">Loading…</div></div>';
         var uid = b.dataset.u;
-        db().ref('files/' + uid).once('value').then(function (s) { var box = q('#rbProfFiles'); if (box) box.innerHTML = fileRows(s.val(), false); }, function () {});
-        q('#rbProfFiles').onclick = function (e) { var o = e.target.closest('[data-open]'); if (o) openFile(o.dataset.open); };
+        db().ref('files/' + uid).once('value').then(function (s) { var box = q('#rbProfFiles'); if (box) { box.innerHTML = fileRows(s.val(), false); linkFiles(box); } }, function () {});
         q('#rbProfViewClose').onclick = function () { v.classList.add('hidden'); };
       };
       function withAuth(fn) { say('…'); app().then(function (a) { return fn(a.auth()); }).then(function () { say(''); }, err); }
