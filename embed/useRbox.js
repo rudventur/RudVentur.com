@@ -1473,6 +1473,136 @@
     q('#iconUser').addEventListener('click', function () { if (!useRbox.classList.contains('hidden')) listChannels(); });
     window.rvUserbox.createChannel = createChannel;
     window.rvUserbox.listChannels = listChannels;
+
+    /* ===== account, online profile and pets (popcoin Realtime Database) =====
+       profiles/<account>         name, kind ("person" or "bot"), motto, emoji, updated
+       profiles/<account>/pets/<pet>   name, kind, emoji, picture (https link), created
+       Anyone (even signed out) can read profiles. Only a real signed-in account
+       (Google or email, not the anonymous browsing identity) can write, and only its own. */
+    var acct = (function () {
+      var st = { user: null, profile: null, viewing: null };
+      var PET_EMOJI = ['🐶', '🐱', '🐰', '🐹', '🐦', '🐢', '🐟', '🦎', '🐍', '🐴', '🤖', '🐉'];
+      var fold = document.createElement('details');
+      fold.className = 'rb-fold'; fold.id = 'rbAccount'; fold.open = true;
+      fold.innerHTML = '<summary>🔐 ACCOUNT, PROFILE AND PETS</summary><div class="rb-fold-body">' +
+        '<div id="rbAcctOut">' +
+        '  <small class="rb-dev-note">You are browsing anonymously. Sign in to get a public profile and add pets.</small>' +
+        '  <button type="button" class="btn" id="rbGoogle">🟢 SIGN IN WITH GOOGLE</button>' +
+        '  <label>📧 Email</label><input type="email" id="rbEmail" autocomplete="email" placeholder="you@example.com">' +
+        '  <label>🔑 Password</label><input type="password" id="rbPass" autocomplete="current-password" placeholder="6 characters or more">' +
+        '  <div class="field-row" style="margin-top:8px;"><button type="button" class="btn btn-small" id="rbEmailIn">🚪 SIGN IN</button><button type="button" class="btn btn-small" id="rbEmailUp">✨ CREATE ACCOUNT</button><button type="button" class="btn btn-small" id="rbEmailReset">❓ FORGOT</button></div>' +
+        '</div>' +
+        '<div id="rbAcctIn" class="hidden">' +
+        '  <div class="field-row"><span id="rbAcctWho" style="flex:1;"></span><button type="button" class="btn btn-small" id="rbSignOut">🚪 SIGN OUT</button></div>' +
+        '  <div class="rb-subtitle">🌐 MY PUBLIC PROFILE</div>' +
+        '  <label>👤 Name</label><input type="text" id="rbPubName" maxlength="60">' +
+        '  <label>🧬 I am a</label><div class="rb-chips" id="rbPubKind"><button type="button" class="rb-chip" data-k="person">🧑 Person</button><button type="button" class="rb-chip" data-k="bot">🤖 Bot</button></div>' +
+        '  <label>📝 Motto</label><input type="text" id="rbPubMotto" maxlength="200">' +
+        '  <button type="button" class="btn" id="rbPubSave">💾 SAVE PUBLIC PROFILE</button>' +
+        '  <div class="rb-subtitle">🐾 MY PETS</div><div class="rb-pets" id="rbMyPets"><div class="rb-empty">No pets yet</div></div>' +
+        '  <label>➕ Add a pet</label>' +
+        '  <div class="field-row"><input type="text" id="rbPetName" maxlength="32" placeholder="Name" style="flex:1;"><input type="text" id="rbPetKind" maxlength="24" placeholder="Kind (cat, robot dog...)" style="flex:1;"></div>' +
+        '  <div class="rb-chips" id="rbPetEmoji">' + PET_EMOJI.map(function (e, i) { return '<button type="button" class="rb-chip' + (i ? '' : ' on') + '" data-e="' + e + '">' + e + '</button>'; }).join('') + '</div>' +
+        '  <input type="url" id="rbPetPic" maxlength="300" placeholder="Picture link (optional, https://...)" style="margin-top:6px;">' +
+        '  <button type="button" class="btn" id="rbPetAdd">🐾 ADD PET</button>' +
+        '</div>' +
+        '<small class="rb-dev-note" id="rbAcctNote"></small>' +
+        '<div class="rb-subtitle">👥 PROFILES</div><div id="rbProfiles"><div class="rb-empty">Open the box to load</div></div>' +
+        '<div class="rb-viewed hidden" id="rbProfView"></div>' +
+        '</div>';
+      builder.parentNode.insertBefore(fold, builder.nextSibling);
+      function say(t) { q('#rbAcctNote').textContent = t || ''; }
+      function err(e) { say('⚠️ ' + String(e && (e.message || e.code) || e).replace(/^Firebase: /, '')); }
+      function real(u) { return !!(u && !u.isAnonymous); }
+      function app() { return presence.start().then(function () { return firebase.app('rvpresence'); }); }
+      function db() { return presence.state.db; }
+      var kind = 'person', petEmoji = PET_EMOJI[0];
+      q('#rbPubKind').onclick = function (e) { var b = e.target.closest('[data-k]'); if (b) { kind = b.dataset.k; paintKind(); } };
+      function paintKind() { [].forEach.call(q('#rbPubKind').children, function (b) { b.classList.toggle('on', b.dataset.k === kind); }); }
+      q('#rbPetEmoji').onclick = function (e) { var b = e.target.closest('[data-e]'); if (!b) return; petEmoji = b.dataset.e; [].forEach.call(this.children, function (c) { c.classList.toggle('on', c === b); }); };
+      function petCard(p, mine, id) {
+        var pic = /^https:\/\//.test(p.picture || '') ? '<img alt="" src="' + escapeHtml(p.picture) + '">' : '<span class="rb-pet-emoji">' + escapeHtml(p.emoji || '🐾') + '</span>';
+        return '<div class="rb-pet">' + pic + '<div class="rb-pet-text"><b>' + escapeHtml(p.name) + '</b><small>' + escapeHtml(p.kind) + '</small></div>' +
+          (mine ? '<button type="button" class="btn btn-small" data-del="' + escapeHtml(id) + '" title="Remove this pet">✖</button>' : '') + '</div>';
+      }
+      function pets(obj, mine) {
+        var ids = Object.keys(obj || {});
+        return ids.length ? ids.map(function (id) { return petCard(obj[id], mine, id); }).join('') : '<div class="rb-empty">No pets yet</div>';
+      }
+      function badge(p) { return p.kind === 'bot' ? '🤖 Bot' : '🧑 Person'; }
+      function paint(u) {
+        st.user = u;
+        q('#rbAcctOut').classList.toggle('hidden', real(u));
+        q('#rbAcctIn').classList.toggle('hidden', !real(u));
+        if (!real(u)) return;
+        q('#rbAcctWho').textContent = '✅ ' + (u.email || u.displayName || 'signed in');
+        db().ref('profiles/' + u.uid).once('value').then(function (s) {
+          var p = s.val() || {};
+          st.profile = p;
+          q('#rbPubName').value = p.name || u.displayName || (window.rvUserbox && rvUserbox.get().username) || '';
+          q('#rbPubMotto').value = p.motto || '';
+          kind = p.kind || 'person'; paintKind();
+          q('#rbMyPets').innerHTML = pets(p.pets, true);
+        }).catch(err);
+      }
+      q('#rbMyPets').onclick = function (e) {
+        var b = e.target.closest('[data-del]'); if (!b || !real(st.user)) return;
+        db().ref('profiles/' + st.user.uid + '/pets/' + b.dataset.del).remove().then(function () { paint(st.user); list(); }, err);
+      };
+      function saveProfile() {
+        var name = q('#rbPubName').value.trim().slice(0, 60);
+        if (!name) { say('Please type a name.'); return Promise.reject(new Error('no name')); }
+        return db().ref('profiles/' + st.user.uid).update({ name: name, kind: kind, motto: q('#rbPubMotto').value.trim().slice(0, 200), updated: firebase.database.ServerValue.TIMESTAMP });
+      }
+      q('#rbPubSave').onclick = function () { saveProfile().then(function () { say('✅ Public profile saved.'); list(); }, function (e) { if (e.message !== 'no name') err(e); }); };
+      q('#rbPetAdd').onclick = function () {
+        var name = q('#rbPetName').value.trim(), k = q('#rbPetKind').value.trim(), pic = q('#rbPetPic').value.trim();
+        if (!name || !k) { say('A pet needs a name and a kind.'); return; }
+        if (pic && !/^https:\/\/\S{4,292}$/.test(pic)) { say('The picture link must start with https://'); return; }
+        var pet = { name: name.slice(0, 32), kind: k.slice(0, 24), emoji: petEmoji, created: firebase.database.ServerValue.TIMESTAMP };
+        if (pic) pet.picture = pic;
+        (st.profile && st.profile.name ? Promise.resolve() : saveProfile())
+          .then(function () { return db().ref('profiles/' + st.user.uid + '/pets').push(pet); })
+          .then(function () { q('#rbPetName').value = q('#rbPetKind').value = q('#rbPetPic').value = ''; say('🐾 ' + pet.name + ' added.'); paint(st.user); list(); }, err);
+      };
+      function list() {
+        return app().then(function () { return db().ref('profiles').orderByChild('updated').limitToLast(30).once('value'); }).then(function (s) {
+          var all = s.val() || {}, ids = Object.keys(all).sort(function (a, b) { return (all[b].updated || 0) - (all[a].updated || 0); });
+          st.all = all;
+          q('#rbProfiles').innerHTML = ids.length ? ids.map(function (id) {
+            var p = all[id], n = Object.keys(p.pets || {}).length;
+            return '<button type="button" class="rb-prof" data-u="' + escapeHtml(id) + '"><b>' + escapeHtml(p.name) + '</b> <span class="rb-chip">' + badge(p) + '</span> <small>🐾 ' + n + '</small></button>';
+          }).join('') : '<div class="rb-empty">No public profiles yet</div>';
+        }).catch(function (e) { q('#rbProfiles').innerHTML = '<div class="rb-empty">Profiles unavailable: ' + escapeHtml(e.message || e) + '</div>'; });
+      }
+      q('#rbProfiles').onclick = function (e) {
+        var b = e.target.closest('[data-u]'); if (!b) return;
+        var p = st.all[b.dataset.u], v = q('#rbProfView');
+        v.classList.remove('hidden');
+        v.innerHTML = '<div class="rb-viewed-head"><span>👁 ' + escapeHtml(p.name) + ' · ' + badge(p) + '</span><button type="button" class="btn btn-small" id="rbProfViewClose">✖</button></div>' +
+          (p.motto ? '<div class="rb-dev-note">' + escapeHtml(p.motto) + '</div>' : '') + '<div class="rb-pets">' + pets(p.pets, false) + '</div>';
+        q('#rbProfViewClose').onclick = function () { v.classList.add('hidden'); };
+      };
+      function withAuth(fn) { say('…'); app().then(function (a) { return fn(a.auth()); }).then(function () { say(''); }, err); }
+      q('#rbGoogle').onclick = function () { withAuth(function (auth) { return auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }); };
+      function creds() { return [q('#rbEmail').value.trim(), q('#rbPass').value]; }
+      q('#rbEmailIn').onclick = function () { var c = creds(); withAuth(function (auth) { return auth.signInWithEmailAndPassword(c[0], c[1]); }); };
+      q('#rbEmailUp').onclick = function () { var c = creds(); withAuth(function (auth) { return auth.createUserWithEmailAndPassword(c[0], c[1]); }); };
+      q('#rbEmailReset').onclick = function () { var c = creds(); withAuth(function (auth) { return auth.sendPasswordResetEmail(c[0]).then(function () { setTimeout(function () { say('📧 Reset link sent to ' + c[0]); }); }); }); };
+      // signing out drops back to anonymous browsing (presence keeps working)
+      q('#rbSignOut').onclick = function () { withAuth(function (auth) { return auth.signOut().then(function () { return auth.signInAnonymously(); }); }); };
+      var watching = false;
+      function startWatch() {
+        if (watching) return; watching = true;
+        app().then(function (a) {
+          a.auth().onAuthStateChanged(function (u) { if (u) presence.state.uid = u.uid; paint(u); });
+          list();
+        }, function (e) { watching = false; err(e); });
+      }
+      q('#iconUser').addEventListener('click', function () { if (!useRbox.classList.contains('hidden')) startWatch(); });
+      return { start: startWatch, list: list, state: st };
+    })();
+    window.rvUserbox.account = acct;
     window.rvUserbox.joinChannel = joinChannel;
     window.rvUserbox.deleteChannel = deleteChannel;
     renderMyInfo();
