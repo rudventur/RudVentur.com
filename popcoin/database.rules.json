@@ -155,6 +155,35 @@
             },
             "$other": {
               ".validate": false
+            },
+            "now": {
+              "mood": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 24"
+              },
+              "status": {
+                ".validate": "newData.isString() && newData.val().matches(/^(available|busy|away|playing)$/)"
+              },
+              "doing": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+              },
+              "energy": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 12"
+              },
+              "chat": {
+                ".validate": "newData.isBoolean()"
+              },
+              "game": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+              },
+              "looking": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+              },
+              "$other": {
+                ".validate": false
+              }
+            },
+            "robot": {
+              ".validate": "newData.isBoolean()"
             }
           }
         }
@@ -267,6 +296,54 @@
           "$field": {
             ".validate": "$field.matches(/^[a-zA-Z_]{1,24}$/) && newData.isString() && newData.val().length <= 2000"
           }
+        }
+      }
+    },
+    "profiles": {
+      ".read": true,
+      ".indexOn": [
+        "updated"
+      ],
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider !== 'anonymous'",
+        ".validate": "newData.hasChildren(['name', 'kind', 'updated'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+        },
+        "kind": {
+          ".validate": "newData.val() === 'person' || newData.val() === 'bot'"
+        },
+        "motto": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
+        },
+        "updated": {
+          ".validate": "newData.val() === now"
+        },
+        "pets": {
+          "$pet": {
+            ".validate": "$pet.matches(/^[A-Za-z0-9_-]{1,40}$/) && newData.hasChildren(['name', 'kind', 'created'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 32"
+            },
+            "kind": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 24"
+            },
+            "emoji": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 16"
+            },
+            "picture": {
+              ".validate": "newData.isString() && newData.val().length <= 300 && newData.val().matches(/^https:\\/\\/[^ ]+$/)"
+            },
+            "created": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
         }
       }
     }
