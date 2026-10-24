@@ -346,6 +346,33 @@
           ".validate": false
         }
       }
+    },
+    "files": {
+      "$uid": {
+        ".read": true,
+        ".write": "auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider !== 'anonymous'",
+        "$file": {
+          ".validate": "$file.matches(/^[A-Za-z0-9_-]{1,40}$/) && newData.hasChildren(['name','size','type','path','created'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+          },
+          "size": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 5242880"
+          },
+          "type": {
+            ".validate": "newData.isString() && newData.val().length <= 100"
+          },
+          "path": {
+            ".validate": "newData.val() === 'files/' + $uid + '/' + $file"
+          },
+          "created": {
+            ".validate": "newData.isNumber() && newData.val() <= now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
     }
   }
 }

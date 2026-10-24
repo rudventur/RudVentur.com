@@ -1,0 +1,19 @@
+rules_version = '2';
+// RudVentur "My files": files/<account>/<file id>
+// Anyone can open a file (they are public, like the profile). Only the account itself,
+// signed in with Google or email (not the anonymous browsing identity), can add or delete,
+// and each file must be under 5 megabytes.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /files/{uid}/{fileId} {
+      allow read: if true;
+      allow delete: if request.auth != null && request.auth.uid == uid
+                    && request.auth.token.firebase.sign_in_provider != 'anonymous';
+      allow create, update: if request.auth != null && request.auth.uid == uid
+                    && request.auth.token.firebase.sign_in_provider != 'anonymous'
+                    && fileId.matches('^[A-Za-z0-9_-]{1,40}$')
+                    && request.resource.size < 5 * 1024 * 1024;
+    }
+    match /{everything=**} { allow read, write: if false; }
+  }
+}

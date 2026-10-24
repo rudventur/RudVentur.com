@@ -1505,6 +1505,10 @@
         '  <div class="rb-chips" id="rbPetEmoji">' + PET_EMOJI.map(function (e, i) { return '<button type="button" class="rb-chip' + (i ? '' : ' on') + '" data-e="' + e + '">' + e + '</button>'; }).join('') + '</div>' +
         '  <input type="url" id="rbPetPic" maxlength="300" placeholder="Picture link (optional, https://...)" style="margin-top:6px;">' +
         '  <button type="button" class="btn" id="rbPetAdd">🐾 ADD PET</button>' +
+        '  <div class="rb-subtitle">📁 MY FILES</div>' +
+        '  <small class="rb-dev-note">Files are public: anyone who opens your profile can see and open them. Up to 5 megabytes each.</small>' +
+        '  <div class="field-row"><input type="file" id="rbFilePick" style="flex:1;"><button type="button" class="btn btn-small" id="rbFileUp">⬆️ UPLOAD</button></div>' +
+        '  <div class="rb-files" id="rbMyFiles"><div class="rb-empty">No files yet</div></div>' +
         '</div>' +
         '<small class="rb-dev-note" id="rbAcctNote"></small>' +
         '<div class="rb-subtitle">👥 PROFILES</div><div id="rbProfiles"><div class="rb-empty">Open the box to load</div></div>' +
@@ -1516,6 +1520,35 @@
       function real(u) { return !!(u && !u.isAnonymous); }
       function app() { return presence.start().then(function () { return firebase.app('rvpresence'); }); }
       function db() { return presence.state.db; }
+      var STORAGE_SDK = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js';
+      function storage() {
+        return app().then(function (a) {
+          return (firebase.storage ? Promise.resolve() : new Promise(function (res, rej) {
+            var el = document.createElement('script'); el.src = STORAGE_SDK; el.onload = res; el.onerror = function () { rej(new Error('could not load file storage')); }; document.head.appendChild(el);
+          })).then(function () {
+            if (!st.storage) { st.storage = a.storage(); var e = (window.RV_PRESENCE_FIREBASE || {}).emulator; if (e && e.storage) st.storage.useEmulator('127.0.0.1', e.storage); }
+            return st.storage;
+          });
+        });
+      }
+      var MAX_FILE = 5 * 1024 * 1024;
+      function size(n) { return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB'; }
+      function day(t) { try { return new Date(t).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+      function fileRows(obj, mine) {
+        var ids = Object.keys(obj || {}).sort(function (a, b) { return (obj[b].created || 0) - (obj[a].created || 0); });
+        return ids.length ? ids.map(function (id) {
+          var f = obj[id];
+          return '<div class="rb-file"><span class="rb-file-icon">' + (/^image\//.test(f.type) ? '🖼️' : /^audio\//.test(f.type) ? '🎵' : /^video\//.test(f.type) ? '🎬' : '📄') + '</span>' +
+            '<div class="rb-pet-text"><b title="' + escapeHtml(f.name) + '">' + escapeHtml(f.name) + '</b><small>' + size(f.size) + ' · ' + escapeHtml(day(f.created)) + '</small></div>' +
+            '<button type="button" class="btn btn-small" data-open="' + escapeHtml(f.path) + '" title="Open or download">⬇️</button>' +
+            (mine ? '<button type="button" class="btn btn-small" data-delf="' + escapeHtml(id) + '" title="Delete this file">🗑️</button>' : '') + '</div>';
+        }).join('') : '<div class="rb-empty">No files yet</div>';
+      }
+      function openFile(path) { storage().then(function (s) { return s.ref(path).getDownloadURL(); }).then(function (u) { window.open(u, '_blank', 'noopener'); }, err); }
+      function loadMyFiles() {
+        if (!real(st.user)) return;
+        db().ref('files/' + st.user.uid).once('value').then(function (s) { q('#rbMyFiles').innerHTML = fileRows(s.val(), true); }, err);
+      }
       var kind = 'person', petEmoji = PET_EMOJI[0];
       q('#rbPubKind').onclick = function (e) { var b = e.target.closest('[data-k]'); if (b) { kind = b.dataset.k; paintKind(); } };
       function paintKind() { [].forEach.call(q('#rbPubKind').children, function (b) { b.classList.toggle('on', b.dataset.k === kind); }); }
@@ -1544,7 +1577,27 @@
           kind = p.kind || 'person'; paintKind();
           q('#rbMyPets').innerHTML = pets(p.pets, true);
         }).catch(err);
+        loadMyFiles();
       }
+      q('#rbMyFiles').onclick = function (e) {
+        var o = e.target.closest('[data-open]'); if (o) { openFile(o.dataset.open); return; }
+        var d = e.target.closest('[data-delf]'); if (!d || !real(st.user)) return;
+        var id = d.dataset.delf, path = 'files/' + st.user.uid + '/' + id;
+        if (!confirm('Delete this file?')) return;
+        storage().then(function (s) { return s.ref(path).delete().catch(function (e) { if (e.code !== 'storage/object-not-found') throw e; }); })
+          .then(function () { return db().ref(path).remove(); })
+          .then(function () { say('🗑️ File deleted.'); loadMyFiles(); }, err);
+      };
+      q('#rbFileUp').onclick = function () {
+        var f = q('#rbFilePick').files[0];
+        if (!f) { say('Pick a file first.'); return; }
+        if (f.size >= MAX_FILE) { say('That file is ' + size(f.size) + '. The limit is 5 megabytes.'); return; }
+        var id = db().ref('files/' + st.user.uid).push().key, path = 'files/' + st.user.uid + '/' + id;
+        say('⬆️ Uploading ' + f.name + '…');
+        storage().then(function (s) { return s.ref(path).put(f, { contentType: f.type || 'application/octet-stream', customMetadata: { name: f.name.slice(0, 120) } }); })
+          .then(function () { return db().ref(path).set({ name: f.name.slice(0, 120), size: f.size, type: (f.type || 'application/octet-stream').slice(0, 100), path: path, created: firebase.database.ServerValue.TIMESTAMP }); })
+          .then(function () { q('#rbFilePick').value = ''; say('✅ ' + f.name + ' uploaded.'); loadMyFiles(); }, err);
+      };
       q('#rbMyPets').onclick = function (e) {
         var b = e.target.closest('[data-del]'); if (!b || !real(st.user)) return;
         db().ref('profiles/' + st.user.uid + '/pets/' + b.dataset.del).remove().then(function () { paint(st.user); list(); }, err);
@@ -1580,7 +1633,11 @@
         var p = st.all[b.dataset.u], v = q('#rbProfView');
         v.classList.remove('hidden');
         v.innerHTML = '<div class="rb-viewed-head"><span>👁 ' + escapeHtml(p.name) + ' · ' + badge(p) + '</span><button type="button" class="btn btn-small" id="rbProfViewClose">✖</button></div>' +
-          (p.motto ? '<div class="rb-dev-note">' + escapeHtml(p.motto) + '</div>' : '') + '<div class="rb-pets">' + pets(p.pets, false) + '</div>';
+          (p.motto ? '<div class="rb-dev-note">' + escapeHtml(p.motto) + '</div>' : '') + '<div class="rb-pets">' + pets(p.pets, false) + '</div>' +
+          '<div class="rb-subtitle">📁 FILES</div><div class="rb-files" id="rbProfFiles"><div class="rb-empty">Loading…</div></div>';
+        var uid = b.dataset.u;
+        db().ref('files/' + uid).once('value').then(function (s) { var box = q('#rbProfFiles'); if (box) box.innerHTML = fileRows(s.val(), false); }, function () {});
+        q('#rbProfFiles').onclick = function (e) { var o = e.target.closest('[data-open]'); if (o) openFile(o.dataset.open); };
         q('#rbProfViewClose').onclick = function () { v.classList.add('hidden'); };
       };
       function withAuth(fn) { say('…'); app().then(function (a) { return fn(a.auth()); }).then(function () { say(''); }, err); }
