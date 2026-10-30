@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Big Bike Shops — RudVentur</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+body{margin:0;background:#07090a;color:#00ff41;font:14px ui-monospace,monospace}
+h1{margin:0;padding:10px 14px;font-size:18px;letter-spacing:2px;border-bottom:1px solid #00ff41;color:#ffe600}
+.wrap{display:flex;gap:10px;padding:10px;flex-wrap:wrap}
+#dir{flex:1 1 320px;max-width:420px}
+#mapbox{flex:2 1 420px;min-width:300px}
+#map{height:560px;border:1px solid #00ff41}
+.shop{display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:6px;border:1px solid #0a5;border-radius:6px;color:#00ff41;text-decoration:none;background:#000}
+.shop:hover{border-color:#ffe600;color:#ffe600}
+.shop.first{border:2px solid #ffe600}
+.logo{width:32px;height:32px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;background:#111;border-radius:4px;overflow:hidden}
+.logo img{width:32px;height:32px;object-fit:contain;background:#fff}
+.name{font-weight:900}.note{font-size:11px;opacity:.8}
+.bar{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+input,button{background:#000;color:#00ff41;border:1px solid #00ff41;font:inherit;padding:5px 8px}
+button{cursor:pointer}#status{font-size:12px;margin:4px 0;color:#ffe600}
+h2{font-size:14px;color:#ffe600;margin:8px 0}
+</style></head><body>
+<h1>🚲 BIG BIKE SHOPS</h1>
+<div class="wrap">
+<div id="dir"><h2>📒 Directory — opens in a new tab</h2><div id="list"></div></div>
+<div id="mapbox"><h2>🗺️ Bike Shop Map — live from OpenStreetMap</h2>
+<div class="bar"><input id="q" placeholder="town or postcode, e.g. Catford" size="22"><button id="go">🔎 Find</button><button id="me">📍 Near me</button><button id="here">🔄 Search this view</button></div>
+<div id="status">Loading…</div><div id="map"></div>
+<div class="note">Map data © OpenStreetMap contributors. Shops come live from the Overpass service (shop = bicycle). Nothing here is made up.</div>
+</div></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="bike-shops.js"></script>
+</body></html>
