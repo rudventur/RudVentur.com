@@ -1644,6 +1644,8 @@
       return { all: all, w: w };
     }
     function fpWrite(d) { lsSet(FP_KEY, JSON.stringify(d.all)); fpRender(); }
+    // REAL popCoin payments (embed/real-popcoin.js) add a FAKE fun boost here. Casino stays worthless.
+    window.rvUserbox.fakeAdd = function (n) { var d = fpRead(); d.w.balance += Math.max(0, Math.floor(+n || 0)); fpWrite(d); return d.w.balance; };
     function today() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
     function owns(w, it) { return it.price === 0 || w.bought.indexOf(it.id) !== -1; }
     function fpRender() {
@@ -1760,6 +1762,9 @@
 
     console.log('👤 useRbox loaded (shared embed, profile key ' + KEY + ')');
   }
+
+  // PRO tiles + REAL popCoin (honour system v1)
+  (function () { var sc = document.createElement('script'); sc.src = baseUrl + 'real-popcoin.js'; document.head.appendChild(sc); })();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
