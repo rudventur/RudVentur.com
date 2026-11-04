@@ -80,6 +80,7 @@
     { id: 'free', icon: '👤', name: 'useRbox', free: true },
     { id: 'real', icon: '🪙', name: 'REAL popCoin' },
     { id: 'wallet', icon: '👛', name: 'Wallet' },
+    { id: 'fakewallet', icon: '🍿', name: 'FAKE wallet', free: true },
     { id: 'data', icon: '📊', name: 'Real data' },
     { id: 'privacy', icon: '🔒', name: 'Privacy', free: true },
     { id: 'keyboard', icon: '⌨️', name: 'Keyboard', free: true },
@@ -87,6 +88,11 @@
     { id: 'services', icon: '🧭', name: 'Services', free: true },
     { id: 'buy', icon: '⭐', name: 'Buy PRO', free: true }
   ];
+  function fakeWalletUrl() {
+    var site = (root.rvUserbox && root.rvUserbox.SITE) || 'https://rudventur.com/';
+    return site + 'popcoin/';
+  }
+  var BANK_PROOF = 'You can prove you bought REAL popCoin with the payment line in your bank statement.';
   function day(ms) { return new Date(ms).toLocaleDateString(); }
   function panel(id) {
     var d = read(), pro = isPro();
@@ -95,7 +101,9 @@
       '<p class="rp-paid"><small>£10 a year · £1.30 a month. After you pay on Ko-fi, PRO will unlock here when auto-check is ready.</small></p>';
     if (id === 'real' || id === 'wallet') return '<b>🪙 REAL popCoin</b><p>Balance: <b>' + balance() + '</b>' + (d.fundraiser ? ' · 🎗️ fundraiser' : '') + '</p>' +
       (d.entries.length ? '<ul>' + d.entries.map(function (e) { return '<li>' + e.amount + ' (paid £' + e.paidGbp + ', ' + (e.rate * 100) + '%) · locked until ' + day(e.unlockAt) + '</li>'; }).join('') + '</ul>' : '<p>No REAL popCoin yet.</p>') +
-      '<small>Locked 1 year. No payout yet. Never used in the casino. To buy REAL popCoin, use the button next to 🍽️ MY RESTAURANT.</small>';
+      '<p class="rp-proof"><small>🏦 ' + BANK_PROOF + '</small></p><small>Locked 1 year. No payout yet. Never used in the casino. To buy REAL popCoin, use the button next to 🍽️ MY RESTAURANT.</small>';
+    if (id === 'fakewallet') return '<b>🍿 FAKE popCornCoin wallet</b><p>Just for fun. No real money.</p>' +
+      '<a class="rp-kofi" href="' + fakeWalletUrl() + '" target="_blank" rel="noopener">🍿 Open the FAKE wallet</a>';
     if (id === 'privacy') return '<b>🔒 Privacy</b><p>PRO and REAL popCoin are saved only on this device for now.</p>';
     if (id === 'services') return '<b>🧭 Services</b><p>Free for everyone for now. See the SERVICES list in the left section.</p>';
     if (id === 'keyboard' || id === 'translator') return '<b>' + id + '</b><p>Free for everyone for now.</p>';
@@ -136,12 +144,13 @@
       '<p><b>🪙 Buy REAL popCoin</b><br>You get one tenth of what you pay as REAL popCoin. It is locked for 1 year. The casino never uses it.</p>' +
       '<p><b>TWO FOR DOUBLES:</b> pay with a matching restaurant code and you get one fifth instead.</p>' +
       '<a class="rp-kofi" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ Pay on Ko-fi for REAL popCoin</a>' +
-      '<small style="display:block;margin-top:6px">After you pay on Ko-fi, your REAL popCoin will show here when auto-check is ready. No self-tick.</small></div>';
+      '<small style="display:block;margin-top:6px">After you pay on Ko-fi, your REAL popCoin will show here when auto-check is ready. No self-tick.</small>' +
+      '<small class="rp-proof" style="display:block;margin-top:6px">🏦 ' + BANK_PROOF + '</small></div>';
     anchor.after(box);
     document.getElementById('rpBuyRealBtn').onclick = function () { var f = document.getElementById('rpBuyRealForm'); f.hidden = !f.hidden; };
   }
   var _mount = mount; mount = function () { _mount(); mountBuyReal(); };
-  api.mount = mount; api.render = render; api.show = show;
+  api.mount = mount; api.BANK_PROOF = BANK_PROOF; api.render = render; api.show = show;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
   setTimeout(mount, 500); setTimeout(mountBuyReal, 1500); setInterval(mountBuyReal, 3000);
 })(typeof window !== 'undefined' ? window : globalThis);

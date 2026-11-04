@@ -880,7 +880,17 @@
     renderPeople();
 
     /* ===== services (left column) = the tables a restaurant can serve ===== */
-    var SITE = (function () { try { return new URL('../', baseUrl).href; } catch (e) { return location.origin + '/'; } })();
+    // The hub root. When this file is loaded from another repo (map-merger, windows13…) '../' would point at
+    // THAT repo, so links like the FAKE popCornCoin wallet went to the map-merger. Only trust '../' on the hub itself.
+    var SITE = (function () {
+      var HUB = 'https://rudventur.com/';
+      try {
+        var u = new URL('../', baseUrl);
+        if (/^(www\.)?rudventur\.com$/i.test(u.hostname) || /\/RudVentur\.com\/$/i.test(u.pathname) || /^(localhost|127\.0\.0\.1)$/.test(u.hostname) || u.protocol === 'file:') return u.href;
+      } catch (e) {}
+      return HUB;
+    })();
+    window.rvUserbox.SITE = SITE;
     var SERVICES = [
       { id: 'hub', name: '🏠 RudVentur hub', url: SITE },
       { id: 'translator', name: '🌐 Translator and map', url: TRANSLATOR_URL },
