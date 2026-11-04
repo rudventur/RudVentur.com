@@ -680,11 +680,26 @@
 #rbAccount .field-row input { min-width: 0; flex: 1 1 110px !important; }
 @media (max-width: 600px) { .rb-pets { grid-template-columns: 1fr; } .rb-pet { flex-direction: column; text-align: center; gap: 2px; padding: 6px 4px; } .rb-pet-text { width: 100%; } .rb-pet-text b { white-space: normal; overflow-wrap: anywhere; word-break: normal; } }
 
-/* PRO icon row (embed/real-popcoin.js): grey = locked PRO tile, colour = open */
-.rp-row { display:flex; flex-wrap:wrap; gap:6px; padding:6px; }
-.rp-tile { display:flex; flex-direction:column; align-items:center; font-size:20px; padding:6px; min-width:64px; border-radius:10px; border:1px solid #f5c542; background:#222; color:#fff; cursor:pointer; }
-.rp-tile span { font-size:10px; margin-top:2px; }
+/* PRO icon row (embed/real-popcoin.js): grey = locked PRO tile, colour = open.
+   Keep this strip short so the three/half column scroll areas still have room:
+   one horizontal row (scroll sideways), wrap never grows the flex stack. */
+.rp-wrap { flex: 0 0 auto; min-height: 0; max-height: 42vh; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.rp-row { display:flex; flex-wrap:nowrap; gap:6px; padding:6px; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.rp-tile { display:flex; flex-direction:column; align-items:center; flex:0 0 auto; font-size:20px; padding:6px; min-width:64px; border-radius:10px; border:1px solid #f5c542; background:#222; color:#fff; cursor:pointer; }
+.rp-tile span { font-size:10px; margin-top:2px; white-space:nowrap; }
 .rp-tile.rp-locked { filter:grayscale(1); opacity:.45; border-color:#666; }
 .rp-panel { padding:8px; margin:0 6px 6px; border-radius:10px; background:#111; color:#eee; font-size:13px; }
 .rp-kofi { display:inline-block; padding:6px 12px; background:#29abe0; color:#fff; border-radius:8px; text-decoration:none; }
 .rp-paid { margin-top:8px; } .rp-paid small, .rp-panel small { display:block; opacity:.7; margin-top:4px; }
+
+/* three / half modes hide outer scroll — header, PRO strip and tabs must not eat the column flex */
+#useRbox[data-view="three"] > .useRbox-header,
+#useRbox[data-view="three"] > .rp-wrap,
+#useRbox[data-view="three"] > .rb-tabs,
+#useRbox[data-view="half"] > .useRbox-header,
+#useRbox[data-view="half"] > .rp-wrap,
+#useRbox[data-view="half"] > .rb-tabs { flex: 0 0 auto; }
+#useRbox[data-view="three"] .rb-cols,
+#useRbox[data-view="half"] .rb-cols { flex: 1 1 auto; min-height: 0; }
+#useRbox[data-view="full"] .rp-wrap { max-height: none; overflow: visible; }
+#useRbox[data-view="full"] .rp-row { flex-wrap: wrap; overflow: visible; }

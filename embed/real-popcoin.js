@@ -94,7 +94,15 @@
     var box = document.getElementById('useRbox'); if (!box || document.getElementById('rpRow')) return;
     var wrap = document.createElement('div'); wrap.className = 'rp-wrap';
     wrap.innerHTML = '<div id="rpRow" class="rp-row"></div><div id="rpPanel" class="rp-panel" hidden></div>';
-    var head = box.querySelector('.useRbox-header'); head ? head.after(wrap) : box.prepend(wrap);
+    // Sit just above the three columns (after tabs if they exist) so column scroll still works.
+    var cols = box.querySelector('.rb-cols');
+    var tabs = box.querySelector('#rbTabs, .rb-tabs');
+    if (cols && cols.parentNode === box) box.insertBefore(wrap, cols);
+    else if (tabs && tabs.parentNode === box) tabs.after(wrap);
+    else {
+      var head = box.querySelector('.useRbox-header');
+      if (head) head.after(wrap); else box.prepend(wrap);
+    }
     render();
   }
   function render() {
