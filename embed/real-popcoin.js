@@ -1,9 +1,9 @@
-/* REAL popCoin + PRO for the useRbox (v1, honour system).
+/* REAL popCoin + PRO for the useRbox.
    Plain rules (Rud, Nov 2026):
    - Free useRbox = one open tile. PRO tiles start GREY and locked until you are PRO.
    - Buy PRO on Ko-fi: https://ko-fi.com/rudventur  (£10 a year or £1.30 a month).
-   - v1: after paying on Ko-fi you tick "I paid". We save the payment time on this device.
-     LATER: a Ko-fi webhook -> Firebase bridge can replace this honour tick (same entry shape).
+   - No "I paid" honour tick in the UI. Ko-fi is the buy path; a Ko-fi webhook / Firebase
+     bridge will mark PRO and REAL purchases later (API helpers stay ready).
    - REAL popCoin (capital R, real value): one tenth (10%) of what you paid.
      "TWO FOR DOUBLES": if the restaurant code matches another subscriber's restaurant
      code saved here, the rate is one fifth (20%) and the profile gets the fundraiser mark.
@@ -90,11 +90,9 @@
   function day(ms) { return new Date(ms).toLocaleDateString(); }
   function panel(id) {
     var d = read(), pro = isPro();
-    if (id === 'buy') return '<b>⭐ Get PRO</b><p>£10 a year or £1.30 a month, on Ko-fi. Pay on Ko-fi, then tick below. You also get a FAKE popCornCoin boost for fun. Services are free for everyone for now.</p><p><small>PRO does not give REAL popCoin. To buy REAL popCoin, use the button next to MY RESTAURANT.</small></p>' +
-      '<a class="rp-kofi" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ Pay on Ko-fi</a>' +
-      '<div class="rp-paid"><label><input type="radio" name="rpPlan" value="year" checked> £10 a year</label> <label><input type="radio" name="rpPlan" value="month"> £1.30 a month</label><br>' +
-      '<button id="rpPaid">✅ I paid for PRO</button>' +
-      '<small>Honour system for now: we trust your tick. Ko-fi auto-check comes later.</small></div>';
+    if (id === 'buy') return '<b>⭐ Get PRO</b><p>£10 a year or £1.30 a month on Ko-fi. Services are free for everyone for now.</p><p><small>PRO does not give REAL popCoin. To buy REAL popCoin, use the button next to MY RESTAURANT.</small></p>' +
+      '<a class="rp-kofi" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ Pay on Ko-fi for PRO</a>' +
+      '<p class="rp-paid"><small>£10 a year · £1.30 a month. After you pay on Ko-fi, PRO will unlock here when auto-check is ready.</small></p>';
     if (id === 'real' || id === 'wallet') return '<b>🪙 REAL popCoin</b><p>Balance: <b>' + balance() + '</b>' + (d.fundraiser ? ' · 🎗️ fundraiser' : '') + '</p>' +
       (d.entries.length ? '<ul>' + d.entries.map(function (e) { return '<li>' + e.amount + ' (paid £' + e.paidGbp + ', ' + (e.rate * 100) + '%) · locked until ' + day(e.unlockAt) + '</li>'; }).join('') + '</ul>' : '<p>No REAL popCoin yet.</p>') +
       '<small>Locked 1 year. No payout yet. Never used in the casino. To buy REAL popCoin, use the button next to 🍽️ MY RESTAURANT.</small>';
@@ -127,10 +125,6 @@
   }
   function show(id) {
     var p = document.getElementById('rpPanel'); p.hidden = false; p.innerHTML = panel(id);
-    var btn = document.getElementById('rpPaid');
-    if (btn) btn.onclick = function () { var plan = (p.querySelector('input[name=rpPlan]:checked') || {}).value;
-      var r = activatePro({ plan: plan });
-      render(); show('free'); p.insertAdjacentHTML('afterbegin', '<p>Thanks! PRO is on until ' + day(r.proUntil) + '. +' + r.fakeBoost + ' FAKE popCornCoins for fun.</p>'); };
   }
   /* ===== Buy REAL popCoin: sits next to 🍽️ MY RESTAURANT (the only REAL purchase UI) ===== */
   function mountBuyReal() {
@@ -140,18 +134,11 @@
     box.innerHTML = '<button type="button" class="btn" id="rpBuyRealBtn" style="width:100%;margin:6px 0;">🪙 Buy REAL popCoin</button>' +
       '<div id="rpBuyRealForm" hidden style="border:1px solid #ccc;border-radius:8px;padding:8px;margin-bottom:8px;">' +
       '<p><b>🪙 Buy REAL popCoin</b><br>You get one tenth of what you pay as REAL popCoin. It is locked for 1 year. The casino never uses it.</p>' +
-      '<p><b>TWO FOR DOUBLES:</b> add a restaurant code that matches another supporter here and you get one fifth instead.</p>' +
-      '<a href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ 1. Pay on Ko-fi</a><br>' +
-      '<label>2. How much did you pay? <select id="rpRealGbp"><option value="5">£5</option><option value="10" selected>£10</option><option value="20">£20</option><option value="50">£50</option></select></label><br>' +
-      '<input id="rpRealCode" placeholder="restaurant code (optional)"><br>' +
-      '<button type="button" id="rpRealConfirm">✅ 3. I paid, add my REAL popCoin</button>' +
-      '<small style="display:block">Honour system for now. Ko-fi auto-check comes later.</small><div id="rpRealMsg"></div></div>';
+      '<p><b>TWO FOR DOUBLES:</b> pay with a matching restaurant code and you get one fifth instead.</p>' +
+      '<a class="rp-kofi" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ Pay on Ko-fi for REAL popCoin</a>' +
+      '<small style="display:block;margin-top:6px">After you pay on Ko-fi, your REAL popCoin will show here when auto-check is ready. No self-tick.</small></div>';
     anchor.after(box);
     document.getElementById('rpBuyRealBtn').onclick = function () { var f = document.getElementById('rpBuyRealForm'); f.hidden = !f.hidden; };
-    document.getElementById('rpRealConfirm').onclick = function () {
-      var e = purchaseReal({ gbp: document.getElementById('rpRealGbp').value, restaurantCode: document.getElementById('rpRealCode').value });
-      document.getElementById('rpRealMsg').innerHTML = '<p>Thanks! +' + e.amount + ' REAL popCoin (locked until ' + day(e.unlockAt) + '), +' + e.fakeBoost + ' FAKE popCornCoins for fun. Balance: ' + balance() + '</p>';
-    };
   }
   var _mount = mount; mount = function () { _mount(); mountBuyReal(); };
   api.mount = mount; api.render = render; api.show = show;
