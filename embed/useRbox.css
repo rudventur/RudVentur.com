@@ -703,3 +703,29 @@
 #useRbox[data-view="half"] .rb-cols { flex: 1 1 auto; min-height: 0; }
 #useRbox[data-view="full"] .rp-wrap { max-height: none; overflow: visible; }
 #useRbox[data-view="full"] .rp-row { flex-wrap: wrap; overflow: visible; }
+
+/* ===== layout pass: padding around text, scale to small panels, scroll that always works ===== */
+#useRbox { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; font-size: clamp(11px, 1.6vw + 6px, 14px); }
+#useRbox .rb-col { padding: 10px 12px; box-sizing: border-box; min-width: 0; }
+#useRbox .rb-info-row { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 5px 2px; }
+#useRbox .rb-info-row b { min-width: 0; overflow-wrap: anywhere; }
+#useRbox .rb-fold > summary { padding: 10px 14px; }
+#useRbox .rb-fold > *:not(summary) { margin-left: 10px; margin-right: 10px; }
+#useRbox label, #useRbox .btn, #useRbox button { line-height: 1.35; }
+.rp-wrap { max-height: 30vh; }
+.rp-row { padding: 8px 10px; gap: 8px; scroll-snap-type: x proximity; }
+.rp-tile { scroll-snap-align: start; padding: 8px 10px; min-width: 70px; font-size: clamp(16px, 2.4vw, 20px); }
+.rp-tile span { font-size: 10.5px; margin-top: 4px; }
+.rp-panel { padding: 10px 14px; line-height: 1.45; overflow-wrap: anywhere; }
+.rp-panel p { margin: 6px 0; }
+.rp-buyreal small, .rp-proof small { line-height: 1.4; }
+#rpBuyRealForm { padding: 10px 12px !important; line-height: 1.45; }
+/* three / half: columns scroll inside, the box itself never clips the last row */
+#useRbox[data-view="three"], #useRbox[data-view="half"] { height: 100%; max-height: 100dvh; }
+#useRbox[data-view="three"] .rb-col, #useRbox[data-view="half"] .rb-col { padding-bottom: 28px; }
+/* half view on narrow / short screens: tiles stay one sideways row, tabs scroll sideways too */
+#useRbox[data-view="half"] .rb-tabs { overflow-x: auto; flex-wrap: nowrap; }
+@media (max-height: 520px) { .rp-wrap { max-height: 22vh; } #useRbox { padding-top: 12px; } }
+@media (max-width: 600px) { #useRbox .rb-col { padding: 8px 8px 24px; } .rp-tile { min-width: 60px; padding: 6px 8px; } }
+/* full view: whole box scrolls, PRO tiles wrap */
+#useRbox[data-view="full"] .rb-col { padding-bottom: 14px; }
