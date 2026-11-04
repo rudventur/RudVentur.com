@@ -9,6 +9,8 @@
      code saved here, the rate is one fifth (20%) and the profile gets the fundraiser mark.
    - REAL popCoin is locked for 1 year (no payout before the anniversary; review end-2027).
      There is NO payout button. The casino NEVER uses REAL popCoin.
+   - NEW RULE (Rud): PRO tiles/Buy PRO NEVER give REAL popCoin. REAL popCoin is ONLY bought
+     with the Buy REAL popCoin button next to MY RESTAURANT (purchaseReal).
    - Every payment ALSO tops up FAKE popCornCoins (fun only, worthless) - see fakeBoost().
    Ledger math for one payment of P pounds (notes only, nothing is paid out here):
      ~30% tax, ~50% to Rud, 10% = your investment (REAL popCoin), the rest = running costs. */
@@ -40,16 +42,27 @@
     w.balance = Math.floor((+w.balance || 0) + n); s.setItem(FAKE_KEY, JSON.stringify(all)); return w.balance;
   }
 
-  /* Record one payment. opts: { plan: 'year'|'month', restaurantCode, at (ms), source } */
-  function recordPayment(opts) {
+  /* PRO only. opts: { plan: 'year'|'month', at, source, player }. Never adds REAL popCoin. */
+  function activatePro(opts) {
     opts = opts || {}; var plan = PLANS[opts.plan] ? opts.plan : 'year', gbp = PLANS[plan].gbp;
+    var d = read(), at = +opts.at || Date.now();
+    d.proUntil = Math.max(at, +d.proUntil || 0) + PLANS[plan].ms; d.plan = plan;
+    (d.pro = d.pro || []).push({ plan: plan, paidGbp: gbp, at: at, source: opts.source || 'honour' });
+    write(d);
+    var boost = fakeBoost(gbp); addFake(boost, opts.player);   // FAKE fun only
+    return { plan: plan, proUntil: d.proUntil, fakeBoost: boost };
+  }
+  /* The ONLY way to get REAL popCoin (Buy button next to MY RESTAURANT).
+     opts: { gbp, restaurantCode, at, source, player } */
+  function purchaseReal(opts) {
+    opts = opts || {}; var gbp = Math.round((+opts.gbp || (PLANS[opts.plan] || {}).gbp || 0) * 100) / 100;
+    if (!(gbp > 0)) throw new Error('Pick an amount');
     var d = read(), at = +opts.at || Date.now(), code = norm(opts.restaurantCode), rate = rateFor(code, d);
-    var e = { amount: Math.round(gbp * rate * 100) / 100, paidGbp: gbp, rate: rate, plan: plan, restaurantCode: code,
+    var e = { amount: Math.round(gbp * rate * 100) / 100, paidGbp: gbp, rate: rate, plan: 'purchase', restaurantCode: code,
       at: at, unlockAt: at + YEAR, source: opts.source || 'honour', deviceNote: 'saved on this device only (v1)' };
     d.entries.push(e);
     if (rate === 0.2) d.fundraiser = true;           // TWO FOR DOUBLES -> fundraiser profile mark
     if (code && d.codes.indexOf(code) === -1) d.codes.push(code);
-    d.proUntil = Math.max(at, +d.proUntil || 0) + PLANS[plan].ms; d.plan = plan;
     write(d);
     e.fakeBoost = fakeBoost(gbp); addFake(e.fakeBoost, opts.player);
     return e;
@@ -57,7 +70,7 @@
   function isPro(now) { return (+read().proUntil || 0) > (now || Date.now()); }
   function balance() { return Math.round(read().entries.reduce(function (s, e) { return s + e.amount; }, 0) * 100) / 100; }
 
-  var api = { PLANS: PLANS, KEY: KEY, split: split, fakeBoost: fakeBoost, recordPayment: recordPayment, isPro: isPro,
+  var api = { PLANS: PLANS, KEY: KEY, split: split, fakeBoost: fakeBoost, activatePro: activatePro, purchaseReal: purchaseReal, isPro: isPro,
     balance: balance, ledger: read, isFundraiser: function () { return !!read().fundraiser; } };
   root.rvRealPopCoin = api;
   if (typeof module !== 'undefined' && module.exports) { module.exports = api; return; }
@@ -69,24 +82,25 @@
     { id: 'wallet', icon: '👛', name: 'Wallet' },
     { id: 'data', icon: '📊', name: 'Real data' },
     { id: 'privacy', icon: '🔒', name: 'Privacy', free: true },
-    { id: 'keyboard', icon: '⌨️', name: 'Keyboard' },
-    { id: 'translator', icon: '🌐', name: 'Translator' },
+    { id: 'keyboard', icon: '⌨️', name: 'Keyboard', free: true },
+    { id: 'translator', icon: '🌐', name: 'Translator', free: true },
     { id: 'services', icon: '🧭', name: 'Services', free: true },
     { id: 'buy', icon: '⭐', name: 'Buy PRO', free: true }
   ];
   function day(ms) { return new Date(ms).toLocaleDateString(); }
   function panel(id) {
     var d = read(), pro = isPro();
-    if (id === 'buy') return '<b>⭐ Get PRO</b><p>£10 a year or £1.30 a month, on Ko-fi. You also get REAL popCoin (one tenth of what you pay, locked 1 year) and a FAKE popCornCoin boost for fun.</p>' +
+    if (id === 'buy') return '<b>⭐ Get PRO</b><p>£10 a year or £1.30 a month, on Ko-fi. Pay on Ko-fi, then tick below. You also get a FAKE popCornCoin boost for fun. Services are free for everyone for now.</p><p><small>PRO does not give REAL popCoin. To buy REAL popCoin, use the button next to MY RESTAURANT.</small></p>' +
       '<a class="rp-kofi" href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ Pay on Ko-fi</a>' +
       '<div class="rp-paid"><label><input type="radio" name="rpPlan" value="year" checked> £10 a year</label> <label><input type="radio" name="rpPlan" value="month"> £1.30 a month</label><br>' +
-      '<input id="rpCode" placeholder="restaurant code (optional)"> <button id="rpPaid">✅ I paid</button>' +
+      '<button id="rpPaid">✅ I paid for PRO</button>' +
       '<small>Honour system for now: we trust your tick. Ko-fi auto-check comes later.</small></div>';
     if (id === 'real' || id === 'wallet') return '<b>🪙 REAL popCoin</b><p>Balance: <b>' + balance() + '</b>' + (d.fundraiser ? ' · 🎗️ fundraiser' : '') + '</p>' +
       (d.entries.length ? '<ul>' + d.entries.map(function (e) { return '<li>' + e.amount + ' (paid £' + e.paidGbp + ', ' + (e.rate * 100) + '%) · locked until ' + day(e.unlockAt) + '</li>'; }).join('') + '</ul>' : '<p>No REAL popCoin yet.</p>') +
-      '<small>Locked 1 year. No payout yet. Never used in the casino.</small>';
+      '<small>Locked 1 year. No payout yet. Never used in the casino. To buy REAL popCoin, use the button next to 🍽️ MY RESTAURANT.</small>';
     if (id === 'privacy') return '<b>🔒 Privacy</b><p>PRO and REAL popCoin are saved only on this device for now.</p>';
-    if (id === 'services') return '<b>🧭 Services</b><p>See the SERVICES list in the left section.</p>';
+    if (id === 'services') return '<b>🧭 Services</b><p>Free for everyone for now. See the SERVICES list in the left section.</p>';
+    if (id === 'keyboard' || id === 'translator') return '<b>' + id + '</b><p>Free for everyone for now.</p>';
     if (id === 'free') return '<b>👤 useRbox</b><p>Your free profile. ' + (pro ? 'PRO until ' + day(d.proUntil) + '.' : 'Not PRO yet.') + '</p>';
     return '<b>' + id + '</b><p>PRO tile. Coming soon.</p>';
   }
@@ -115,10 +129,32 @@
     var p = document.getElementById('rpPanel'); p.hidden = false; p.innerHTML = panel(id);
     var btn = document.getElementById('rpPaid');
     if (btn) btn.onclick = function () { var plan = (p.querySelector('input[name=rpPlan]:checked') || {}).value;
-      var e = recordPayment({ plan: plan, restaurantCode: document.getElementById('rpCode').value });
-      render(); show('real'); p.insertAdjacentHTML('afterbegin', '<p>Thanks! +' + e.amount + ' REAL popCoin, +' + e.fakeBoost + ' FAKE popCornCoins for fun.</p>'); };
+      var r = activatePro({ plan: plan });
+      render(); show('free'); p.insertAdjacentHTML('afterbegin', '<p>Thanks! PRO is on until ' + day(r.proUntil) + '. +' + r.fakeBoost + ' FAKE popCornCoins for fun.</p>'); };
   }
+  /* ===== Buy REAL popCoin: sits next to 🍽️ MY RESTAURANT (the only REAL purchase UI) ===== */
+  function mountBuyReal() {
+    var sub = document.getElementById('rbSubscriber'); if (!sub || document.getElementById('rpBuyReal')) return;
+    var anchor = sub.closest('label') || sub;
+    var box = document.createElement('div'); box.id = 'rpBuyReal'; box.className = 'rp-buyreal';
+    box.innerHTML = '<button type="button" class="btn" id="rpBuyRealBtn" style="width:100%;margin:6px 0;">🪙 Buy REAL popCoin</button>' +
+      '<div id="rpBuyRealForm" hidden style="border:1px solid #ccc;border-radius:8px;padding:8px;margin-bottom:8px;">' +
+      '<p><b>🪙 Buy REAL popCoin</b><br>You get one tenth of what you pay as REAL popCoin. It is locked for 1 year. The casino never uses it.</p>' +
+      '<p><b>TWO FOR DOUBLES:</b> add a restaurant code that matches another supporter here and you get one fifth instead.</p>' +
+      '<a href="https://ko-fi.com/rudventur" target="_blank" rel="noopener">☕ 1. Pay on Ko-fi</a><br>' +
+      '<label>2. How much did you pay? <select id="rpRealGbp"><option value="5">£5</option><option value="10" selected>£10</option><option value="20">£20</option><option value="50">£50</option></select></label><br>' +
+      '<input id="rpRealCode" placeholder="restaurant code (optional)"><br>' +
+      '<button type="button" id="rpRealConfirm">✅ 3. I paid, add my REAL popCoin</button>' +
+      '<small style="display:block">Honour system for now. Ko-fi auto-check comes later.</small><div id="rpRealMsg"></div></div>';
+    anchor.after(box);
+    document.getElementById('rpBuyRealBtn').onclick = function () { var f = document.getElementById('rpBuyRealForm'); f.hidden = !f.hidden; };
+    document.getElementById('rpRealConfirm').onclick = function () {
+      var e = purchaseReal({ gbp: document.getElementById('rpRealGbp').value, restaurantCode: document.getElementById('rpRealCode').value });
+      document.getElementById('rpRealMsg').innerHTML = '<p>Thanks! +' + e.amount + ' REAL popCoin (locked until ' + day(e.unlockAt) + '), +' + e.fakeBoost + ' FAKE popCornCoins for fun. Balance: ' + balance() + '</p>';
+    };
+  }
+  var _mount = mount; mount = function () { _mount(); mountBuyReal(); };
   api.mount = mount; api.render = render; api.show = show;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
-  setTimeout(mount, 500);
+  setTimeout(mount, 500); setTimeout(mountBuyReal, 1500); setInterval(mountBuyReal, 3000);
 })(typeof window !== 'undefined' ? window : globalThis);
