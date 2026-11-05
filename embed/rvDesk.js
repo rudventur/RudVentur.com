@@ -33,11 +33,12 @@
   function url(u) { return new URL(u, HUB).href; }
 
   var APPS = {
-    keyboard:   { icon: '⌨️', title: 'World Keyboards', src: 'https://rudventur.github.io/windows13/keyboard-realistic.html', w: 860, h: 560 },
-    chat:       { icon: '💬', title: 'Global Chat', src: 'https://rudventur.github.io/global-chat-v5/', w: 480, h: 620 },
+    // the keyboard and chat buttons open the one translator, at the keyboard or at the Chat tab
+    keyboard:   { icon: '⌨️', title: 'World Keyboards (in the translator)', via: 'translator', msg: { tab: 'translate', keyboard: true }, query: 'keyboard=1' },
+    chat:       { icon: '💬', title: 'Global Chat (in the translator)', via: 'translator', msg: { tab: 'chat' }, query: 'tab=chat' },
     popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html?v=20261018-3', w: 600, h: 760, fit: true },
     mapmerger:  { icon: '🗺️', title: 'Map Merger Venti', src: 'https://rudventur.github.io/map-merger-venti/', w: 1000, h: 680 },
-    translator: { icon: '🌐', title: 'Translator v7', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
+    translator: { icon: '🌐', title: 'Translator, chat and keyboards', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
     snout:      { icon: '🐾', title: 'Snout First', src: 'https://rudventur.github.io/map-merger-venti/snout-first.html', w: 900, h: 680 },
     weather:    { icon: '🌦️', title: 'Weather News', src: 'yesterday-today-tomorrow-weather.html', w: 720, h: 640 },
     ventusky:   { icon: '🌬️', title: 'Ventusky', src: 'https://www.ventusky.com/', w: 1000, h: 680 },
@@ -599,6 +600,22 @@
   function open(id) {
     var app = APPS[id];
     if (!app) return;
+    if (app.via) {
+      var tw = wins[app.via];
+      if (tw) {
+        restore(tw);
+        try { tw.frame.contentWindow.postMessage({ rvTranslator: app.msg }, '*'); } catch (e) {}
+        return;
+      }
+      var lang = ''; try { lang = localStorage.getItem('rvUserLang') || ''; } catch (e) {}
+      openWin(app.via, app.query + (lang ? '&lang=' + encodeURIComponent(lang) : ''));
+      return;
+    }
+    openWin(id, '');
+  }
+
+  function openWin(id, query) {
+    var app = APPS[id];
     if (app.tab) { realTab(app.src); return; }
     if (wins[id]) { restore(wins[id]); return; }
 
@@ -632,7 +649,7 @@
     var perms = window.rvView && rvView.permissionsFor ? rvView.permissionsFor(url(app.src)) : [];
     fr.allow = (perms.length ? perms : ['fullscreen']).join('; ');
     fr.setAttribute('allowfullscreen', '');
-    fr.src = url(app.src);
+    fr.src = url(app.src) + (query ? (app.src.indexOf('?') < 0 ? '?' : '&') + query : '');
     var grip = el('div', 'rvd-grip');
     win.appendChild(bar); win.appendChild(fr); win.appendChild(grip);
     document.body.appendChild(win);
@@ -836,8 +853,8 @@
       // the bunker for secret movie making; the PIX PANEL tab is the pix describer
       // (emoji bandits + green scenery indicators on the camera feed).
       if (id === 'popcorn') pb1Burst(b);
-      var w = wins[id];
-      if (w && isFront(w)) minimise(w); else open(id);
+      var w = wins[a.via || id];
+      if (w && isFront(w) && !a.via) minimise(w); else open(id);
     });
     parent.appendChild(b);
   }

@@ -893,7 +893,7 @@
     window.rvUserbox.SITE = SITE;
     var SERVICES = [
       { id: 'hub', name: '🏠 RudVentur hub', url: SITE },
-      { id: 'translator', name: '🌐 Translator and map', url: TRANSLATOR_URL },
+      { id: 'translator', name: '🌐 Translator, chat and keyboards', url: TRANSLATOR_URL },
       { id: 'chemventur', name: '🧪 ChemVentur', url: 'https://rudventur.github.io/v120-ChemVentur/' },
       { id: 'map-merger', name: '🗺️ Map merger', url: 'https://rudventur.github.io/map-merger-venti/' },
       { id: 'windows13', name: '🪟 Windows 13', url: 'https://rudventur.github.io/windows13/WINDOWS13-MASTER.html' },
