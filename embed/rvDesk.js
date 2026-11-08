@@ -52,12 +52,30 @@
     chemmulti:  { icon: '⚗️', title: 'ChemVentur Multi v118', src: 'https://rudventur.github.io/ChemVentur-Multi-v118/', w: 1100, h: 720 },
     chem:       { icon: '🧬', title: 'ChemVentur (classic)', src: 'ChemVentur/index.html', w: 1100, h: 720 },
     typegame:   { icon: '⌨️', title: 'Type Game', src: 'https://rudventur.github.io/punk-script/type-game.html', w: 1000, h: 700 },
-    kofi:       { icon: '☕', title: 'Ko-fi', src: 'https://ko-fi.com/rudventur', tab: true }
+    kofi:       { icon: '☕', title: 'Ko-fi', src: 'https://ko-fi.com/rudventur', tab: true },
+    // Big Bike Shops: the directory and map page, then each shop opens in a new tab
+    bikeshops:  { icon: '🚲', title: 'Big Bike Shops — Directory and Map', src: 'bike-shops.html', w: 1100, h: 720 },
+    bikemap:    { icon: '🗺️', title: 'Bike Shop Map (OpenStreetMap)', src: 'bike-shops.html#map', w: 1100, h: 720 },
+    compton:    { icon: '🚲', title: 'Compton Cycles', src: 'https://comptoncycles.co.uk/', tab: true },
+    evans:      { icon: '🚴', title: 'Evans Cycles', src: 'https://www.evanscycles.com/', tab: true },
+    halfords:   { icon: '🔧', title: 'Halfords', src: 'https://www.halfords.com/', tab: true },
+    tredz:      { icon: '🚵', title: 'Tredz', src: 'https://www.tredz.co.uk/', tab: true },
+    leisure:    { icon: '🏞️', title: 'Leisure Lakes Bikes', src: 'https://www.leisurelakesbikes.com/', tab: true },
+    sigma:      { icon: '🏁', title: 'Sigma Sports', src: 'https://www.sigmasports.com/', tab: true },
+    rutland:    { icon: '🚲', title: 'Rutland Cycling', src: 'https://www.rutlandcycling.com/', tab: true },
+    rose:       { icon: '🌹', title: 'Rose Bikes', src: 'https://www.rosebikes.com/', tab: true },
+    // Bike Builder: checklist, build guides, parts suppliers and frame builders
+    bikebuilder:{ icon: '🔧', title: 'Bike Builder — Checklist and Guides', src: 'bike-builder.html', w: 1100, h: 720 },
+    parktool:   { icon: '🔧', title: 'Park Tool Repair Help', src: 'https://www.parktool.com/en-us/blog/repair-help', tab: true },
+    sheldon:    { icon: '📚', title: 'Sheldon Brown', src: 'https://www.sheldonbrown.com/', tab: true },
+    shimano:    { icon: '⚙️', title: 'Shimano Dealer Manuals', src: 'https://si.shimano.com/', tab: true }
   };
   // The notch menu (top-left). To add a link: add it to APPS above (icon, title, src),
   // then put its id in one of these groups, or add a new group: ['<icon> <NAME>', [ids]].
   var MENU = [
     ['🗺️ MAPS', ['mapmerger', 'ventusky', 'windy', 'blitz', 'nullschool', 'zoomearth']],
+    ['🚲 BIG BIKE SHOPS', ['bikeshops', 'bikemap', 'compton', 'evans', 'halfords', 'tredz', 'leisure', 'sigma', 'rutland', 'rose']],
+    ['🔧 BIKE BUILDER', ['bikebuilder', 'parktool', 'sheldon', 'shimano']],
     ['🛠️ TOOLS', ['translator', 'snout', 'weather', 'keyboard']],
     ['🎸 SOCIAL', ['social', 'chat']],
     ['💰 BANK', ['bank', 'vault']],
@@ -165,7 +183,7 @@
   }
   function realTab(src) {
     var a = document.createElement('a');
-    a.href = url(src); a.target = '_blank'; a.rel = 'noopener';
+    a.href = url(src); a.target = '_blank'; a.rel = 'noopener noreferrer';
     a.setAttribute('data-rv-nolayer', '');
     document.body.appendChild(a); a.click(); a.remove();
   }
