@@ -729,3 +729,19 @@
 @media (max-width: 600px) { #useRbox .rb-col { padding: 8px 8px 24px; } .rp-tile { min-width: 60px; padding: 6px 8px; } }
 /* full view: whole box scrolls, PRO tiles wrap */
 #useRbox[data-view="full"] .rb-col { padding-bottom: 14px; }
+
+/* ===== restaurants: tables, free tables, the right to remain ===== */
+.rb-rest-msg { border: 1px dashed var(--yellow); color: var(--yellow); border-radius: 8px; padding: 6px 10px; margin: 6px 0; font-size: 12px; }
+.rb-rest-msg.hidden { display: none; }
+.rb-mine { border-color: var(--yellow); }
+.rb-badge-closed { border: 1px solid #ff4d4d; color: #ff6b6b; }
+.rb-badge-invite { border: 1px solid #ffb84d; color: #ffb84d; }
+.rb-invite-badge { font-size: 12px; }
+.rb-invited { border-color: #ffb84d; }
+.rb-table { border: 1px solid rgba(0,255,65,0.35); border-radius: 6px; padding: 6px 8px; margin-top: 6px; }
+.rb-table .rb-service { margin-top: 0; }
+.rb-table .btn { margin-top: 6px; }
+.rb-table-who { font-size: 12px; opacity: 0.9; margin-top: 4px; overflow-wrap: anywhere; }
+.rb-free-table { border-style: dashed; border-color: var(--yellow); }
+.rb-seated-list { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; }
+.rb-tables-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }

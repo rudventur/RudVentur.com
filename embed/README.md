@@ -346,3 +346,18 @@ title and the jump strip (top panels, brought back by tabs), the eight tiles (fo
 up to their header; clicking the header still opens full screen) and the rvDesk
 taskbar (a 🎃 tab at the bottom brings it back). It changes nothing inside
 `rvDesk.js`; it adds the toggle to the taskbar once rvDesk has built it.
+
+## Restaurants, free tables and the right to remain
+
+- Every subscriber (the "I am a subscriber" tick box, honour system for now) gets a restaurant:
+  `restaurants/<uid>/info` in the popcoin Realtime Database. Its tables are the services they serve.
+- Every free useR gets one free table and no restaurant: `freeTables/<uid>`. They can pull it up
+  at any open restaurant (`rvUserbox.restaurant.pullUpFreeTable(ownerUid)`).
+- Open restaurant: anyone signed in may sit (`restaurants/<owner>/seats/<uid>`).
+- Closed restaurant (closed in Editing, or the owner went offline): ordinary visitors are moved
+  back to the room list; people the owner invited (`restaurants/<owner>/invites/<uid>`) keep the
+  right to remain and stay seated. Only the owner opens, closes, invites and uninvites.
+- Everything is shared only while "Show me in the room list" is on; turning it off takes your
+  seat, your free table and your restaurant down. Rules: `popcoin/database.rules.json`
+  (the same nodes are in `firebase/presence.rules.json`). Tests:
+  `popcoin/tests/restaurants.rules.test.mjs` and `embed/tests/useRbox-restaurant-headless.js`.

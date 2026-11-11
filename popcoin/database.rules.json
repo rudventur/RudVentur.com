@@ -189,6 +189,102 @@
         }
       }
     },
+    "restaurants": {
+      "$owner": {
+        "info": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid === $owner",
+          ".validate": "newData.hasChildren(['name', 'open', 'sub', 'updated'])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 32"
+          },
+          "open": {
+            ".validate": "newData.isBoolean()"
+          },
+          "sub": {
+            ".validate": "newData.val() === true"
+          },
+          "room": {
+            ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_-]{1,32}$/)"
+          },
+          "updated": {
+            ".validate": "newData.isNumber() && newData.val() <= now"
+          },
+          "tables": {
+            "$table": {
+              ".validate": "$table.matches(/^[a-z0-9-]{1,24}$/) && newData.val() === true"
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "invites": {
+          ".read": "auth != null && auth.uid === $owner",
+          "$guest": {
+            ".read": "auth != null && auth.uid === $guest",
+            ".write": "auth != null && auth.uid === $owner && $guest !== $owner",
+            ".validate": "newData.hasChildren(['name', 'at'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 32"
+            },
+            "at": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "seats": {
+          ".read": "auth != null && (auth.uid === $owner || root.child('restaurants').child($owner).child('info').child('open').val() === true || root.child('restaurants').child($owner).child('invites').child(auth.uid).exists())",
+          "$uid": {
+            ".write": "auth != null && ((auth.uid === $uid && (!newData.exists() || $uid === $owner || root.child('restaurants').child($owner).child('info').child('open').val() === true || root.child('restaurants').child($owner).child('invites').child($uid).exists())) || (auth.uid === $owner && !newData.exists()))",
+            ".validate": "newData.hasChildren(['name', 'at']) && (newData.hasChild('table') !== newData.hasChild('free'))",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 32"
+            },
+            "at": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "table": {
+              ".validate": "newData.isString() && root.child('restaurants').child($owner).child('info').child('tables').child(newData.val()).val() === true"
+            },
+            "free": {
+              ".validate": "newData.val() === true && newData.parent().parent().parent().parent().parent().child('freeTables').child($uid).child('at').val() === $owner"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "freeTables": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['name', 'service'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 32"
+        },
+        "service": {
+          ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9-]{1,24}$/)"
+        },
+        "label": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+        },
+        "at": {
+          ".validate": "newData.isString() && newData.val() !== $uid && newData.parent().parent().parent().child('restaurants').child(newData.val()).child('info').exists()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
     "channels": {
       "public": {
         ".read": "auth != null",
