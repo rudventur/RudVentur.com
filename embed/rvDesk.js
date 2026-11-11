@@ -4,8 +4,7 @@
      <script src="embed/rvDesk.js" defer></script>
 
    Puts the Windows 13 layout straight onto the page (no ENTER screen):
-     top-left      RUDVENTUR notch menu (view modes and Ko-fi; services are in the useRbox shop,
-                   view modes, Ko-fi)
+     top-left      RUDVENTUR notch menu (maps, weather and tool links with icons, view modes, Ko-fi)
      top-right     the R circle + useRbox (embed/useRbox.js; not built here)
      bottom-left   ⌨️ Keyboards, 💬 Global Chat
      bottom-right  🍿 PB1 opens the Popcorn Hub (PB2 + pix describer inside);
@@ -48,16 +47,42 @@
     zoomearth:  { icon: '🛰️', title: 'Zoom Earth', src: 'https://zoom.earth/', tab: true },
     social:     { icon: '🎸', title: 'RudVentur Social', src: 'https://rudventur.github.io/punk-script/', w: 760, h: 680 },
     bank:       { icon: '💰', title: 'Bank / Ledger', src: 'https://rudventur.github.io/bank/', w: 900, h: 700 },
-    vault:      { icon: '🍿', title: 'PopCOIN Wallet', src: 'popcoin/', w: 560, h: 760 },
+    vault:      { icon: '🍿', title: 'FAKE popCornCoin Wallet', src: 'popcoin/', w: 560, h: 760 },
     win13:      { icon: '🪟', title: 'WINDOWS 13', src: 'https://rudventur.github.io/windows13/WINDOWS13-MASTER.html', tab: true },
     luxwin:     { icon: '🐧', title: 'LuxWin13', src: 'https://rudventur.github.io/LuxWin13/', tab: true },
     chemmulti:  { icon: '⚗️', title: 'ChemVentur Multi v118', src: 'https://rudventur.github.io/ChemVentur-Multi-v118/', w: 1100, h: 720 },
     chem:       { icon: '🧬', title: 'ChemVentur (classic)', src: 'ChemVentur/index.html', w: 1100, h: 720 },
     typegame:   { icon: '⌨️', title: 'Type Game', src: 'https://rudventur.github.io/punk-script/type-game.html', w: 1000, h: 700 },
-    kofi:       { icon: '☕', title: 'Ko-fi', src: 'https://ko-fi.com/rudventur', tab: true }
+    kofi:       { icon: '☕', title: 'Ko-fi', src: 'https://ko-fi.com/rudventur', tab: true },
+    // Big Bike Shops: the directory and map page, then each shop opens in a new tab
+    bikeshops:  { icon: '🚲', title: 'Big Bike Shops — Directory and Map', src: 'bike-shops.html', w: 1100, h: 720 },
+    bikemap:    { icon: '🗺️', title: 'Bike Shop Map (OpenStreetMap)', src: 'bike-shops.html#map', w: 1100, h: 720 },
+    compton:    { icon: '🚲', title: 'Compton Cycles', src: 'https://comptoncycles.co.uk/', tab: true },
+    evans:      { icon: '🚴', title: 'Evans Cycles', src: 'https://www.evanscycles.com/', tab: true },
+    halfords:   { icon: '🔧', title: 'Halfords', src: 'https://www.halfords.com/', tab: true },
+    tredz:      { icon: '🚵', title: 'Tredz', src: 'https://www.tredz.co.uk/', tab: true },
+    leisure:    { icon: '🏞️', title: 'Leisure Lakes Bikes', src: 'https://www.leisurelakesbikes.com/', tab: true },
+    sigma:      { icon: '🏁', title: 'Sigma Sports', src: 'https://www.sigmasports.com/', tab: true },
+    rutland:    { icon: '🚲', title: 'Rutland Cycling', src: 'https://www.rutlandcycling.com/', tab: true },
+    rose:       { icon: '🌹', title: 'Rose Bikes', src: 'https://www.rosebikes.com/', tab: true },
+    // Bike Builder: checklist, build guides, parts suppliers and frame builders
+    bikebuilder:{ icon: '🔧', title: 'Bike Builder — Checklist and Guides', src: 'bike-builder.html', w: 1100, h: 720 },
+    parktool:   { icon: '🔧', title: 'Park Tool Repair Help', src: 'https://www.parktool.com/en-us/blog/repair-help', tab: true },
+    sheldon:    { icon: '📚', title: 'Sheldon Brown', src: 'https://www.sheldonbrown.com/', tab: true },
+    shimano:    { icon: '⚙️', title: 'Shimano Dealer Manuals', src: 'https://si.shimano.com/', tab: true }
   };
-  // No link list in the notch menu: services and items are in the shop, in the left section of the useRbox.
-  var MENU = [];
+  // The notch menu (top-left). To add a link: add it to APPS above (icon, title, src),
+  // then put its id in one of these groups, or add a new group: ['<icon> <NAME>', [ids]].
+  var MENU = [
+    ['🗺️ MAPS', ['mapmerger', 'ventusky', 'windy', 'blitz', 'nullschool', 'zoomearth']],
+    ['🚲 BIG BIKE SHOPS', ['bikeshops', 'bikemap', 'compton', 'evans', 'halfords', 'tredz', 'leisure', 'sigma', 'rutland', 'rose']],
+    ['🔧 BIKE BUILDER', ['bikebuilder', 'parktool', 'sheldon', 'shimano']],
+    ['🛠️ TOOLS', ['translator', 'snout', 'weather', 'keyboard']],
+    ['🎸 SOCIAL', ['social', 'chat']],
+    ['💰 BANK', ['bank', 'vault']],
+    ['🪟 OS', ['win13', 'luxwin']],
+    ['☢️ CHEMVENTUR', ['chemmulti', 'chem', 'typegame']]
+  ];
 
   var CSS = [
     ':root{--rvd-neon:#00ff41;--rvd-yellow:#ffe600;--rvd-bg:#07090a}',
@@ -68,7 +93,7 @@
     'border-radius:0 0 12px 12px;color:var(--rvd-neon);font:900 13px/1 ui-monospace,monospace;letter-spacing:2px;cursor:pointer;',
     'box-shadow:0 0 12px rgba(0,255,65,.35);user-select:none}',
     '#rvd-notch:hover{background:#021a08}',
-    '#rvd-menu{position:fixed;top:44px;left:10px;z-index:2000002;width:250px;max-height:calc(100vh - 110px);overflow-y:auto;',
+    '#rvd-menu{position:fixed;top:44px;left:10px;z-index:2000002;width:300px;max-height:calc(100vh - 110px);overflow-y:auto;',
     'background:#0b0d0e;border:1px solid #1f3a26;border-radius:10px;padding:6px;display:none;',
     'box-shadow:0 14px 40px rgba(0,0,0,.75);font:12px ui-monospace,monospace}',
     '#rvd-menu.open{display:block}',
@@ -82,6 +107,10 @@
     '#rvd-menu .rvd-sub .rvd-mi{color:#9ab;font-size:11px;padding:8px 10px}',
     '#rvd-menu .rvd-sep{border-top:1px solid #1f3a26;margin:5px 4px}',
     '#rvd-menu .rvd-gold{color:var(--rvd-yellow)}',
+    '#rvd-menu .rvd-ico{display:inline-flex;width:22px;justify-content:center;flex:none;margin-right:6px}',
+    '#rvd-menu .rvd-mi{justify-content:flex-start}#rvd-menu .rvd-grp{justify-content:space-between}',
+    '#rvd-menu .rvd-lbl{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere}',
+    '@media (max-width:640px){#rvd-menu{width:calc(100vw - 20px);max-height:calc(100vh - 120px)}}',
     /* bottom corners */
     '.rvd-corner{position:fixed;bottom:62px;z-index:1600;display:flex;gap:8px}',
     '#rvd-bl{left:12px}#rvd-br{right:12px}',
@@ -155,7 +184,7 @@
   }
   function realTab(src) {
     var a = document.createElement('a');
-    a.href = url(src); a.target = '_blank'; a.rel = 'noopener';
+    a.href = url(src); a.target = '_blank'; a.rel = 'noopener noreferrer';
     a.setAttribute('data-rv-nolayer', '');
     document.body.appendChild(a); a.click(); a.remove();
   }
@@ -395,46 +424,60 @@
     notch.title = 'RUDVENTUR menu';
     var menu = el('div');
     menu.id = 'rvd-menu';
-    MENU.forEach(function (grp) {
-      var g = el('button', 'rvd-mi rvd-grp', grp[0]);
-      g.type = 'button'; ex(g, 'Opens or closes this group of the menu.');
+    function labelled(cls, icon, text) {
+      var b = el('button', cls);
+      b.type = 'button';
+      var i = el('span', 'rvd-ico', icon);
+      b.appendChild(i); b.appendChild(el('span', 'rvd-lbl', text));
+      return b;
+    }
+    function group(icon, text) {
+      var g = labelled('rvd-mi rvd-grp', icon, text);
+      ex(g, 'Opens or closes this group of the menu.');
       var sub = el('div', 'rvd-sub');
+      g.addEventListener('click', function (e) { e.stopPropagation(); g.classList.toggle('open'); sub.classList.toggle('open'); });
+      return [g, sub];
+    }
+    MENU.forEach(function (grp) {
+      var parts = grp[0].split(' ');
+      var gs = group(parts[0], parts.slice(1).join(' '));
+      var g = gs[0], sub = gs[1];
       grp[1].forEach(function (id) {
         var a = APPS[id];
-        var b = el('button', 'rvd-mi', a.icon + ' ' + a.title + (a.tab ? ' ↗' : ''));
-        b.type = 'button'; ex(b, a.tab ? 'Opens ' + a.title + ' in a new tab.' : 'Opens ' + a.title + ' in a window on this page.');
+        var b = labelled('rvd-mi', a.icon, a.title + (a.tab ? ' ↗' : ''));
+        ex(b, a.tab ? 'Opens ' + a.title + ' in a new tab.' : 'Opens ' + a.title + ' in a window on this page.');
         b.addEventListener('click', function () { closeNotch(); open(id); });
         sub.appendChild(b);
       });
-      g.addEventListener('click', function () { g.classList.toggle('open'); sub.classList.toggle('open'); });
       menu.appendChild(g); menu.appendChild(sub);
     });
+    menu.appendChild(el('div', 'rvd-sep'));
     // view modes, same as the logo menu
-    var v = el('button', 'rvd-mi rvd-grp', '🖥️ VIEW');
-    v.type = 'button'; ex(v, 'Shows the view choices: full screen layouts and popcorn window sizes.');
+    var v = labelled('rvd-mi rvd-grp', '🖥️', 'VIEW');
+    ex(v, 'Shows the view choices: full screen layouts and popcorn window sizes.');
     var vs = el('div', 'rvd-sub');
     [['horizontal', 'Full Screen Horizontal'], ['panoramic', 'Full Screen Panoramic'],
      ['vertical', 'Full Screen Vertical'], ['normal', 'Normal / Default Browser']].forEach(function (m) {
-      var b = el('button', 'rvd-mi', m[1]);
-      b.type = 'button'; ex(b, 'Switches the page view to ' + m[1] + '. The choice is remembered on this device.');
+      var b = labelled('rvd-mi', '🖥️', m[1]);
+      ex(b, 'Switches the page view to ' + m[1] + '. The choice is remembered on this device.');
       b.addEventListener('click', function () { closeNotch(); if (window.rvView) rvView.set(m[0]); });
       vs.appendChild(b);
     });
     [['max', '🍿 Popcorn — Fill the Screen'], ['fullscreen', '🍿 Popcorn — True Full Screen'],
      ['camera', '📷 Popcorn — Full Screen Camera'], ['normal', '🍿 Popcorn — Normal Size']].forEach(function (m) {
-      var b = el('button', 'rvd-mi', m[1]);
-      b.type = 'button'; ex(b, 'Opens the Popcorn Hub window at this size: ' + m[1].replace(/^\S+ Popcorn — /, '') + '.');
+      var b = labelled('rvd-mi', m[1].slice(0, 2), m[1].slice(3));
+      ex(b, 'Opens the Popcorn Hub window at this size: ' + m[1].replace(/^\S+ Popcorn — /, '') + '.');
       b.addEventListener('click', function () { closeNotch(); popcornView(m[0]); });
       vs.appendChild(b);
     });
-    v.addEventListener('click', function () { v.classList.toggle('open'); vs.classList.toggle('open'); });
+    v.addEventListener('click', function (e) { e.stopPropagation(); v.classList.toggle('open'); vs.classList.toggle('open'); });
     menu.appendChild(v); menu.appendChild(vs);
     menu.appendChild(el('div', 'rvd-sep'));
-    var buy = el('button', 'rvd-mi rvd-gold', '⚡ Buy Pumpkin Electricity! 🎃');
-    buy.type = 'button'; ex(buy, 'Supports RUDVENTUR: opens the Ko-fi page where you can buy the creator a coffee (pays for hosting and electricity).');
+    var buy = labelled('rvd-mi rvd-gold', '⚡', 'Buy Pumpkin Electricity! 🎃');
+    ex(buy, 'Supports RUDVENTUR: opens the Ko-fi page where you can buy the creator a coffee (pays for hosting and electricity).');
     buy.addEventListener('click', function () { closeNotch(); open('kofi'); });
-    var kofi = el('button', 'rvd-mi rvd-gold', '☕ Ko-fi ↗');
-    kofi.type = 'button'; ex(kofi, 'Opens the RUDVENTUR Ko-fi page in a new tab.');
+    var kofi = labelled('rvd-mi rvd-gold', '☕', 'Ko-fi ↗');
+    ex(kofi, 'Opens the RUDVENTUR Ko-fi page in a new tab.');
     kofi.addEventListener('click', function () { closeNotch(); open('kofi'); });
     menu.appendChild(buy); menu.appendChild(kofi);
 

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bike Builder — RudVentur</title>
+<style>
+body{margin:0;background:#07090a;color:#00ff41;font:14px ui-monospace,monospace}
+h1{margin:0;padding:10px 14px;font-size:18px;letter-spacing:2px;border-bottom:1px solid #00ff41;color:#ffe600}
+.wrap{display:flex;gap:10px;padding:10px;flex-wrap:wrap}
+#dir{flex:1 1 320px;max-width:420px}
+#mapbox{flex:2 1 420px;min-width:300px}
+#map{height:560px;border:1px solid #00ff41}
+.shop{display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:6px;border:1px solid #0a5;border-radius:6px;color:#00ff41;text-decoration:none;background:#000}
+.shop:hover{border-color:#ffe600;color:#ffe600}
+.shop.first{border:2px solid #ffe600}
+.logo{width:32px;height:32px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;background:#111;border-radius:4px;overflow:hidden}
+.logo img{width:32px;height:32px;object-fit:contain;background:#fff}
+.name{font-weight:900}.note{font-size:11px;opacity:.8}
+.bar{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+input,button{background:#000;color:#00ff41;border:1px solid #00ff41;font:inherit;padding:5px 8px}
+button{cursor:pointer}#status{font-size:12px;margin:4px 0;color:#ffe600}
+h2{font-size:14px;color:#ffe600;margin:8px 0}
+</style></head><body>
+<style>.col{flex:1 1 300px;max-width:460px}.chk label{display:flex;gap:8px;padding:5px;border-bottom:1px dashed #0a5;cursor:pointer}
+.chk input{accent-color:#00ff41}#count{color:#ffe600}</style></head><body>
+<h1>🔧 BIKE BUILDER</h1>
+<div class="wrap">
+<div class="col"><h2>🛠️ Build checklist — saved on this device</h2><div id="count"></div><div class="chk" id="chk"></div>
+<button id="reset">↺ Start a new build</button></div>
+<div class="col"><h2>📘 Build guides</h2><div id="guides"></div><h2>📦 Parts suppliers</h2><div id="parts"></div></div>
+<div class="col"><h2>🧑‍🏭 Frame builders</h2><div id="frames"></div></div>
+</div>
+<script src="bike-builder.js"></script>
+</body></html>

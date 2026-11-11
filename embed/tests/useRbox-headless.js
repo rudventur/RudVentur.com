@@ -63,32 +63,104 @@ const DESK = { width: 1440, height: 900 };
   ok(await a.evaluate(() => document.getElementById('useRbox').dataset.view === 'three'), 'the button cycles back to 3 sections');
   await a.screenshot({ path: '/tmp/vm-three.png' });
 
-  // ===== profile builder =====
-  st = await a.evaluate(() => { const b = document.getElementById('rbBuilder'); return { inRight: !!b.closest('.rb-col-right'), first: b.parentNode.firstElementChild === b, steps: b.querySelectorAll('.rb-step').length, shown: b.querySelectorAll('.rb-step:not(.hidden)').length }; });
-  ok(st.inRight && st.first && st.steps === 8 && st.shown === 1, 'the profile builder is first in the Editing column: 8 steps, one at a time', JSON.stringify(st));
+  // ===== nag: robot or not =====
+  const nagTo = async (p) => { for (let i = 0; i < 4 && !(await p.$('#rvRobotBtn')); i++) { await p.$eval('#rvNagOk', b => b.click()); await sleep(80); } };
+  await nagTo(a);
+  st = await a.evaluate(() => ({ human: !!document.getElementById('rvHuman'), robot: !!document.getElementById('rvRobotBtn') }));
+  ok(st.human && st.robot, 'the robot check offers both "I\'m not a robot" and "I am a robot 🤖"', JSON.stringify(st));
+  await a.click('#rvRobotBtn'); await sleep(200);
+  st = await a.evaluate(() => ({ msg: document.getElementById('rvNagMsg').innerText, info: document.getElementById('rbMyInfo').innerText, flag: localStorage.getItem('rvRobot') }));
+  ok(/fellow robot/.test(st.msg) && /🤖 robot/.test(st.info) && st.flag === '1', 'the robot path is playful and puts a 🤖 badge on the profile', st.msg.split('\n')[0]);
+  await a.evaluate(() => document.getElementById('rvInsideHeader').scrollIntoView());
+  await a.screenshot({ path: path.join(shotDir, 'rbox-robot.png') });
+  await a.click('#rvRobotOk'); await sleep(150);
+  ok(await a.evaluate(() => !document.getElementById('rvRobotBtn') && !!document.getElementById('rvNagMsg').textContent), 'after the robot path the support flow continues');
+
+  // ===== profile builder: tiles, draft, review, approve =====
   const typeIn = async (sel, text) => { await a.$eval(sel, e => { e.value = ''; }); await a.type(sel, text); };
-  await typeIn('#rbBuilder [data-b="username"]', 'Mateusz');
+  const tileInfo = () => a.evaluate(() => ({ title: (document.querySelector('#rbTile .rb-subtitle') || {}).textContent, chips: document.querySelectorAll('#rbTile .rb-chip, #rbTile [data-k="avatar"]').length, inputs: document.querySelectorAll('#rbTile [data-in]').length,
+    nav: ['rbBack', 'rbSkip', 'rbNext'].every(id => document.getElementById(id) && getComputedStyle(document.getElementById('rbNav')).display !== 'none') }));
+  st = await a.evaluate(() => { const b = document.getElementById('rbBuilder'); return { inRight: !!b.closest('.rb-col-right'), first: b.parentNode.firstElementChild === b, dots: b.querySelectorAll('#rbSteps span').length }; });
+  ok(st.inRight && st.first && st.dots === 9, 'the builder leads the Editing column: 8 tiles and a review tile', JSON.stringify(st));
+  const seen = [];
+  for (let i = 0; i < 8; i++) { const t = await tileInfo(); seen.push(t); await a.click('#rbSkip'); await sleep(60); }
+  ok(seen.every(t => t.nav && t.chips >= 2) && seen.filter(t => t.inputs > 0).length >= 6, 'every tile has quick-pick chips, Back, Skip and Next; most have their own entry too', seen.map(t => t.chips + '/' + t.inputs).join(' '));
+  await a.click('#rbBackEdit'); await sleep(60);
+  ok(await a.evaluate(() => /APPROVED/.test(document.getElementById('rbMyInfo').innerText) && !localStorage.getItem('rvProfileDraft')), 'skipping changes nothing: still ✅ APPROVED, no draft');
+  // 1 name (chip, then own)
+  await a.click('#rbTile [data-k="username"][data-v="Neon Owl"]'); await sleep(60);
   let info = await a.$eval('#rbMyInfo', e => e.innerText);
-  ok(/Mateusz/.test(info), 'typing the name previews it at once in 👤 MY INFO', info.split('\n').slice(0, 2).join(' '));
-  await a.click('#rbNext'); await typeIn('#rbBuilder [data-b="psignature"]', 'Bonds in 3D');
-  await a.click('#rbNext'); await a.click('#rbBuilder [data-av="🦉"]');
-  await a.click('#rbNext'); await a.select('#rbBuilder [data-b="langpick"]', 'pl'); await a.click('#rbBuilder [data-b="langadd"]'); await a.select('#rbBuilder [data-b="langpick"]', 'en'); await a.click('#rbBuilder [data-b="langadd"]');
-  await a.click('#rbNext'); await typeIn('#rbBuilder [data-b="publicNote"]', 'Come and fly');
-  await a.click('#rbNext'); await a.click('#rbBuilder input[name="rbBLoc"][value="share"]');
-  await a.click('#rbNext'); await a.click('#rbBuilder [data-b="sub"]'); await a.click('#rbBuilder [data-b="tables"] input[value="chemventur"]');
-  await a.click('#rbNext');
+  ok(/DRAFT/.test(info) && /Neon Owl/.test(info) && await a.$eval('#username', e => e.value) !== 'Neon Owl', 'a chip changes the middle at once, marked ✏️ DRAFT; the saved name is untouched', info.split('\n').slice(0, 3).join(' | '));
+  await typeIn('#rbTile [data-in="username"]', 'Mateusz'); await a.click('#rbNext');
+  await a.click('#rbTile [data-k="psignature"][data-v="Bonds in 3D"]'); await a.click('#rbTile [data-k="sigStyle"][data-v="sparkle"]'); await a.click('#rbNext');
+  await a.click('#rbTile [data-k="avatar"][data-v="🦉"]'); await a.click('#rbNext');
+  for (const l of ['pl', 'en', 'uk']) await a.click(`#rbTile [data-k="languages"][data-v="${l}"]`);
+  await a.select('#rbTile [data-in="langpick"]', 'cy'); await a.click('#rbTile [data-act="langadd"]'); await a.click('#rbNext');
+  await a.click('#rbTile [data-k="publicNote"][data-v="Ask me about chemistry 🧪"]'); await a.click('#rbNext');
+  await a.click('#rbTile [data-k="locLevel"][data-v="area"]'); await typeIn('#rbTile [data-in="currentLoc"]', '1 Baker Street, London, United Kingdom'); await a.click('#rbNext');
+  await a.click('#rbTile [data-k="subscriber"][data-v="yes"]'); await a.click('#rbTile [data-k="tables"][data-v="chemventur"]'); await a.click('#rbTile [data-k="tables"][data-v="translator"]'); await a.click('#rbNext');
+  // right now
+  await a.click('#rbTile [data-k="now.mood"][data-v="🤩 Excited"]'); await a.click('#rbTile [data-share="mood"]');
+  await a.click('#rbTile [data-k="now.status"][data-v="playing"]'); await a.click('#rbTile [data-share="status"]');
+  await typeIn('#rbTile [data-in="now.doing"]', 'Building a molecule'); // not shared
+  await a.click('#rbTile [data-k="now.energy"][data-v="🔋 4"]');
+  await a.click('#rbTile [data-k="now.chat"][data-v="yes"]'); await a.click('#rbTile [data-share="chat"]');
+  await a.click('#rbTile [data-k="now.game"][data-v="🧪 ChemVentur"]'); await a.click('#rbTile [data-share="game"]');
+  await a.click('#rbTile [data-k="now.looking"][data-v="🗣 Language exchange"]'); await a.click('#rbTile [data-share="looking"]');
   info = await a.$eval('#rbMyInfo', e => e.innerText);
-  ok(/🦉/.test(info) && /Polish, English/.test(info) && /Bonds in 3D/.test(info) && /Come and fly/.test(info) && /1 tables/.test(info), 'the preview shows avatar, languages, signature, note and the restaurant table', info.replace(/\n/g, ' | '));
-  await sleep(300);
-  await a.screenshot({ path: path.join(shotDir, 'rbox-profile-builder.png') });
-  await a.click('#rbNext'); await sleep(400);   // save
-  st = await a.evaluate(() => { const p = rvUserbox.get(); return { name: p.username, ps: p.psignature, av: p.avatar, langs: p.languages, pub: JSON.parse(localStorage.getItem('rvPublicSettings') || '{}'), extra: JSON.parse(localStorage.getItem('rud_useRbox_extra') || '{}').publicNote, v2: JSON.parse(localStorage.getItem('rud_useRbox_v2') || '{}').username }; });
-  ok(st.name === 'Mateusz' && st.ps === 'Bonds in 3D' && st.av === '🦉' && st.langs === 'pl,en' && st.pub.shareLoc === true && st.pub.subscriber === true && st.pub.tables.join() === 'chemventur' && st.extra === 'Come and fly' && st.v2 === 'Mateusz', 'SAVE stores every step on the device', JSON.stringify(st));
+  ok(/Excited\s+👁/.test(info) && /Playing/.test(info) && /Building a molecule\s+🔒/.test(info) && /Language exchange/.test(info), 'the "right now" answers show in the middle at once, 👁 shared or 🔒 private', info.replace(/\n/g, ' | ').slice(0, 400));
+  await a.evaluate(() => document.getElementById('rbMyInfo').scrollIntoView());
+  await a.screenshot({ path: path.join(shotDir, 'rbox-state.png') });
+  await a.click('#rbNext'); await sleep(100);
+  st = await a.evaluate(() => ({ text: document.getElementById('rbTile').innerText, approve: !!document.getElementById('rbApprove'), nav: getComputedStyle(document.getElementById('rbNav')).display }));
+  ok(st.approve && st.nav === 'none' && /✨ Bonds in 3D ✨/.test(st.text) && /🦉/.test(st.text) && /Polish, English, Ukrainian, Welsh/.test(st.text) && /Area only · London, United Kingdom/.test(st.text) && /2 tables/.test(st.text) && /Excited/.test(st.text),
+    'the review tile lists every choice, with Approve, Back to edit and Discard', st.text.replace(/\n/g, ' | ').slice(0, 300));
+  ok(await a.evaluate(() => rvUserbox.get().username !== 'Mateusz' && !!localStorage.getItem('rvProfileDraft')), 'before approval nothing is saved (only the draft)');
+  await a.screenshot({ path: path.join(shotDir, 'rbox-builder-review.png') });
+  await a.click('#rbApprove'); await sleep(250);
+  st = await a.evaluate(() => { const p = rvUserbox.get(), pub = JSON.parse(localStorage.getItem('rvPublicSettings') || '{}'), now = JSON.parse(localStorage.getItem('rvNowState') || '{}');
+    return { cel: (document.getElementById('rbCelebrate') || {}).innerText || '', info: document.getElementById('rbMyInfo').innerText.split('\n')[0], name: p.username, av: p.avatar, langs: p.languages, sty: p.sigStyle, pub, now, draft: localStorage.getItem('rvProfileDraft') }; });
+  ok(/Profile created ✨/.test(st.cel) && /APPROVED/.test(st.info) && st.name === 'Mateusz' && st.av === '🦉' && st.langs === 'pl,en,uk,cy' && st.sty === 'sparkle' && st.pub.locLevel === 'area' && st.pub.shareLoc === true && st.pub.tables.length === 2 && st.now.mood === '🤩 Excited' && st.now.share.mood && !st.now.share.doing && st.draft === null,
+    'approving saves everything, celebrates "Profile created ✨" and the middle shows ✅ APPROVED', JSON.stringify({ cel: st.cel.slice(-20), info: st.info, name: st.name, langs: st.langs }));
+  await sleep(3200);
+  ok(await a.evaluate(() => !document.getElementById('rbCelebrate')), 'the celebration clears itself');
+  // discard
+  await a.click('#rbBackEdit'); await a.click('#rbTile [data-k="username"][data-v="Pumpkin"]'); await sleep(50);
+  await a.evaluate(() => { for (let i = 0; i < 9; i++) document.getElementById('rbSkip').click(); }); await sleep(50);
+  await a.click('#rbDiscard'); await sleep(80);
+  info = await a.$eval('#rbMyInfo', e => e.innerText);
+  ok(/APPROVED/.test(info) && /Mateusz/.test(info) && !/Pumpkin/.test(info), 'Discard changes drops the draft and the middle goes back to the approved profile');
+  // the normal editing fields also update the middle live
+  await a.click('#rbBackEdit');
+  await a.$eval('#psignature', e => { e.value = 'Typed in Editing'; e.dispatchEvent(new Event('input', { bubbles: true })); });
+  info = await a.$eval('#rbMyInfo', e => e.innerText);
+  ok(/Typed in Editing/.test(info), 'typing in the normal editing fields also updates the middle at once');
+  await a.$eval('#psignature', e => { e.value = 'Bonds in 3D'; e.dispatchEvent(new Event('input', { bubbles: true })); });
+
+  // ===== "right now" over presence: only the 👁 lines, only while shown in the room list =====
+  const ce = await browser.createBrowserContext();
+  const e2 = await open(ce, DESK, '', { rudventur_channel: 'statecafe' });
+  await openBox(e2);
+  await a.evaluate(() => { localStorage.setItem('rudventur_channel', 'statecafe'); document.dispatchEvent(new CustomEvent('rv:channel')); });
+  await sleep(1500);
+  let seenBy = await e2.evaluate(() => document.getElementById('rbPeopleList').innerText);
+  ok(!/Mateusz/.test(seenBy), 'while "Show me in the room list" is off, nobody sees me or my state', seenBy);
+  await a.evaluate(() => { const c = document.getElementById('rbRoomVisible'); c.checked = true; c.dispatchEvent(new Event('change')); });
+  await e2.waitForFunction(() => /Mateusz/.test(document.getElementById('rbPeopleList').innerText), { timeout: 15000 }).catch(() => {});
+  await e2.evaluate(() => [...document.querySelectorAll('#rbPeopleList .rb-person')].find(b => /Mateusz/.test(b.textContent)).click());
+  const viewed = await e2.$eval('#rbViewedBody', e => e.innerText);
+  ok(/Excited/.test(viewed) && /Playing/.test(viewed) && /ChemVentur/.test(viewed) && /Language exchange/.test(viewed) && /Yes/.test(viewed) && !/Building a molecule/.test(viewed) && /robot/i.test(viewed) && /London, United Kingdom/.test(viewed) && !/Baker Street/.test(viewed),
+    'another useR sees only the 👁 shared lines, the robot badge and the area (not the street)', viewed.replace(/\n/g, ' | '));
+  await e2.screenshot({ path: '/tmp/state-viewed.png' });
+  await a.evaluate(() => { const c = document.getElementById('rbRoomVisible'); c.checked = false; c.dispatchEvent(new Event('change')); });
+  ok(e2.errs.length === 0, 'no page errors (second useR)', e2.errs.join(' | '));
+  await ce.close();
 
   // ===== channels =====
   st = await a.evaluate(() => ({ api: typeof rvUserbox.createChannel + typeof rvUserbox.listChannels, list: !!document.querySelector('.rb-col-mid #rbChannels'), make: !!document.querySelector('.rb-col-right #rbMakeChannel') }));
   ok(st.api === 'functionfunction' && st.list && st.make, 'rvUserbox.createChannel and listChannels exist; channel list in the middle, making in Editing', JSON.stringify(st));
   await a.$eval('#rbMakeChannel', d => { d.open = true; });
+  const typeIn2 = typeIn;
   await typeIn('#rbChName', 'Night Owls'); await typeIn('#rbChDesc', 'Late chemistry talk');
   await a.click('#rbChCreate'); await a.waitForFunction(() => /Made|⚠️/.test(document.getElementById('rbChMsg').textContent), { timeout: 15000 });
   let msg = await a.$eval('#rbChMsg', e => e.textContent);
@@ -129,6 +201,10 @@ const DESK = { width: 1440, height: 900 };
   ok(c.every(k => k.vis) && c[0].x < c[1].x && c[1].x < c[2].x && c.every(k => Math.abs(k.y - c[0].y) < 2) && c.every(k => k.w >= 100), 'phone: still three sections side by side (no stacking)', JSON.stringify(c.map(k => [k.x, k.w])));
   ok(c.every(k => k.scroll === 'auto' && k.font >= 11 && k.h > 500 && k.h < 844), 'phone: each section scrolls on its own, text at least 11px', JSON.stringify(c.map(k => [k.h, k.font])));
   ok(R, 'phone: the R stays on top and clickable');
+  await p.click('#rbTile [data-k="username"][data-v="Quiet Fox"]'); await sleep(80);
+  const pinfo = await p.$eval('#rbMyInfo', e => e.innerText);
+  const pb = await p.$eval('#rbBuilder', e => Math.round(e.getBoundingClientRect().width));
+  ok(/DRAFT/.test(pinfo) && /Quiet Fox/.test(pinfo) && pb >= 90, 'phone, three columns: the builder chips work and the middle updates live', 'builder ' + pb + ' pixels wide');
   const scrolled = await p.evaluate(() => { const r = document.querySelector('.rb-col-right'); r.scrollTop = 400; return [r.scrollTop, document.querySelector('.rb-col-left').scrollTop]; });
   ok(scrolled[0] > 0 && scrolled[1] === 0, 'scrolling the Editing section leaves the others where they are', scrolled.join(','));
   await p.evaluate(() => { document.querySelector('.rb-col-right').scrollTop = 0; });

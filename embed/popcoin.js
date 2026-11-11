@@ -1,6 +1,6 @@
 /* popcoin.js — the PopCOIN engine (balance, mining, sending, receiving, export).
 
-   PopCOIN is RUDVENTUR's site credit. Amounts are whole "pips": 100 pips = 1 PopCOIN.
+   FAKE popCornCoin is RUDVENTUR's site credit. Amounts are whole "pips": 100 pips = 1 PopCOIN.
 
    Two modes:
    - shared: when window.POPCOIN_FIREBASE holds a Firebase web config (see
@@ -19,7 +19,7 @@
      PopCOIN.minable()        pips claimable right now (estimate)
      PopCOIN.send(name, pips, note)
      PopCOIN.reward(pips, reason) queue a reward (games, translator); paid out as
-                              fast as the rules allow (3 PopCOIN per 30 s, 50 a day)
+                              fast as the rules allow (3 FAKE popCornCoin per 30 s, 50 a day)
      PopCOIN.pending()        rewards still waiting to be paid out -> pips
      PopCOIN.exportWallet() / PopCOIN.withdrawalSlip(pips, to)   download files
      PopCOIN.fmt(pips)        "12.34"
@@ -29,16 +29,16 @@
   'use strict';
   if (window.PopCOIN) return;
 
-  var WELCOME = 1000;          // 10 PopCOIN on a new account (must match the rules)
+  var WELCOME = 1000;          // 10 FAKE popCornCoin on a new account (must match the rules)
   var MS_PER_PIP = 500;        // 2 pips a second while mining (must match the rules)
-  var MAX_CLAIM = 600;         // at most 6 PopCOIN per claim (must match the rules)
+  var MAX_CLAIM = 600;         // at most 6 FAKE popCornCoin per claim (must match the rules)
   var REF_GBP = typeof window.POPCOIN_REF_GBP === 'number' ? window.POPCOIN_REF_GBP : 0.01;
   var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
   var LOCAL_KEY = 'popcoin_local_v1';
   var PENDING_KEY = 'popcoin_pending_v1';  // shared by every RUDVENTUR page
-  var REWARD_MAX = 300;        // at most 3 PopCOIN per reward claim (must match the rules)
+  var REWARD_MAX = 300;        // at most 3 FAKE popCornCoin per reward claim (must match the rules)
   var REWARD_GAP = 30000;      // at least 30 s between reward claims (must match the rules)
-  var REWARD_DAY = 5000;       // at most 50 PopCOIN of rewards a day (must match the rules)
+  var REWARD_DAY = 5000;       // at most 50 FAKE popCornCoin of rewards a day (must match the rules)
 
   var state = { mode: 'loading', uid: null, name: '', balance: 0, minedAt: 0, history: [], error: '',
     rewardAt: 0, rewardDay: 0, rewardToday: 0 };
@@ -85,7 +85,7 @@
       try { d = JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null'); } catch (e) {}
       if (!d) {
         d = { name: suggestedName(), balance: WELCOME, minedAt: Date.now(), history: [] };
-        d.history.unshift({ type: 'welcome', amount: WELCOME, at: Date.now(), note: 'Welcome to PopCOIN' });
+        d.history.unshift({ type: 'welcome', amount: WELCOME, at: Date.now(), note: 'Welcome to FAKE popCornCoin' });
       }
       this.d = d; this.save();
       state.mode = 'local'; state.uid = 'this-device';
@@ -109,7 +109,7 @@
       return Promise.resolve(gain);
     },
     send: function () {
-      return Promise.reject(new Error('Sending opens as soon as PopCOIN shared accounts are switched on.'));
+      return Promise.reject(new Error('Sending opens as soon as FAKE popCornCoin shared accounts are switched on.'));
     },
     reward: function (gain, note, day, today) {
       this.d.balance += gain;
@@ -180,7 +180,7 @@
         upd['names/' + name] = self.uid;
         upd['users/' + self.uid] = { name: name, balance: WELCOME, minedAt: firebase.database.ServerValue.TIMESTAMP, lastTx: '' };
         return self.root.update(upd).then(function () {
-          return self.log({ type: 'welcome', amount: WELCOME, note: 'Welcome to PopCOIN' });
+          return self.log({ type: 'welcome', amount: WELCOME, note: 'Welcome to FAKE popCornCoin' });
         }, function (e) {
           // name taken: add a few digits and try again
           if (++tries > 5) throw e;
@@ -208,10 +208,10 @@
       toName = cleanName(toName.replace(/^@/, ''));
       pips = Math.round(pips);
       if (!(pips > 0)) return Promise.reject(new Error('Enter an amount above 0.'));
-      if (pips > state.balance) return Promise.reject(new Error('Not enough PopCOIN.'));
+      if (pips > state.balance) return Promise.reject(new Error('Not enough FAKE popCornCoin.'));
       return self.root.child('names/' + toName).once('value').then(function (s) {
         var to = s.val();
-        if (!to) throw new Error('No PopCOIN wallet called @' + toName + '.');
+        if (!to) throw new Error('No FAKE popCornCoin wallet called @' + toName + '.');
         if (to === self.uid) throw new Error('That is your own wallet.');
         var tx = self.root.child('outbox/' + self.uid).push().key;
         var TS = firebase.database.ServerValue.TIMESTAMP;
@@ -320,7 +320,7 @@
     var go = cfg && cfg.apiKey && cfg.databaseURL
       ? (backend = shared).init(cfg).catch(function (e) {
           console.warn('PopCOIN shared accounts unavailable, using this device', e);
-          state.error = 'Could not reach PopCOIN accounts, using this device for now.';
+          state.error = 'Could not reach FAKE popCornCoin accounts, using this device for now.';
           return (backend = local).init();
         })
       : (backend = local).init();
@@ -358,10 +358,10 @@
     withdrawalSlip: function (pips, to) {
       pips = Math.min(Math.round(pips) || state.balance, state.balance);
       download('popcoin-withdrawal-slip-' + Date.now() + '.json', JSON.stringify({
-        slip: 'PopCOIN withdrawal slip',
+        slip: 'FAKE popCornCoin withdrawal slip',
         from: '@' + state.name, account: state.uid, to: to || '(not set)',
-        amount: fmt(pips) + ' PopCOIN', indicativeGBP: value(pips).toFixed(2),
-        status: 'REQUEST - PopCOIN is a site credit and is not redeemable for money yet',
+        amount: fmt(pips) + ' FAKE popCornCoin', indicativeGBP: value(pips).toFixed(2),
+        status: 'REQUEST - FAKE popCornCoin is a site credit and is not redeemable for money yet',
         created: new Date().toISOString(), ref: 'PC-' + Date.now().toString(36).toUpperCase()
       }, null, 2));
     },

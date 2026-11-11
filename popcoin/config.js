@@ -1,6 +1,6 @@
 /* PopCOIN settings.
 
-   Shared accounts switch on when POPCOIN_FIREBASE holds your PopCOIN Firebase
+   Shared accounts switch on when POPCOIN_FIREBASE holds your FAKE popCornCoin Firebase
    project's web config (Firebase console → Project settings → Your apps → Web
    app → SDK setup and configuration → "Config"). These values are public by
    design; the database rules (popcoin/database.rules.json) are what protect the

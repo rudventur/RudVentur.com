@@ -47,6 +47,35 @@
             },
             "$other": {
               ".validate": false
+            },
+            "now": {
+              "mood": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 24"
+              },
+              "status": {
+                ".validate": "newData.isString() && newData.val().matches(/^(available|busy|away|playing)$/)"
+              },
+              "doing": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+              },
+              "energy": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 12"
+              },
+              "chat": {
+                ".validate": "newData.isBoolean()"
+              },
+              "game": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+              },
+              "looking": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+              },
+              "$other": {
+                ".validate": false
+              }
+            },
+            "robot": {
+              ".validate": "newData.isBoolean()"
             }
           }
         }
