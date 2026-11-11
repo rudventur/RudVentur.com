@@ -301,6 +301,7 @@
     bar.className = 'rv-layer-bar';
     var out = document.createElement('button');
     out.type = 'button'; out.title = 'Open in a new tab'; out.textContent = '\u2197';
+    out.setAttribute('data-explain', 'Opens this page in a real browser tab and closes the layer.');
     out.addEventListener('click', function () {
       var href = abs;
       try { href = fr.contentWindow.location.href; } catch (e) {}
@@ -309,9 +310,11 @@
     });
     var x = document.createElement('button');
     x.type = 'button'; x.title = 'Close'; x.textContent = '\u2715';
+    x.setAttribute('data-explain', 'Closes this layer and goes back to the page underneath.');
     x.addEventListener('click', function () { closeLayer(); });
     var rb = document.createElement('button');
     rb.type = 'button'; rb.title = 'View options'; rb.textContent = 'R';
+    rb.setAttribute('data-explain', 'Opens the view menu for the page in this layer.');
     rb.style.fontWeight = '900';
     rb.addEventListener('click', toggleMenu);
     bar.appendChild(rb); bar.appendChild(out); bar.appendChild(x);
@@ -504,7 +507,8 @@
     menu.setAttribute('role', 'menu');
     // a logo that is also a link keeps its link as the first menu item
     goBtn = btn(menu, '', function (e) { e.stopPropagation(); closeMenu(); location.href = goHref; });
-    ITEMS.forEach(function (it) { btn(menu, it[1], pick(it[0])); });
+    goBtn.setAttribute('data-explain', 'Follows the page logo link, the same as clicking the logo normally.');
+    ITEMS.forEach(function (it) { btn(menu, it[1], pick(it[0])).setAttribute('data-explain', 'Switches the page view to ' + it[1] + '. The choice is remembered on this device.'); });
     extrasBox = document.createElement('div');
     extrasBox.className = 'rv-extras';
     menu.appendChild(extrasBox);
@@ -514,15 +518,17 @@
       e.stopPropagation(); sub.classList.toggle('open'); subBtn.classList.toggle('open');
     });
     subBtn.className = 'rv-set';
+    subBtn.setAttribute('data-explain', 'Shows more view choices: locked or rotating panoramic, and full screen vertical.');
     sub = document.createElement('div');
     sub.className = 'rv-sub';
-    SUB.forEach(function (it) { btn(sub, it[1], pick(it[0])); });
+    SUB.forEach(function (it) { btn(sub, it[1], pick(it[0])).setAttribute('data-explain', 'Switches the page view to ' + it[1].replace(/^\W+\s*/, '') + '.'); });
     menu.appendChild(sub);
     var isep = Object.assign(document.createElement('div'), { className: 'rv-sep' });
     isep.setAttribute('data-rv-install', '');
     menu.appendChild(isep);
     var ib = btn(menu, '\uD83D\uDCF2 Download the RUDVENTUR app', function (e) { e.stopPropagation(); closeMenu(); install(); });
     ib.setAttribute('data-rv-install', '');
+    ib.setAttribute('data-explain', 'Installs RUDVENTUR on your home screen as an app, or shows how to do it on your phone.');
     document.body.appendChild(menu);
     syncInstall();
     document.addEventListener('click', function (e) { if (!menu.contains(e.target)) closeMenu(); });
@@ -567,6 +573,7 @@
       fab.type = 'button';
       fab.className = 'rv-fab';
       fab.title = 'RUDVENTUR view options';
+      fab.setAttribute('data-explain', 'Opens the RUDVENTUR view menu: full screen layouts and installing the app. It stays at the left edge on every page.');
       fab.textContent = 'R';
       fab.addEventListener('click', toggleMenu);
       document.body.appendChild(fab);

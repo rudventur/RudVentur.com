@@ -32,11 +32,12 @@
   function url(u) { return new URL(u, HUB).href; }
 
   var APPS = {
-    keyboard:   { icon: '⌨️', title: 'World Keyboards', src: 'https://rudventur.github.io/windows13/keyboard-realistic.html', w: 860, h: 560 },
-    chat:       { icon: '💬', title: 'Global Chat', src: 'https://rudventur.github.io/global-chat-v5/', w: 480, h: 620 },
+    // the keyboard and chat buttons open the one translator, at the keyboard or at the Chat tab
+    keyboard:   { icon: '⌨️', title: 'World Keyboards (in the translator)', via: 'translator', msg: { tab: 'translate', keyboard: true }, query: 'keyboard=1' },
+    chat:       { icon: '💬', title: 'Global Chat (in the translator)', via: 'translator', msg: { tab: 'chat' }, query: 'tab=chat' },
     popcorn:    { icon: '🍿', title: 'Popcorn Hub', src: 'bottom-right-popcorn-complete.html?v=20261018-3', w: 600, h: 760, fit: true },
     mapmerger:  { icon: '🗺️', title: 'Map Merger Venti', src: 'https://rudventur.github.io/map-merger-venti/', w: 1000, h: 680 },
-    translator: { icon: '🌐', title: 'Translator v7', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
+    translator: { icon: '🌐', title: 'Translator, chat and keyboards', src: 'https://rudventur.github.io/map-merger-venti/translator_v7.html', w: 1000, h: 680 },
     snout:      { icon: '🐾', title: 'Snout First', src: 'https://rudventur.github.io/map-merger-venti/snout-first.html', w: 900, h: 680 },
     weather:    { icon: '🌦️', title: 'Weather News', src: 'yesterday-today-tomorrow-weather.html', w: 720, h: 640 },
     ventusky:   { icon: '🌬️', title: 'Ventusky', src: 'https://www.ventusky.com/', w: 1000, h: 680 },
@@ -287,9 +288,27 @@
     }
   }
 
+  function ex(node, text) { node.setAttribute('data-explain', text); }
+
   function open(id) {
     var app = APPS[id];
     if (!app) return;
+    if (app.via) {
+      var tw = wins[app.via];
+      if (tw) {
+        restore(tw);
+        try { tw.frame.contentWindow.postMessage({ rvTranslator: app.msg }, '*'); } catch (e) {}
+        return;
+      }
+      var lang = ''; try { lang = localStorage.getItem('rvUserLang') || ''; } catch (e) {}
+      openWin(app.via, app.query + (lang ? '&lang=' + encodeURIComponent(lang) : ''));
+      return;
+    }
+    openWin(id, '');
+  }
+
+  function openWin(id, query) {
+    var app = APPS[id];
     if (app.tab) { realTab(app.src); return; }
     if (wins[id]) { restore(wins[id]); return; }
 
@@ -316,6 +335,8 @@
     var bMax = el('button', '', '⛶'); bMax.title = 'Full screen';
     var bX = el('button', 'rvd-x', '✕'); bX.title = 'Close';
     [bOut, bMin, bMax, bX].forEach(function (b) { b.type = 'button'; });
+    ex(bOut, 'Opens ' + app.title + ' in a real browser tab and closes this window.'); ex(bMin, 'Minimises this window to the taskbar at the bottom; click its taskbar button to bring it back.');
+    ex(bMax, 'Makes this window fill the screen, or back to its normal size.'); ex(bX, 'Closes the ' + app.title + ' window.');
     bar.appendChild(title); bar.appendChild(bOut); bar.appendChild(bMin); bar.appendChild(bMax); bar.appendChild(bX);
     var fr = document.createElement('iframe');
     // RUDVENTUR pages get only what they need (same list as the full-screen
@@ -323,13 +344,13 @@
     var perms = window.rvView && rvView.permissionsFor ? rvView.permissionsFor(url(app.src)) : [];
     fr.allow = (perms.length ? perms : ['fullscreen']).join('; ');
     fr.setAttribute('allowfullscreen', '');
-    fr.src = url(app.src);
+    fr.src = url(app.src) + (query ? (app.src.indexOf('?') < 0 ? '?' : '&') + query : '');
     var grip = el('div', 'rvd-grip');
     win.appendChild(bar); win.appendChild(fr); win.appendChild(grip);
     document.body.appendChild(win);
 
     var task = el('button', 'rvd-task', app.icon + ' ' + app.title);
-    task.type = 'button';
+    task.type = 'button'; ex(task, 'Brings the ' + app.title + ' window to the front, or minimises it if it is already in front.');
     tasksEl.appendChild(task);
 
     var rec = { id: id, el: win, frame: fr, task: task };
@@ -412,6 +433,7 @@
     }
     function group(icon, text) {
       var g = labelled('rvd-mi rvd-grp', icon, text);
+      ex(g, 'Opens or closes this group of the menu.');
       var sub = el('div', 'rvd-sub');
       g.addEventListener('click', function (e) { e.stopPropagation(); g.classList.toggle('open'); sub.classList.toggle('open'); });
       return [g, sub];
@@ -423,6 +445,7 @@
       grp[1].forEach(function (id) {
         var a = APPS[id];
         var b = labelled('rvd-mi', a.icon, a.title + (a.tab ? ' ↗' : ''));
+        ex(b, a.tab ? 'Opens ' + a.title + ' in a new tab.' : 'Opens ' + a.title + ' in a window on this page.');
         b.addEventListener('click', function () { closeNotch(); open(id); });
         sub.appendChild(b);
       });
@@ -431,16 +454,19 @@
     menu.appendChild(el('div', 'rvd-sep'));
     // view modes, same as the logo menu
     var v = labelled('rvd-mi rvd-grp', '🖥️', 'VIEW');
+    ex(v, 'Shows the view choices: full screen layouts and popcorn window sizes.');
     var vs = el('div', 'rvd-sub');
     [['horizontal', 'Full Screen Horizontal'], ['panoramic', 'Full Screen Panoramic'],
      ['vertical', 'Full Screen Vertical'], ['normal', 'Normal / Default Browser']].forEach(function (m) {
       var b = labelled('rvd-mi', '🖥️', m[1]);
+      ex(b, 'Switches the page view to ' + m[1] + '. The choice is remembered on this device.');
       b.addEventListener('click', function () { closeNotch(); if (window.rvView) rvView.set(m[0]); });
       vs.appendChild(b);
     });
     [['max', '🍿 Popcorn — Fill the Screen'], ['fullscreen', '🍿 Popcorn — True Full Screen'],
      ['camera', '📷 Popcorn — Full Screen Camera'], ['normal', '🍿 Popcorn — Normal Size']].forEach(function (m) {
       var b = labelled('rvd-mi', m[1].slice(0, 2), m[1].slice(3));
+      ex(b, 'Opens the Popcorn Hub window at this size: ' + m[1].replace(/^\S+ Popcorn — /, '') + '.');
       b.addEventListener('click', function () { closeNotch(); popcornView(m[0]); });
       vs.appendChild(b);
     });
@@ -448,8 +474,10 @@
     menu.appendChild(v); menu.appendChild(vs);
     menu.appendChild(el('div', 'rvd-sep'));
     var buy = labelled('rvd-mi rvd-gold', '⚡', 'Buy Pumpkin Electricity! 🎃');
+    ex(buy, 'Supports RUDVENTUR: opens the Ko-fi page where you can buy the creator a coffee (pays for hosting and electricity).');
     buy.addEventListener('click', function () { closeNotch(); open('kofi'); });
     var kofi = labelled('rvd-mi rvd-gold', '☕', 'Ko-fi ↗');
+    ex(kofi, 'Opens the RUDVENTUR Ko-fi page in a new tab.');
     kofi.addEventListener('click', function () { closeNotch(); open('kofi'); });
     menu.appendChild(buy); menu.appendChild(kofi);
 
@@ -486,6 +514,9 @@
     var a = APPS[id];
     var b = el('button', 'rvd-cbtn', a.icon);
     b.type = 'button';
+    ex(b, id === 'keyboard' ? 'Opens the translator with the on-screen keyboards for many languages; it types into the focused text box.' :
+      id === 'chat' ? 'Opens the Chat tab of the translator: the public chat room, with every message translated into your language.' :
+      id === 'popcorn' ? 'Opens the Popcorn Hub: popCoin wallet, PIX camera challenges, the bunker and tools.' : 'Opens ' + a.title + '.');
     b.title = a.title;
     if (id === 'popcorn') {
       b.classList.add('rvd-pb1');
@@ -497,8 +528,8 @@
       // the bunker for secret movie making; the PIX PANEL tab is the pix describer
       // (emoji bandits + green scenery indicators on the camera feed).
       if (id === 'popcorn') pb1Burst(b);
-      var w = wins[id];
-      if (w && isFront(w)) minimise(w); else open(id);
+      var w = wins[a.via || id];
+      if (w && isFront(w) && !a.via) minimise(w); else open(id);
     });
     parent.appendChild(b);
   }
@@ -517,7 +548,7 @@
 
     var bar = el('div'); bar.id = 'rvd-taskbar';
     var start = el('button', '', '🎃 RUDVENTUR'); start.id = 'rvd-start'; start.type = 'button';
-    start.title = 'RUDVENTUR menu';
+    start.title = 'RUDVENTUR menu'; ex(start, 'Opens the RUDVENTUR menu: view choices, popcorn window sizes and support links.');
     start.addEventListener('click', function (e) { e.stopPropagation(); toggleNotch(); });
     tasksEl = el('div'); tasksEl.id = 'rvd-tasks';
     var clock = el('div'); clock.id = 'rvd-clock';
