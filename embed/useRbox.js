@@ -345,8 +345,10 @@
       '    <label class="toggle"><input type="checkbox" id="rbRoomVisible"><span>Show me in the room list</span></label>' +
       '    <small class="rb-dev-note" id="rbPresenceNote">Off by default. When on, your name and the public fields you chose are shared live with this room.</small>' +
       '    <div class="rb-subtitle">🍽️ OPEN RESTAURANTS</div>' +
+      '    <div class="rb-rest-msg hidden" id="rbRestMsg"></div>' +
       '    <div id="rbRestaurants"><div class="rb-empty">No restaurants open right now</div></div>' +
-      '    <div class="rb-tables hidden" id="rbTables"><div class="rb-viewed-head"><span id="rbTablesTitle"></span><button type="button" class="btn btn-small" data-explain="Closes the restaurant tables list." id="rbTablesClose" title="Close">✖</button></div><div id="rbTablesList"></div></div>' +
+      '    <div class="rb-tables hidden" id="rbTables"><div class="rb-viewed-head"><span id="rbTablesTitle"></span><button type="button" class="btn btn-small" data-explain="Closes the restaurant tables list." id="rbTablesClose" title="Close">✖</button></div><div id="rbTablesStatus"></div><div id="rbTablesList"></div><div id="rbSeated"></div><div class="rb-tables-actions" id="rbTablesActions"></div></div>' +
+      '    <small class="rb-dev-note">Every supporter gets a restaurant. Everyone else gets one free table to pull up at any open restaurant. When a restaurant closes, only the people its owner invited may stay.</small>' +
       '  </div></details>' +
       '   </section>' +
       '   <section class="rb-col rb-col-right">' +
@@ -400,6 +402,11 @@
       '    <div id="rbRestSettings">' +
       '      <label>Opening</label><select id="rbRestOpen"><option value="online">🟢 Open when I am online</option><option value="closed">🔴 Closed</option></select>' +
       '      <label>Tables (the services I serve)</label><div id="rbTableChoices"></div>' +
+      '    </div>' +
+      '    <div id="rbFreeSettings">' +
+      '      <label>🪑 My free table (everyone who is not a supporter gets one)</label><select id="rbFreeTable"></select>' +
+      '      <input type="text" id="rbFreeLabel" maxlength="40" placeholder="Give your table a name (optional)">' +
+      '      <small class="rb-dev-note">Pull it up at any open restaurant. You can have one free table, no restaurant.</small>' +
       '    </div>' +
       '    <button type="button" class="btn" data-explain="Saves what you share publicly and your restaurant opening and tables." id="rbSavePublic" style="width:100%;margin-top:10px;">💾 SAVE SHARING AND RESTAURANT</button>' +
       '  </div>' +
@@ -861,6 +868,7 @@
         return '<label>' + r[0] + '</label><div class="rb-viewed-val">' + escapeHtml(r[1]) + '</div>';
       }).join('') || '<div class="rb-empty">This useR has not shared anything yet.</div>';
       box.classList.remove('hidden');
+      personActions(p);
       box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
     q('#rbViewedClose').onclick = function () { q('#rbViewed').classList.add('hidden'); };
@@ -875,6 +883,8 @@
         var b = document.createElement('button');
         b.type = 'button'; b.className = 'rb-person';
         b.textContent = '👤 ' + (p.username || p.name || 'useR');
+        if (p.id && rest && rest.myInvites[p.id]) { b.textContent += ' 🎟️'; b.classList.add('rb-invited'); b.title = 'Invited to your restaurant: may stay when it is closed'; }
+        b.setAttribute('data-id', p.id || '');
         b.setAttribute('data-explain', 'Shows what this person shares publicly: note, location and wishes.');
         b.onclick = function () { showPerson(p); };
         list.appendChild(b);
@@ -912,7 +922,7 @@
       { id: 'camera-background', name: '📷 Camera background', url: SITE + 'camera-background.html' },
       { id: 'weather', name: '⛅ Weather', url: SITE + 'yesterday-today-tomorrow-weather.html' }
     ];
-    function serviceById(id) { return SERVICES.filter(function (x) { return x.id === id; })[0]; }
+    function serviceById(id) { return (SERVICES || []).filter(function (x) { return x.id === id; })[0]; }
     var tableBox = q('#rbTableChoices');   // the service links themselves are the shop items in the left section
     SERVICES.forEach(function (x) {
       var a = document.createElement('a');
@@ -926,8 +936,10 @@
     var PUB_KEY = 'rvPublicSettings';
     function readPub() {
       var d = {}; try { d = JSON.parse(lsGet(PUB_KEY) || '{}') || {}; } catch (e) {}
+      var fr = d.free && typeof d.free === 'object' ? d.free : {};
       return { shareLoc: !!d.shareLoc, shareBurial: !!d.shareBurial, subscriber: !!d.subscriber,
-        restOpen: d.restOpen === 'closed' ? 'closed' : 'online', tables: Array.isArray(d.tables) ? d.tables : [], locLevel: d.locLevel === 'area' ? 'area' : 'exact' };
+        restOpen: d.restOpen === 'closed' ? 'closed' : 'online', tables: Array.isArray(d.tables) ? d.tables : [], locLevel: d.locLevel === 'area' ? 'area' : 'exact',
+        free: { service: serviceById(fr.service) ? fr.service : 'hub', label: str(fr.label).slice(0, 40) } };
     }
     function loadPub() {
       var d = readPub();
@@ -935,13 +947,17 @@
       q('#rbSubscriber').checked = d.subscriber; q('#rbRestOpen').value = d.restOpen;
       tableBox.querySelectorAll('input').forEach(function (i) { i.checked = d.tables.indexOf(i.value) >= 0; });
       q('#rbRestSettings').style.display = d.subscriber ? '' : 'none';
+      q('#rbFreeTable').value = d.free.service; q('#rbFreeLabel').value = d.free.label;
+      q('#rbFreeSettings').style.display = d.subscriber ? 'none' : '';
     }
-    q('#rbSubscriber').onchange = function () { q('#rbRestSettings').style.display = this.checked ? '' : 'none'; };
+    SERVICES.forEach(function (x) { var o = document.createElement('option'); o.value = x.id; o.textContent = x.name; q('#rbFreeTable').appendChild(o); });
+    q('#rbSubscriber').onchange = function () { q('#rbRestSettings').style.display = this.checked ? '' : 'none'; q('#rbFreeSettings').style.display = this.checked ? 'none' : ''; };
     q('#rbSavePublic').onclick = function () {
       var tables = [];
       tableBox.querySelectorAll('input:checked').forEach(function (i) { tables.push(i.value); });
       lsSet(PUB_KEY, JSON.stringify({ shareLoc: q('#rbShareLoc').checked, shareBurial: q('#rbShareBurial').checked,
         subscriber: q('#rbSubscriber').checked, restOpen: q('#rbRestOpen').value, tables: tables,
+        free: { service: q('#rbFreeTable').value, label: str(q('#rbFreeLabel').value).trim().slice(0, 40) },
         locLevel: (function () { try { return (JSON.parse(lsGet(PUB_KEY) || '{}') || {}).locLevel; } catch (e) { return undefined; } })() }));
       var b = this, t = b.textContent; b.textContent = '✅ SAVED'; setTimeout(function () { b.textContent = t; }, 1200);
       renderMyInfo(); presence.publish();
@@ -962,7 +978,9 @@
         ['✨ Public note', v.publicNote], ['⚰️ Burial wish', x.burialWish ? x.burialWish + (d.shareBurial ? '  (public)' : '  (private)') : ''],
         ['🗣 Languages', (v.languages || []).map(function (l) { var o = q('#rbLang option[value="' + l + '"]'); return o ? o.textContent : l; }).join(', ')],
         ['📡 Room', lsGet('rudventur_channel') || 'main'],
-        ['🍽️ Restaurant', v.subscriber ? (d.restOpen === 'online' ? 'Open when online · ' + (v.tables || []).length + ' tables' : 'Closed') : '']];
+        ['🍽️ Restaurant', v.subscriber ? (d.restOpen === 'online' ? 'Open when online · ' + (v.tables || []).length + ' tables' : 'Closed') : ''],
+        ['🪑 Free table', v.subscriber ? '' : (function () { var f = v.free || d.free, s = serviceById(f.service); return (s ? s.name : '') + (f.label ? ' · “' + f.label + '”' : '') +
+          (rest && rest.seatAt && rest.seatFree ? ' · pulled up at a restaurant' : ' · at home (not at a restaurant)'); })()]];
       var now = v.now || { share: {} }, NL = { mood: '🎭 Mood', status: '🚦 Status', doing: '🛠 Doing now', energy: '🔋 Energy', chat: '💬 Open to chat', game: '🎮 Game or room', looking: '🔎 Looking for' };
       var ST = { available: '🟢 Available', busy: '🔴 Busy', away: '🌙 Away', playing: '🎮 Playing' };
       Object.keys(NL).forEach(function (f) { var val = now[f]; if (val) rows.push([NL[f], (f === 'status' ? ST[val] || val : f === 'chat' ? (val === 'yes' ? 'Yes' : 'Not now') : val) + ((now.share || {})[f] ? '  👁' : '  🔒')]); });
@@ -974,42 +992,247 @@
     q('#saveUser').addEventListener('click', function () { renderMyInfo(); presence.publish(); });
     if (saveExtraBtn) saveExtraBtn.addEventListener('click', function () { renderMyInfo(); presence.publish(); });
 
-    /* ===== restaurants (middle column) ===== */
-    function restaurantName(p) { return '🍽️ ' + (p.username || 'useR') + '\'s restaurant'; }
+    /* ===== restaurants (middle column) =====
+       Every subscriber gets a restaurant (restaurants/<uid>), its tables are the services they serve.
+       Every free useR gets ONE free table (freeTables/<uid>) and no restaurant; they can pull it up at any open restaurant.
+       Open: anyone may sit. Closed: ordinary visitors are moved out, invited guests keep the right to remain.
+       Only the owner opens, closes and invites (the database rules check all of this too). Nothing here is made up:
+       every name in these lists comes from the live database. */
+    var rest = { view: null, info: null, seats: {}, invited: false, myInvites: {}, invitedBy: {}, seatAt: null, offs: [], ownOff: null, freeInfo: {} };
+    function restaurantName(p) { return '🍽️ ' + (p.username || p.name || 'useR') + '\'s restaurant'; }
+    function myUid() { return presence.state.uid; }
+    function myName() { return str(q('#username').value).slice(0, 32) || 'useR'; }
+    function restMsg(t) { var m = q('#rbRestMsg'); m.textContent = t || ''; m.classList.toggle('hidden', !t); }
+    function freeTableText(f) {
+      var s = serviceById(f && f.service); if (!s) return '';
+      return s.name + (f.label ? ' · “' + f.label + '”' : '');
+    }
     function renderRestaurants() {
       var box = q('#rbRestaurants'); box.innerHTML = '';
-      var open = people.filter(function (p) { return p.restaurant && p.restaurant.open && p.restaurant.tables.length; });
-      if (!open.length) { box.innerHTML = '<div class="rb-empty">No restaurants open right now</div>'; return; }
-      open.forEach(function (p) {
+      var uid = myUid(), d = readPub(), mine = d.subscriber && uid && presence.state.myRef;
+      if (mine) {
+        var m = document.createElement('button');
+        m.type = 'button'; m.className = 'rb-person rb-mine'; m.id = 'rbMyRestaurant';
+        m.textContent = '⭐ My restaurant · ' + (d.restOpen === 'online' ? '🟢 open' : '🔴 closed') + ' · ' + d.tables.length + ' tables';
+        m.setAttribute('data-explain', 'Shows your own restaurant: who is sitting at your tables, and who you invited.');
+        m.onclick = function () { showRestaurant(uid, myName()); };
+        box.appendChild(m);
+      }
+      var list = people.filter(function (p) { return p.restaurant && (p.restaurant.open || rest.invitedBy[p.id]) && p.restaurant.tables.length; });
+      if (!list.length && !mine) { box.innerHTML = '<div class="rb-empty">No restaurants open right now</div>'; return; }
+      list.forEach(function (p) {
         var b = document.createElement('button');
-        b.type = 'button'; b.className = 'rb-person';
-        b.textContent = restaurantName(p) + ' · ' + p.restaurant.tables.length + ' tables';
-        b.setAttribute('data-explain', 'Shows the open tables at this restaurant, so you can sit down and talk.');
-        b.onclick = function () { showTables(p); };
+        b.type = 'button'; b.className = 'rb-person'; b.setAttribute('data-owner', p.id);
+        b.textContent = restaurantName(p) + ' · ' + (p.restaurant.open ? p.restaurant.tables.length + ' tables' : '🔴 closed · 🎟️ you are invited');
+        b.setAttribute('data-explain', 'Shows the tables at this restaurant and who sits there, so you can sit down and talk.');
+        b.onclick = function () { showRestaurant(p.id, p.username); };
         box.appendChild(b);
       });
     }
-    function showTables(p) {
-      q('#rbTablesTitle').textContent = restaurantName(p);
-      var list = q('#rbTablesList'); list.innerHTML = '';
-      p.restaurant.tables.forEach(function (id) {
-        var x = serviceById(id); if (!x) return;
-        var a = document.createElement('a');
-        a.className = 'rb-service'; a.href = x.id === 'translator' ? withLang(x.url) : x.url;
-        a.target = '_blank'; a.rel = 'noopener'; a.textContent = '🪑 ' + x.name;
-        list.appendChild(a);
+    function stopViewing() { rest.offs.forEach(function (f) { try { f(); } catch (e) {} }); rest.offs = []; rest.view = null; rest.info = null; rest.seats = {}; rest.invited = false; }
+    function listenRef(ref, cb, onErr) { ref.on('value', cb, onErr || function () {}); rest.offs.push(function () { ref.off('value', cb); }); }
+    function showRestaurant(owner, ownerName) {
+      return presence.start().then(function () {
+        stopViewing();
+        var db = presence.state.db, me = myUid(), base = 'restaurants/' + owner + '/';
+        rest.view = { owner: owner, name: ownerName || 'useR', mine: owner === me };
+        q('#rbTables').classList.remove('hidden');
+        renderTablesView();
+        var view = rest.view;
+        var first = view.mine ? Promise.resolve(null) : db.ref(base + 'invites/' + me).once('value').then(function (s) { return s.exists(); }, function () { return false; });
+        return first.then(function (inv) {
+        if (rest.view !== view) return;
+        rest.invited = !!inv;
+        listenRef(db.ref(base + 'info'), function (s) {
+          var was = rest.info; rest.info = s.val();
+          if (!rest.info) { if (rest.view && !rest.view.mine) moveOut(owner, '🌙 ' + rest.view.name + '\'s restaurant is gone for now. You are back at the room list.'); return; }
+          if (was && was.open && !rest.info.open && rest.seatAt === owner && !rest.view.mine) {
+            if (rest.invited) restMsg('🎟️ ' + rest.view.name + ' closed the restaurant, but you were invited, so you can stay.');
+            else { moveOut(owner, '🌙 ' + rest.view.name + '\'s restaurant just closed. Thanks for visiting! You are back at the room list.'); return; }
+          }
+          if (!rest.info.open && !rest.invited && !rest.view.mine) { moveOut(owner, '🌙 ' + rest.view.name + '\'s restaurant is closed right now.'); return; }
+          watchSeats();
+          renderTablesView();
+        });
+        if (!rest.view.mine) {
+          listenRef(db.ref(base + 'invites/' + me), function (s) {
+            var was = rest.invited; rest.invited = s.exists(); rest.invitedBy[owner] = rest.invited;
+            if (was && !rest.invited && rest.info && !rest.info.open) { moveOut(owner, '🌙 ' + rest.view.name + ' took back the invite and the restaurant is closed. You are back at the room list.'); return; }
+            if (!was && rest.invited) restMsg('🎟️ ' + rest.view.name + ' invited you: you can stay even when the restaurant closes.');
+            renderTablesView();
+          });
+        }
+        });
       });
-      q('#rbTables').classList.remove('hidden');
     }
-    q('#rbTablesClose').onclick = function () { q('#rbTables').classList.add('hidden'); };
+    var seatsWatched = null;
+    function watchSeats() {
+      if (!rest.view || seatsWatched === rest.view.owner) return;
+      var owner = rest.view.owner, ref = presence.state.db.ref('restaurants/' + owner + '/seats');
+      seatsWatched = owner;
+      var cb = function (s) { rest.seats = s.val() || {}; loadFreeInfo(); renderTablesView(); };
+      ref.on('value', cb, function () {   // the database stopped letting us read: closed and not invited (any more)
+        seatsWatched = null;
+        if (rest.view && rest.view.owner === owner && !rest.view.mine) moveOut(owner, rest.invited
+          ? '🌙 ' + rest.view.name + ' took back the invite and the restaurant is closed. You are back at the room list.'
+          : '🌙 ' + rest.view.name + '\'s restaurant closed. You are back at the room list.');
+      });
+      rest.offs.push(function () { ref.off('value', cb); seatsWatched = null; });
+    }
+    function loadFreeInfo() {
+      Object.keys(rest.seats).forEach(function (uid) {
+        if (!rest.seats[uid].free || rest.freeInfo[uid]) return;
+        presence.state.db.ref('freeTables/' + uid).once('value').then(function (s) { if (s.exists()) { rest.freeInfo[uid] = s.val(); renderTablesView(); } }).catch(function () {});
+      });
+    }
+    function moveOut(owner, msg) {
+      var p = rest.seatAt === owner ? leaveSeat() : Promise.resolve();
+      stopViewing();
+      q('#rbTables').classList.add('hidden');
+      restMsg(msg);
+      renderRestaurants();
+      return p;
+    }
+    function seatRef(owner) { return presence.state.db.ref('restaurants/' + owner + '/seats/' + myUid()); }
+    function needVisible() {
+      if (presence.visible()) return false;
+      restMsg('👀 Turn on "Show me in the room list" first, so the others can see who sits down.');
+      return true;
+    }
+    function sit(owner, table) {
+      if (needVisible()) return Promise.reject(new Error('not shown in the room list'));
+      return presence.start().then(function () {
+        var pre = rest.seatAt && rest.seatAt !== owner ? leaveSeat() : Promise.resolve();
+        return pre.then(function () {
+          var db = presence.state.db, me = myUid(), upd = {}, seat = { name: myName(), at: firebase.database.ServerValue.TIMESTAMP };
+          if (table === 'free') { seat.free = true; upd['freeTables/' + me + '/at'] = owner; } else { seat.table = table; upd['freeTables/' + me + '/at'] = null; }
+          if (table !== 'free' && readPub().subscriber) delete upd['freeTables/' + me + '/at'];
+          upd['restaurants/' + owner + '/seats/' + me] = seat;
+          seatRef(owner).onDisconnect().remove();
+          return db.ref().update(upd).then(function () { rest.seatAt = owner; rest.seatFree = table === 'free'; renderTablesView(); renderMyInfo(); });
+        });
+      }).catch(function (e) { restMsg('🚫 Could not sit down: ' + (e && e.message || e)); throw e; });
+    }
+    function leaveSeat() {
+      var owner = rest.seatAt; if (!owner || !presence.state.db) return Promise.resolve();
+      rest.seatAt = null; rest.seatFree = false;
+      var r = seatRef(owner); r.onDisconnect().cancel();
+      var upd = {}; upd['restaurants/' + owner + '/seats/' + myUid()] = null;
+      if (!readPub().subscriber) upd['freeTables/' + myUid() + '/at'] = null;
+      return presence.state.db.ref().update(upd).catch(function () { return r.remove().catch(function () {}); }).then(function () { renderMyInfo(); });
+    }
+    function invite(uid, name) {
+      return presence.start().then(function () {
+        return presence.state.db.ref('restaurants/' + myUid() + '/invites/' + uid).set({ name: str(name || 'useR').slice(0, 32), at: firebase.database.ServerValue.TIMESTAMP });
+      });
+    }
+    function uninvite(uid) {
+      return presence.start().then(function () {
+        var upd = {}, base = 'restaurants/' + myUid() + '/';
+        upd[base + 'invites/' + uid] = null;
+        if (readPub().restOpen !== 'online') upd[base + 'seats/' + uid] = null;   // closed: no invite, no right to remain
+        return presence.state.db.ref().update(upd);
+      });
+    }
+    function watchMyInvites(on) {
+      if (!on) { if (rest.ownOff) { rest.ownOff(); rest.ownOff = null; } rest.myInvites = {}; return; }
+      if (rest.ownOff) return;
+      var ref = presence.state.db.ref('restaurants/' + myUid() + '/invites');
+      var cb = function (s) { rest.myInvites = s.val() || {}; renderPeople(); renderTablesView(); var v = q('#rbViewed'); if (v.dataset.uid && !v.classList.contains('hidden')) personActions(viewedPerson); };
+      ref.on('value', cb, function () {});
+      rest.ownOff = function () { ref.off('value', cb); };
+    }
+    // the owner closing: move the ordinary visitors out, invited guests stay seated
+    function clearUninvited() {
+      var db = presence.state.db, base = 'restaurants/' + myUid() + '/';
+      return Promise.all([db.ref(base + 'seats').once('value'), db.ref(base + 'invites').once('value')]).then(function (r) {
+        var seats = r[0].val() || {}, inv = r[1].val() || {}, upd = {};
+        Object.keys(seats).forEach(function (uid) { if (!inv[uid] && uid !== myUid()) upd[base + 'seats/' + uid] = null; });
+        return Object.keys(upd).length ? db.ref().update(upd) : null;
+      });
+    }
+    function renderTablesView() {
+      if (!rest.view) return;
+      var v = rest.view, info = rest.info, me = myUid(), d = readPub();
+      q('#rbTablesTitle').textContent = v.mine ? '⭐ My restaurant' : restaurantName({ username: v.name });
+      var st = q('#rbTablesStatus');
+      if (!info) { st.innerHTML = '<div class="rb-empty">Loading…</div>'; q('#rbTablesList').innerHTML = ''; q('#rbSeated').innerHTML = ''; q('#rbTablesActions').innerHTML = ''; return; }
+      st.innerHTML = (info.open ? '<span class="rb-badge rb-badge-ok">🟢 OPEN</span>' : '<span class="rb-badge rb-badge-closed">🔴 CLOSED</span>') +
+        (!v.mine && rest.invited ? ' <span class="rb-badge rb-badge-invite">🎟️ INVITED · you can stay</span>' : '');
+      var seats = rest.seats, ids = Object.keys(seats);
+      var tag = function (uid) {
+        var s = seats[uid], invited = v.mine ? !!rest.myInvites[uid] : (uid === me && rest.invited);
+        return escapeHtml(s.name || 'useR') + (uid === me ? ' (you)' : '') + (invited ? ' <span class="rb-invite-badge" title="Invited: can stay when closed">🎟️</span>' : '');
+      };
+      var list = q('#rbTablesList'); list.innerHTML = '';
+      Object.keys(info.tables || {}).forEach(function (id) {
+        var x = serviceById(id); if (!x) return;
+        var row = document.createElement('div'); row.className = 'rb-table'; row.setAttribute('data-table', id);
+        var who = ids.filter(function (u) { return seats[u].table === id; });
+        row.innerHTML = '<a class="rb-service" target="_blank" rel="noopener" href="' + escapeHtml(x.id === 'translator' ? withLang(x.url) : x.url) + '">🪑 ' + escapeHtml(x.name) + '</a>' +
+          '<div class="rb-table-who">' + (who.length ? who.map(tag).join(', ') : '<i>empty</i>') + '</div>' +
+          (!v.mine && rest.seatAt === v.owner && seats[me] && seats[me].table === id ? '' : !v.mine ? '<button type="button" class="btn btn-small" data-sit="' + id + '" data-explain="Sits you down at this table, so the others here see you.">🪑 SIT HERE</button>' : '');
+        list.appendChild(row);
+      });
+      var free = ids.filter(function (u) { return seats[u].free; });
+      q('#rbSeated').innerHTML = '<div class="rb-subtitle">🪑 FREE TABLES PULLED UP</div>' + (free.length ? free.map(function (u) {
+        var f = rest.freeInfo[u];
+        return '<div class="rb-table rb-free-table" data-free="' + escapeHtml(u) + '">🪑 ' + tag(u) + '\'s free table' + (f ? '<div class="rb-table-who">' + escapeHtml(freeTableText(f)) + '</div>' : '') + '</div>';
+      }).join('') : '<div class="rb-empty">No free tables here yet</div>') +
+        '<div class="rb-subtitle">👥 SITTING HERE</div>' + (ids.length ? '<div class="rb-seated-list">' + ids.map(function (u) { return '<div class="rb-seated" data-uid="' + escapeHtml(u) + '">👤 ' + tag(u) + '</div>'; }).join('') + '</div>' : '<div class="rb-empty">Nobody is sitting here yet</div>');
+      var act = q('#rbTablesActions'), h = '';
+      if (!v.mine) {
+        if (!d.subscriber && rest.seatAt !== v.owner) h += '<button type="button" class="btn" id="rbPullUp" data-explain="Brings your own free table into this restaurant and sits you at it.">🪑 PULL UP MY FREE TABLE · ' + escapeHtml(freeTableText(d.free)) + '</button>';
+        if (!d.subscriber && rest.seatAt === v.owner && !(seats[me] && seats[me].free)) h += '<button type="button" class="btn btn-small" id="rbPullUp" data-explain="Moves you to your own free table in this restaurant.">🪑 MOVE TO MY FREE TABLE</button>';
+        if (rest.seatAt === v.owner) h += '<button type="button" class="btn btn-small" id="rbLeaveSeat" data-explain="Gets up and leaves this restaurant.">🚶 LEAVE THE RESTAURANT</button>';
+      } else {
+        h += '<small class="rb-dev-note">Open or close it in ✏️ Editing → MY RESTAURANT. Invite people from the people list or their profile: invited people may stay when you close.</small>';
+      }
+      act.innerHTML = h;
+      var pu = q('#rbPullUp'); if (pu) pu.onclick = function () { sit(v.owner, 'free').catch(function () {}); };
+      var lv = q('#rbLeaveSeat'); if (lv) lv.onclick = function () { leaveSeat().then(renderTablesView); };
+      list.querySelectorAll('[data-sit]').forEach(function (b) { b.onclick = function () { sit(v.owner, b.getAttribute('data-sit')).catch(function () {}); }; });
+    }
+    q('#rbTablesClose').onclick = function () { q('#rbTables').classList.add('hidden'); stopViewing(); };
+    // invite buttons on a profile in the middle column (only for a restaurant owner)
+    var viewedPerson = null;
+    function personActions(p) {
+      viewedPerson = p;
+      var box = q('#rbViewed'), old = q('#rbInviteRow'); if (old) old.parentNode.removeChild(old);
+      box.dataset.uid = p && p.id || '';
+      if (!p || !p.id || !readPub().subscriber || !presence.state.myRef) return;
+      var invited = !!rest.myInvites[p.id], row = document.createElement('div');
+      row.id = 'rbInviteRow'; row.className = 'field-row'; row.style.marginTop = '8px';
+      row.innerHTML = invited
+        ? '<span class="rb-badge rb-badge-invite">🎟️ INVITED</span><button type="button" class="btn btn-small" id="rbUninvite" data-explain="Takes back the invite. When your restaurant is closed they are moved out.">✖ UNINVITE</button>'
+        : '<button type="button" class="btn btn-small" id="rbInviteBtn" data-explain="Invites this useR to your restaurant: they may stay seated even when it closes.">🎟️ INVITE TO MY RESTAURANT</button>';
+      q('#rbViewedBody').appendChild(row);
+      var ib = q('#rbInviteBtn'); if (ib) ib.onclick = function () { invite(p.id, p.username).catch(function (e) { restMsg('🚫 ' + (e && e.message || e)); }); };
+      var ub = q('#rbUninvite'); if (ub) ub.onclick = function () { uninvite(p.id).catch(function (e) { restMsg('🚫 ' + (e && e.message || e)); }); };
+    }
+    // closed restaurants only show up for the people their owner invited
+    function checkInvites() {
+      if (!presence.state.db || !myUid()) return;
+      people.forEach(function (p) {
+        if (!p.restaurant || p.restaurant.open || !p.id) return;
+        presence.state.db.ref('restaurants/' + p.id + '/invites/' + myUid()).once('value').then(function (s) {
+          if (!!rest.invitedBy[p.id] !== s.exists()) { rest.invitedBy[p.id] = s.exists(); renderRestaurants(); }
+        }).catch(function () {});
+      });
+    }
     var origSet = window.rvUserbox.setChannelPeople;
-    window.rvUserbox.setChannelPeople = function (list) { origSet(list); renderRestaurants(); };
+    window.rvUserbox.setChannelPeople = function (list) { origSet(list); renderRestaurants(); checkInvites(); };
+    window.rvUserbox.restaurant = {
+      open: showRestaurant, sit: sit, pullUpFreeTable: function (owner) { return sit(owner, 'free'); }, leave: leaveSeat,
+      invite: invite, uninvite: uninvite, invites: function () { return Object.keys(rest.myInvites); },
+      state: function () { return { viewing: rest.view && rest.view.owner, open: !!(rest.info && rest.info.open), seats: JSON.parse(JSON.stringify(rest.seats)), invited: rest.invited, seatedAt: rest.seatAt }; }
+    };
 
     /* ===== live presence: the popcoin Firebase project's Realtime Database =====
        presence/rooms/<room>/<uid>. Only written while "Show me in the room list" is on;
        only public fields; marked offline by the server when this tab goes away. */
     var presence = (function () {
-      var st = { db: null, uid: null, myRef: null, room: null, listen: null, starting: null, offlineAfter: 0 };
+      var st = { db: null, uid: null, myRef: null, restRef: null, freeRef: null, room: null, listen: null, starting: null, offlineAfter: 0 };
       var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
       function cleanRoom(r) { r = str(r).toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32); return r || 'main'; }
       function loadScript(src) {
@@ -1088,8 +1311,49 @@
         r.onDisconnect().cancel();
         return r.remove().catch(function () {});
       }
+      // no longer shown in the room list: get up from any seat, take the free table home, take the restaurant down
+      function withdrawAll() {
+        if (!st.myRef && !st.restRef && !st.freeRef) return Promise.resolve();
+        var jobs = [leaveSeat(), withdraw()];
+        if (st.restRef) { var rr = st.restRef; st.restRef = null; jobs.push(dropRestaurant(rr)); }
+        if (st.freeRef) { var fr = st.freeRef; st.freeRef = null; fr.onDisconnect().cancel(); jobs.push(fr.remove().catch(function () {})); }
+        watchMyInvites(false);
+        return Promise.all(jobs).then(function () { renderRestaurants(); });
+      }
+      function dropRestaurant(infoRef) {
+        infoRef.onDisconnect().cancel();
+        var seatsRef = infoRef.parent.child('seats');
+        return seatsRef.once('value').then(function (s) {
+          var upd = {}; Object.keys(s.val() || {}).forEach(function (u) { upd['seats/' + u] = null; });
+          upd.info = null;   // the invite list stays (it is private to the owner and each guest)
+          return infoRef.parent.update(upd);
+        }).catch(function () {});
+      }
+      // subscribers: the restaurant sign (restaurants/<uid>/info), closed by the server when this tab goes away.
+      // free useRs: their one free table (freeTables/<uid>), removed when this tab goes away.
+      function publishRestaurant() {
+        var d = readPub(), base = st.db.ref('restaurants/' + st.uid);
+        if (d.subscriber) {
+          if (st.freeRef) { var fr = st.freeRef; st.freeRef = null; fr.onDisconnect().cancel(); fr.remove().catch(function () {}); }
+          var tables = {}; d.tables.forEach(function (t) { if (serviceById(t)) tables[t] = true; });
+          var open = d.restOpen === 'online', info = { name: str(q('#username').value).slice(0, 32) || 'useR', open: open, sub: true,
+            room: cleanRoom(lsGet('rudventur_channel') || 'main'), updated: firebase.database.ServerValue.TIMESTAMP };
+          if (Object.keys(tables).length) info.tables = tables;
+          st.restRef = base.child('info');
+          st.restRef.onDisconnect().update({ open: false, updated: firebase.database.ServerValue.TIMESTAMP });
+          watchMyInvites(true);
+          return st.restRef.set(info).then(function () { return open ? null : clearUninvited(); });
+        }
+        if (st.restRef) { var rr = st.restRef; st.restRef = null; watchMyInvites(false); dropRestaurant(rr); }
+        var f = d.free, rec = { name: str(q('#username').value).slice(0, 32) || 'useR', service: f.service };
+        if (f.label) rec.label = f.label.slice(0, 40);
+        if (rest.seatAt && rest.seatFree) rec.at = rest.seatAt;
+        st.freeRef = st.db.ref('freeTables/' + st.uid);
+        st.freeRef.onDisconnect().remove();
+        return st.freeRef.set(rec);
+      }
       function publish() {
-        if (!visible()) { return withdraw(); }
+        if (!visible()) { return withdrawAll(); }
         return start().then(function () {
           var room = cleanRoom(lsGet('rudventur_channel') || 'main');
           var ref = st.db.ref('presence/rooms/' + room + '/' + st.uid);
@@ -1098,7 +1362,7 @@
             st.myRef = ref;
             ref.onDisconnect().update({ online: false, lastSeen: firebase.database.ServerValue.TIMESTAMP });
             return ref.set(myRecord());
-          }).then(function () { note('You are shown live in room "' + room + '".'); });
+          }).then(publishRestaurant).then(function () { note('You are shown live in room "' + room + '".'); renderRestaurants(); renderMyInfo(); });
         }).catch(function (e) { note('Could not share your presence: ' + (e && e.message || e)); });
       }
       function listen() {
@@ -1121,7 +1385,7 @@
           }, function (e) { note('Live room list unavailable: ' + (e && e.message || e)); });
         }).catch(function () {});
       }
-      return { publish: publish, listen: listen, withdraw: withdraw, cleanRoom: cleanRoom, state: st, start: start };
+      return { publish: publish, listen: listen, withdraw: withdrawAll, cleanRoom: cleanRoom, state: st, start: start, visible: visible };
     })();
     window.rvUserbox.presence = { publish: presence.publish, listen: presence.listen, leave: presence.withdraw };
     q('#rbRoomVisible').addEventListener('change', function () { presence.publish(); });
@@ -1195,7 +1459,7 @@
       return { username: q('#username').value, psignature: q('#psignature').value, sigStyle: str(p.sigStyle) || 'plain', avatar: str(p.avatar),
         languages: str(p.languages).split(',').filter(Boolean), publicNote: q('#publicNote').value || str(x.publicNote),
         locLevel: d.shareLoc ? (d.locLevel === 'area' ? 'area' : 'exact') : 'private', currentLoc: q('#currentLoc').value,
-        subscriber: d.subscriber, tables: d.tables.slice(), now: now, robot: rbLsGet('rvRobot') === '1' };
+        subscriber: d.subscriber, tables: d.tables.slice(), free: { service: d.free.service, label: d.free.label }, now: now, robot: rbLsGet('rvRobot') === '1' };
     }
     var draft = null;   // null = no changes waiting
     try { draft = JSON.parse(lsGet(DRAFT_KEY) || 'null'); } catch (e) { draft = null; }
@@ -1248,7 +1512,9 @@
       { t: '🍽️ Restaurant tables', h: 'Supporters run a restaurant; tables are the services you serve', r: function (d) {
           return chips('subscriber', [['yes', '⭐ I am a supporter'], ['no', 'Not yet']], d.subscriber ? 'yes' : 'no') +
             (d.subscriber ? chips('tables', SERVICES.map(function (s) { return [s.id, s.name]; }), d.tables, true) +
-              '<div class="rb-chips"><button type="button" class="rb-chip" data-act="allTables">All tables</button><button type="button" class="rb-chip" data-act="noTables">No tables</button></div>' : ''); } },
+              '<div class="rb-chips"><button type="button" class="rb-chip" data-act="allTables">All tables</button><button type="button" class="rb-chip" data-act="noTables">No tables</button></div>'
+              : '<div class="rb-subtitle">🪑 Your free table</div><small class="rb-dev-note">Everyone gets one free table to pull up at any open restaurant</small>' +
+                chips('freeService', SERVICES.map(function (s) { return [s.id, s.name]; }), (d.free || {}).service) + custom('freeLabel', (d.free || {}).label || '', 'Name your table (optional)', 40)); } },
       { t: '🌤 Right now', h: 'How you are at the moment. Tick 👁 to share a line with the room (only while you are online and shown in the room list)', r: function (d) {
           var n = d.now; var row = function (f, html) { return '<div class="rb-nowrow"><div class="rb-subtitle">' + NOW_LABEL[f] + '</div>' + html + shareBox(f, n) + '</div>'; };
           return row('mood', chips('now.mood', pairs(CH.mood), n.mood) + custom('now.mood', n.mood, 'Your own mood', 24)) +
@@ -1273,7 +1539,8 @@
     function summaryRows(d) {
       var rows = [['🙂 Avatar', d.avatar], ['👤 Name', d.username], ['📝 Signature', styleSig(d.psignature, d.sigStyle)], ['🗣 Languages', d.languages.map(langName).join(', ')],
         ['✨ Public note', d.publicNote], ['📍 Location', LOC_LEVELS[d.locLevel] + (d.currentLoc ? ' · ' + (d.locLevel === 'area' ? areaOf(d.currentLoc) : d.currentLoc) : '')],
-        ['🍽️ Restaurant', d.subscriber ? d.tables.length + ' tables: ' + d.tables.map(function (t) { var s = serviceById(t); return s ? s.name : t; }).join(', ') : 'not a supporter']];
+        ['🍽️ Restaurant', d.subscriber ? d.tables.length + ' tables: ' + d.tables.map(function (t) { var s = serviceById(t); return s ? s.name : t; }).join(', ') : 'not a supporter'],
+        ['🪑 Free table', d.subscriber ? '' : (function () { var f = d.free || {}, s = serviceById(f.service); return (s ? s.name : '') + (f.label ? ' · “' + f.label + '”' : ''); })()]];
       NOW_FIELDS.forEach(function (f) { var v = d.now[f]; if (v) rows.push([NOW_LABEL[f], (f === 'status' ? STATUS[v] || v : f === 'chat' ? (v === 'yes' ? 'Yes' : 'Not now') : v) + (d.now.share[f] ? '  👁' : '  🔒')]); });
       return rows;
     }
@@ -1299,6 +1566,7 @@
       var d = ensureDraft();
       if (key.indexOf('now.') === 0) { var f = key.slice(4); d.now[f] = str(v).slice(0, f === 'game' ? 40 : f === 'mood' ? 24 : 60); }
       else if (key === 'subscriber') d.subscriber = v === 'yes';
+      else if (key === 'freeService' || key === 'freeLabel') { d.free = d.free || { service: 'hub', label: '' }; if (key === 'freeService') d.free.service = v; else d.free.label = str(v).slice(0, 40); }
       else d[key] = v;
       saveDraft(); refresh();
     }
@@ -1346,7 +1614,8 @@
       q('#username').value = str(d.username).slice(0, 32); q('#psignature').value = str(d.psignature).slice(0, 200);
       q('#publicNote').value = str(d.publicNote).slice(0, 300); q('#currentLoc').value = str(d.currentLoc).slice(0, 80);
       q('#rbShareLoc').checked = d.locLevel !== 'private'; q('#rbSubscriber').checked = !!d.subscriber;
-      q('#rbRestSettings').style.display = d.subscriber ? '' : 'none';
+      q('#rbRestSettings').style.display = d.subscriber ? '' : 'none'; q('#rbFreeSettings').style.display = d.subscriber ? 'none' : '';
+      if (d.free) { q('#rbFreeTable').value = serviceById(d.free.service) ? d.free.service : 'hub'; q('#rbFreeLabel').value = str(d.free.label).slice(0, 40); }
       tableBox.querySelectorAll('input').forEach(function (i) { i.checked = d.tables.indexOf(i.value) >= 0; });
       saveProfile({ avatar: d.avatar, languages: d.languages.slice(0, 12).join(','), sigStyle: d.sigStyle || 'plain', username: q('#username').value, psignature: q('#psignature').value });
       lsSet(NOW_KEY, JSON.stringify(d.now));
