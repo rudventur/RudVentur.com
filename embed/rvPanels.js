@@ -4,7 +4,7 @@
 
      header    the RUDVENTUR title            hidden → tab under the top edge
      zones     the "→ The Map …" jump strip   hidden → tab under the top edge
-     map, bank, user, social, os, tools, chem, repos
+     map, bank, user, social, os, tools, chem, repos, advert
                the tiles                       fold up to their header
                                                (clicking the header itself
                                                still opens full screen)
@@ -30,7 +30,8 @@
 
   var TILES = {
     map: 'The Map', bank: 'The Bank', user: 'The User', social: 'The Social',
-    os: 'The OS', tools: 'The Tools', chem: 'ChemVentur', repos: 'The Repos'
+    os: 'The OS', tools: 'The Tools', chem: 'ChemVentur', repos: 'The Repos',
+    advert: 'Advert'
   };
 
   // ── the taskbar comes from embed/rvDesk.js; give it the same toggle ──

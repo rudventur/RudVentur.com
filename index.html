@@ -19,6 +19,7 @@
   --repos:#ffdd33;
   --bank:#ffc800;
   --chem:#00ff88;
+  --advert:#c8f542;
 }
 
 body{
@@ -184,6 +185,113 @@ body::before{
 .panel--chem:hover{border-color:var(--chem);box-shadow:0 0 25px rgba(0,255,136,.08)}
 .panel--chem .panel__title{color:var(--chem)}
 .panel--chem .tool-link:hover{border-left-color:var(--chem);color:var(--chem)}
+
+/* advert scroll — a full-width rolling advertisement strip */
+.panel--advert{border-color:#2a3a0a;grid-column:1/-1}
+.panel--advert:hover{border-color:var(--advert);box-shadow:0 0 25px rgba(200,245,66,.08)}
+.panel--advert .panel__title{color:var(--advert)}
+.advert-strip{
+  position:relative;
+  overflow:hidden;
+  flex:1;
+  min-height:2.8rem;
+  border:1px solid #2a3a0a;
+  background:#0c1008;
+}
+.advert-strip__track{
+  display:flex;
+  width:max-content;
+  animation:advert-marquee 32s linear infinite;
+}
+.advert-strip:hover .advert-strip__track,
+.advert-strip:focus-within .advert-strip__track{
+  animation-play-state:paused;
+}
+.advert-strip__set{
+  display:flex;
+  flex-shrink:0;
+}
+.advert-item{
+  display:inline-flex;
+  align-items:center;
+  gap:.75rem;
+  padding:.7rem 1.6rem;
+  color:var(--advert);
+  text-decoration:none;
+  white-space:nowrap;
+  border-right:1px solid #1e2a10;
+  min-height:2.8rem;
+}
+.advert-item:hover,
+.advert-item:focus-visible{
+  background:rgba(200,245,66,.06);
+  outline:none;
+}
+.advert-item:focus-visible{
+  box-shadow:inset 0 0 0 2px var(--advert);
+}
+.advert-item__badge{
+  font-family:'DM Mono',monospace;
+  font-size:.55rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:#8a9a60;
+  border:1px solid #3a4a20;
+  padding:.15rem .4rem;
+  flex-shrink:0;
+}
+.advert-item__icon{font-size:1.05rem;line-height:1}
+.advert-item__name{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:.95rem;
+  letter-spacing:.5px;
+  color:#e8ff9a;
+}
+.advert-item__text{
+  font-family:'DM Mono',monospace;
+  font-size:.72rem;
+  color:#9aaa70;
+}
+.advert-item__url{
+  font-family:'DM Mono',monospace;
+  font-size:.7rem;
+  color:#7a8a55;
+}
+@keyframes advert-marquee{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+/* screen-reader (and reduced-motion) copy of each unique advert; hidden while the strip rolls */
+.advert-strip__static{
+  position:absolute;
+  width:1px;height:1px;
+  padding:0;margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+@media (prefers-reduced-motion:reduce){
+  .advert-strip{overflow:visible}
+  .advert-strip__track{display:none;animation:none}
+  .advert-strip__static{
+    position:static;
+    width:auto;height:auto;
+    margin:0;clip:auto;
+    overflow:visible;
+    white-space:normal;
+    display:flex;
+    flex-wrap:wrap;
+  }
+  .advert-item{white-space:normal;flex-wrap:wrap;border-right:none}
+}
+@media (max-width:480px){
+  .advert-item{padding:.65rem 1rem;gap:.5rem}
+  .advert-item__name{font-size:.85rem}
+  .advert-item__text,.advert-item__url{font-size:.68rem}
+}
+
 .chem-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
@@ -403,6 +511,7 @@ button.tool-link{
 .zone-nav a[data-zone="tools"]:hover{color:var(--tools);text-shadow:0 0 8px rgba(199,143,255,.4)}
 .zone-nav a[data-zone="chem"]:hover{color:var(--chem);text-shadow:0 0 8px rgba(0,255,136,.4)}
 .zone-nav a[data-zone="repos"]:hover{color:var(--repos);text-shadow:0 0 8px rgba(255,221,51,.4)}
+.zone-nav a[data-zone="advert"]:hover{color:var(--advert);text-shadow:0 0 8px rgba(200,245,66,.4)}
 
 /* ─── REPOS GRID ─── */
 .repos-inside{margin-top:1rem;border-top:1px solid #3a3a0a;padding-top:.8rem}
@@ -557,6 +666,7 @@ button.tool-link{
 .panel--tools{--sf-panel-accent:var(--tools);--sf-panel-text:var(--tools)}
 .panel--chem{--sf-panel-accent:var(--chem);--sf-panel-text:var(--chem)}
 .panel--repos{--sf-panel-accent:var(--repos);--sf-panel-text:var(--repos)}
+.panel--advert{--sf-panel-accent:var(--advert);--sf-panel-text:var(--advert)}
 .panel__head .sf-ptoggle{opacity:.6;transition:opacity .2s}
 .panel__head .sf-ptoggle:hover,.panel__head .sf-ptoggle:focus-visible,.panel.sf-panel-collapsed .sf-ptoggle{opacity:1}
 /* the full-screen mark sits after the toggle */
@@ -733,11 +843,24 @@ body.sf-hidden-zones .top-tabs .sf-ptab[data-panel-toggle="zones"]{display:flex}
   <li><a data-zone="tools"  onclick="focusPanel('tools');return false">→ The Tools</a></li>
   <li><a data-zone="chem"   onclick="focusPanel('chem');return false">→ ChemVentur</a></li>
   <li><a data-zone="repos"  onclick="focusPanel('repos');return false">→ The Repos</a></li>
+  <li><a data-zone="advert" onclick="focusPanel('advert');return false">→ Advert</a></li>
   <li class="zone-nav__toggle"><button class="sf-ptoggle" type="button" data-panel-toggle="zones"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button></li>
 </ul>
 
-<!-- 6 PANEL GRID -->
+<!-- 6 PANEL GRID, with the Advert scroll as a full-width strip at the top -->
 <main class="universe-grid">
+
+  <!-- ADVERT SCROLL — rolling advertisement strip (entries come from scroll-adverts.js) -->
+  <section class="panel panel--advert" id="advertPanel">
+    <div class="panel__head sf-phead" onclick="toggleFullscreen(this, event)" title="click for full screen" data-explain="Click the tile header to roll the tile open and bring it into view; click again to roll it back.">
+      <span class="panel__icon">📢</span>
+      <span class="panel__title sf-ptitle">Advert</span>
+      <button class="sf-ptoggle" type="button" data-panel-toggle="advert"><span class="sf-pt-icon"></span><span class="sf-pt-label"></span></button>
+    </div>
+    <div class="sf-pbody">
+      <div id="advert-strip" class="advert-strip" aria-label="Advertisements"></div>
+    </div>
+  </section>
 
   <!-- PANEL 1 — MAP ZONE (top left) -->
   <section class="panel panel--map">
@@ -1126,6 +1249,7 @@ document.querySelectorAll('.tool-link.soon').forEach(link => {
 
 <!-- Windows 13 desktop: notch menu top-left, useRbox R top-right, keyboard + chat
      bottom-left, Popcorn bottom-right, taskbar bottom-middle. Ko-fi lives in the notch menu. -->
+<script src="scroll-adverts.js"></script>
 <script src="embed/useRbox.js" defer></script>
 <script src="embed/rvDesk.js?v=20261029-1" defer></script>
 <!-- 🍿 PB1 (rvDesk bottom-right) opens the Popcorn Hub. PB2 inside the hub opens
